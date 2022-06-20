@@ -7,3 +7,5 @@ dependencies:
 - pre-commit
 - pytest
 - pytest-cov
+- uvicorn
+- fastapi
