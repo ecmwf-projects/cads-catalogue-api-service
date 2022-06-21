@@ -7,5 +7,6 @@ dependencies:
 - pre-commit
 - pytest
 - pytest-cov
+- sqlalchemy
 - uvicorn
 - fastapi
