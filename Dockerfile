@@ -1,6 +1,5 @@
 FROM continuumio/miniconda3
 
-
 WORKDIR /src/cads-catalogue-api-service
 
 COPY environment.yml /src/cads-catalogue-api-service
@@ -12,7 +11,7 @@ COPY . /src/cads-catalogue-api-service
 
 RUN pip install --no-deps -e .
 
-ENV APP_HOST=0.0.0.0
-ENV APP_PORT=8082
+ENV PORT=8000
+ENV LOGLEVEL=info
 
-CMD uvicorn cads_catalogue_api_service.main:app --host ${APP_HOST} --port ${APP_PORT} --log-level info
+CMD uvicorn --host 0.0.0.0 --port ${PORT} --log-level ${LOGLEVEL} cads_catalogue_api_service.main:app
