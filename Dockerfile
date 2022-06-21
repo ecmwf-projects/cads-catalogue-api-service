@@ -6,4 +6,5 @@ WORKDIR /srv
 
 RUN conda install -c conda-forge make gcc python=3.10 \
     && make conda-env-update CONDAFLAGS="-n base" \
-    && pip install -e .
+    && pip install -e . \
+    && uvicorn cads_catalogue_api_service.api:app
