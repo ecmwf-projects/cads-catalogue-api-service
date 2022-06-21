@@ -1,12 +1,13 @@
 channels:
-- conda-forge
-- nodefaults
+  - conda-forge
+  - nodefaults
 dependencies:
-- make
-- mypy
-- pre-commit
-- pytest
-- pytest-cov
-- sqlalchemy
-- uvicorn
-- fastapi
+  - make
+  - mypy
+  - pre-commit
+  - pytest
+  - pytest-cov
+  - sqlalchemy
+  - stac-fastapi
+  - uvicorn
+  - fastapi
