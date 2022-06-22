@@ -15,3 +15,7 @@
 
 class FeatureNotImplemented(NotImplementedError):
     """This STAC feature is not implemented yet."""
+
+    def __init__(self, message: str = "This STAC feature is not implemented yet."):
+        super().__init__(message)
+        self.message = message

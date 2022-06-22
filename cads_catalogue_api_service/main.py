@@ -18,6 +18,8 @@ from typing import Type
 from urllib.parse import urljoin
 
 import attr
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session as SqlSession
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import TokenPaginationExtension
@@ -29,6 +31,7 @@ from stac_pydantic.shared import MimeTypes
 
 from . import config, exceptions, serializers
 from . import temp_models as database
+from .exceptions import FeatureNotImplemented
 from .session import Session
 
 logger = logging.getLogger(__name__)
@@ -100,21 +103,21 @@ class CatalogueClient(BaseCoreClient):
             return self.collection_serializer.db_to_stac(collection, base_url)
 
     def get_item(self, item_id: str, collection_id: str, **kwargs) -> None:
-        raise exceptions.FeatureNotImplemented("Not implemented")
+        raise exceptions.FeatureNotImplemented("STAC item is not implemented")
 
     def get_search(
         self,
         **kwargs,
     ) -> None:
         """GET search catalog."""
-        raise exceptions.FeatureNotImplemented("Not implemented")
+        raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
     def item_collection(self, **kwargs) -> ItemCollection:
         """Read an item collection from the database."""
-        raise exceptions.FeatureNotImplemented("Not implemented")
+        raise exceptions.FeatureNotImplemented("STAC items is not implemented")
 
     def post_search(self, **kwargs) -> None:
-        raise exceptions.FeatureNotImplemented("Not implemented")
+        raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
 
 api = StacApi(
@@ -126,3 +129,11 @@ api = StacApi(
 )
 
 app = api.app
+
+
+@app.exception_handler(FeatureNotImplemented)
+async def unicorn_exception_handler(request: Request, exc: FeatureNotImplemented):
+    return JSONResponse(
+        status_code=501,
+        content={"message": exc.message},
+    )
