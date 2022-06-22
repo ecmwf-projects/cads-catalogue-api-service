@@ -26,7 +26,7 @@ def test_settings_custom() -> None:
 
 def test_settings_env() -> None:
     """Test that the default settings can be taken from env vars."""
-    os.environ["postgres_dbname"] = "bar"
+    os.environ["POSTGRES_DBNAME"] = "bar"
     session = config.SqlalchemySettings()
 
     assert (
