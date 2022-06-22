@@ -14,8 +14,8 @@
 
 
 import logging
-import typing as T
 import urllib
+from typing import Type
 
 import attr
 import fastapi
@@ -47,15 +47,15 @@ settings = config.SqlalchemySettings()
 class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
     session: Session = attr.ib(default=Session.create_from_settings(settings))
-    collection_table: T.Type[database.Collection] = attr.ib(default=database.Collection)
-    collection_serializer: T.Type[serializers.Serializer] = attr.ib(
+    collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
+    collection_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
     )
 
     @staticmethod
     def _lookup_id(
-        id: str, table: T.Type[database.BaseModel], session: sqlalchemy.orm.Session
-    ) -> T.Type[database.BaseModel]:
+        id: str, table: Type[database.BaseModel], session: sqlalchemy.orm.Session
+    ) -> Type[database.BaseModel]:
         """Lookup row by id."""
         row = session.query(table).filter(table.id == id).first()
         if not row:

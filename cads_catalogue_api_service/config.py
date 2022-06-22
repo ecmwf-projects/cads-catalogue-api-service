@@ -1,5 +1,3 @@
-import typing as T
-
 import stac_fastapi.types
 
 
@@ -21,10 +19,10 @@ class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):
     postgres_dbname: str = "catalogue"
 
     # Fields which are defined by STAC but not included in the database model
-    forbidden_fields: T.Set[str] = {"type"}
+    forbidden_fields: set[str] = {"type"}
 
     # Fields which are item properties but indexed as distinct fields in the database model
-    indexed_fields: T.Set[str] = {"datetime"}
+    indexed_fields: set[str] = {"datetime"}
 
     @property
     def connection_string(self):

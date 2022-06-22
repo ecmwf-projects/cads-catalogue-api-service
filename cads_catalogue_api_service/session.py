@@ -1,7 +1,7 @@
 """database session management."""
 import contextlib
 import logging
-import typing as T
+from typing import Iterator
 
 import attr
 import fastapi_utils.session
@@ -18,7 +18,7 @@ class FastAPISessionMaker(fastapi_utils.session.FastAPISessionMaker):
     """FastAPISessionMaker."""
 
     @contextlib.contextmanager
-    def context_session(self) -> T.Iterator[sqlalchemy.orm.Session]:
+    def context_session(self) -> Iterator[sqlalchemy.orm.Session]:
         """Override base method to include exception handling."""
         try:
             yield from self.get_db()

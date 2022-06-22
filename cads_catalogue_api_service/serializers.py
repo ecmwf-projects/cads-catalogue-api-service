@@ -1,6 +1,6 @@
 """Serializers."""
 import abc
-import typing as T
+from typing import TypedDict
 
 import attr
 import stac_fastapi.types
@@ -15,13 +15,13 @@ class Serializer(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def db_to_stac(cls, db_model: database.BaseModel, base_url: str) -> T.TypedDict:
+    def db_to_stac(cls, db_model: database.BaseModel, base_url: str) -> TypedDict:
         """Transform database model to stac."""
         ...
 
     @classmethod
     @abc.abstractmethod
-    def stac_to_db(cls, stac_data: T.TypedDict) -> database.BaseModel:
+    def stac_to_db(cls, stac_data: TypedDict) -> database.BaseModel:
         """Transform stac to database model."""
         ...
 
@@ -40,7 +40,7 @@ class CollectionSerializer(Serializer):
     """Serialization methods for STAC collections."""
 
     @classmethod
-    def db_to_stac(cls, db_model: database.Collection, base_url: str) -> T.TypedDict:
+    def db_to_stac(cls, db_model: database.Collection, base_url: str) -> TypedDict:
         """Transform database model to stac collection."""
         collection_links = stac_fastapi.types.links.CollectionLinks(
             collection_id=db_model.id, base_url=base_url
@@ -72,6 +72,6 @@ class CollectionSerializer(Serializer):
         )
 
     @classmethod
-    def stac_to_db(cls, stac_data: T.TypedDict) -> database.Collection:
+    def stac_to_db(cls, stac_data: TypedDict) -> database.Collection:
         """Transform stac collection to database model."""
         return database.Collection(**dict(stac_data))
