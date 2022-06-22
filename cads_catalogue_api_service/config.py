@@ -1,6 +1,6 @@
 import typing as T
 
-import stac_fastapi.types.config
+import stac_fastapi.types
 
 
 class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):
