@@ -45,7 +45,7 @@ class CollectionSerializer(Serializer):
         collection_links = CollectionLinks(
             collection_id=db_model.id, base_url=base_url
         ).create_links()
-        # We don't implements items. Let's remove the rel="items" entry
+        # We don't implement items. Let's remove the rel="items" entry
         collection_links = [link for link in collection_links if link["rel"] != "items"]
 
         db_links = db_model.links

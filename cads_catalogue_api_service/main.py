@@ -102,7 +102,7 @@ class CatalogueClient(BaseCoreClient):
             collection = self._lookup_id(collection_id, self.collection_table, session)
             return self.collection_serializer.db_to_stac(collection, base_url)
 
-    def get_item(self, item_id: str, collection_id: str, **kwargs) -> None:
+    def get_item(self, **kwargs) -> None:
         raise exceptions.FeatureNotImplemented("STAC item is not implemented")
 
     def get_search(
