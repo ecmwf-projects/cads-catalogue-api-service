@@ -1,10 +1,10 @@
 """Serializers."""
 import abc
-from typing import TypedDict
+import typing as T
 
 import attr
-from stac_fastapi.types import stac as stac_types
-from stac_fastapi.types.links import CollectionLinks, resolve_links
+import stac_fastapi.types
+import stac_fastapi.types.links
 
 from . import temp_models as database
 
@@ -15,13 +15,13 @@ class Serializer(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def db_to_stac(cls, db_model: database.BaseModel, base_url: str) -> TypedDict:
+    def db_to_stac(cls, db_model: database.BaseModel, base_url: str) -> T.TypedDict:
         """Transform database model to stac."""
         ...
 
     @classmethod
     @abc.abstractmethod
-    def stac_to_db(cls, stac_data: TypedDict) -> database.BaseModel:
+    def stac_to_db(cls, stac_data: T.TypedDict) -> database.BaseModel:
         """Transform stac to database model."""
         ...
 
@@ -40,9 +40,9 @@ class CollectionSerializer(Serializer):
     """Serialization methods for STAC collections."""
 
     @classmethod
-    def db_to_stac(cls, db_model: database.Collection, base_url: str) -> TypedDict:
+    def db_to_stac(cls, db_model: database.Collection, base_url: str) -> T.TypedDict:
         """Transform database model to stac collection."""
-        collection_links = CollectionLinks(
+        collection_links = stac_fastapi.types.links.CollectionLinks(
             collection_id=db_model.id, base_url=base_url
         ).create_links()
         # We don't implement items. Let's remove the rel="items" entry
@@ -50,11 +50,13 @@ class CollectionSerializer(Serializer):
 
         db_links = db_model.links
         if db_links:
-            collection_links += resolve_links(db_links, base_url)
+            collection_links += stac_fastapi.types.links.resolve_links(
+                db_links, base_url
+            )
 
         stac_extensions = db_model.stac_extensions or []
 
-        return stac_types.Collection(
+        return stac_fastapi.types.stac.Collection(
             type="Collection",
             id=db_model.id,
             stac_extensions=stac_extensions,
@@ -70,6 +72,6 @@ class CollectionSerializer(Serializer):
         )
 
     @classmethod
-    def stac_to_db(cls, stac_data: TypedDict) -> database.Collection:
+    def stac_to_db(cls, stac_data: T.TypedDict) -> database.Collection:
         """Transform stac collection to database model."""
         return database.Collection(**dict(stac_data))

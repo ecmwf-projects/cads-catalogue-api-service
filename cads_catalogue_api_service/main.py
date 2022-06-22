@@ -14,31 +14,29 @@
 
 
 import logging
-from typing import Type
-from urllib.parse import urljoin
+import typing as T
+import urllib
 
 import attr
-from fastapi import Request
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session as SqlSession
-from stac_fastapi.api.app import StacApi
-from stac_fastapi.extensions.core import TokenPaginationExtension
-from stac_fastapi.types.core import BaseCoreClient
-from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Collections, ItemCollection
+import fastapi
+import fastapi.responses
+import sqlalchemy.orm
+import stac_fastapi.api.app
+import stac_fastapi.extensions.core
+import stac_fastapi.types
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 
 from . import config, exceptions, serializers
 from . import temp_models as database
-from .exceptions import FeatureNotImplemented
 from .session import Session
 
 logger = logging.getLogger(__name__)
 
 
 extensions = [
-    TokenPaginationExtension(),
+    # This extenstion is required, seems for a bad implementation
+    stac_fastapi.extensions.core.TokenPaginationExtension(),
 ]
 
 
@@ -46,25 +44,27 @@ settings = config.SqlalchemySettings()
 
 
 @attr.s
-class CatalogueClient(BaseCoreClient):
+class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
     session: Session = attr.ib(default=Session.create_from_settings(settings))
-    collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
-    collection_serializer: Type[serializers.Serializer] = attr.ib(
+    collection_table: T.Type[database.Collection] = attr.ib(default=database.Collection)
+    collection_serializer: T.Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
     )
 
     @staticmethod
     def _lookup_id(
-        id: str, table: Type[database.BaseModel], session: SqlSession
-    ) -> Type[database.BaseModel]:
+        id: str, table: T.Type[database.BaseModel], session: sqlalchemy.orm.Session
+    ) -> T.Type[database.BaseModel]:
         """Lookup row by id."""
         row = session.query(table).filter(table.id == id).first()
         if not row:
-            raise NotFoundError(f"{table.__name__} {id} not found")
+            raise stac_fastapi.types.errors.NotFoundError(
+                f"{table.__name__} {id} not found"
+            )
         return row
 
-    def all_collections(self, **kwargs) -> Collections:
+    def all_collections(self, **kwargs) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the database."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
@@ -87,15 +87,17 @@ class CatalogueClient(BaseCoreClient):
                 {
                     "rel": Relations.self.value,
                     "type": MimeTypes.json,
-                    "href": urljoin(base_url, "collections"),
+                    "href": urllib.parse.urljoin(base_url, "collections"),
                 },
             ]
-            collection_list = Collections(
+            collection_list = stac_fastapi.types.stac.Collections(
                 collections=serialized_collections or [], links=links
             )
             return collection_list
 
-    def get_collection(self, collection_id: str, **kwargs) -> Collection:
+    def get_collection(
+        self, collection_id: str, **kwargs
+    ) -> stac_fastapi.types.stac.Collection:
         """Get collection by id."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
@@ -112,7 +114,7 @@ class CatalogueClient(BaseCoreClient):
         """GET search catalog."""
         raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
-    def item_collection(self, **kwargs) -> ItemCollection:
+    def item_collection(self, **kwargs) -> stac_fastapi.types.stac.ItemCollection:
         """Read an item collection from the database."""
         raise exceptions.FeatureNotImplemented("STAC items is not implemented")
 
@@ -120,7 +122,7 @@ class CatalogueClient(BaseCoreClient):
         raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
 
-api = StacApi(
+api = stac_fastapi.api.app.StacApi(
     settings=settings,
     extensions=extensions,
     client=CatalogueClient(),
@@ -131,9 +133,11 @@ api = StacApi(
 app = api.app
 
 
-@app.exception_handler(FeatureNotImplemented)
-async def unicorn_exception_handler(request: Request, exc: FeatureNotImplemented):
-    return JSONResponse(
+@app.exception_handler(exceptions.FeatureNotImplemented)
+async def unicorn_exception_handler(
+    request: fastapi.Request, exc: exceptions.FeatureNotImplemented
+):
+    return fastapi.responses.JSONResponse(
         status_code=501,
         content={"message": exc.message},
     )
