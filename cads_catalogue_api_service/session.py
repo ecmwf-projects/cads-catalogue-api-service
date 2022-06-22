@@ -1,6 +1,5 @@
 """database session management."""
 import logging
-import os
 from contextlib import contextmanager
 from typing import Iterator
 
@@ -40,20 +39,10 @@ class Session:
     conn_string: str = attr.ib()
 
     @classmethod
-    def create_from_env(cls):
-        """Create from environment."""
-        return cls(
-            conn_string=os.environ.get(
-                "CONN_STRING",
-                "postgresql://catalogue:password@localhost:5432/catalogue",
-            ),
-        )
-
-    @classmethod
     def create_from_settings(cls, settings: SqlalchemySettings) -> "Session":
         """Create a Session object from settings."""
         return cls(
-            connection_string=settings.connection_string,
+            conn_string=settings.connection_string,
         )
 
     def __attrs_post_init__(self):

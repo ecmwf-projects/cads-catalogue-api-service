@@ -15,5 +15,7 @@ services:
       context: .
     ports:
     - 8000:8000
+    environment:
+    - postgres_host=catalogue-db
 volumes:
   catalogue-db-data:

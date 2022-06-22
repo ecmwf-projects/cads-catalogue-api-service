@@ -39,10 +39,13 @@ extensions = [
 ]
 
 
+settings = config.SqlalchemySettings()
+
+
 @attr.s
 class CatalogueClient(BaseCoreClient):
 
-    session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
+    session: Session = attr.ib(default=Session.create_from_settings(settings))
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
     collection_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
@@ -112,9 +115,6 @@ class CatalogueClient(BaseCoreClient):
 
     def post_search(self, **kwargs) -> None:
         raise exceptions.FeatureNotImplemented("Not implemented")
-
-
-settings = config.SqlalchemySettings()
 
 
 api = StacApi(
