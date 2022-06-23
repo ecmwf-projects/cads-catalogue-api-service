@@ -43,7 +43,7 @@ settings = config.SqlalchemySettings()
 
 
 @attr.s
-class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
+class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
 
     session: Session = attr.ib(default=Session.create_from_settings(settings))
     collection_table: Type[cads_catalogue.database.Resource] = attr.ib(
@@ -67,9 +67,11 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             )
         return row
 
-    def all_collections(self, **kwargs) -> stac_fastapi.types.stac.Collections:
+    def all_collections(
+        self, request: fastapi.Request
+    ) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the database."""
-        base_url = str(kwargs["request"].base_url)
+        base_url = str(request.base_url)
         with self.session.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
             serialized_collections = [
@@ -99,29 +101,26 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             return collection_list
 
     def get_collection(
-        self, collection_id: str, **kwargs
+        self, collection_id: str, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collection:
         """Get collection by id."""
-        base_url = str(kwargs["request"].base_url)
+        base_url = str(request.base_url)
         with self.session.reader.context_session() as session:
             collection = self._lookup_id(collection_id, self.collection_table, session)
             return self.collection_serializer.db_to_stac(collection, base_url)
 
-    def get_item(self, **kwargs) -> None:
+    def get_item(self) -> None:
         raise exceptions.FeatureNotImplemented("STAC item is not implemented")
 
-    def get_search(
-        self,
-        **kwargs,
-    ) -> None:
+    def get_search(self) -> None:
         """GET search catalog."""
         raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
-    def item_collection(self, **kwargs) -> stac_fastapi.types.stac.ItemCollection:
+    def item_collection(self) -> stac_fastapi.types.stac.ItemCollection:
         """Read an item collection from the database."""
         raise exceptions.FeatureNotImplemented("STAC items is not implemented")
 
-    def post_search(self, **kwargs) -> None:
+    def post_search(self) -> None:
         raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
 
@@ -139,7 +138,7 @@ app = api.app
 @app.exception_handler(exceptions.FeatureNotImplemented)
 async def unicorn_exception_handler(
     request: fastapi.Request, exc: exceptions.FeatureNotImplemented
-):
+) -> fastapi.responses.JSONResponse:
     return fastapi.responses.JSONResponse(
         status_code=501,
         content={"message": exc.message},
