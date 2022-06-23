@@ -35,11 +35,11 @@ class FastAPISessionMaker(fastapi_utils.session.FastAPISessionMaker):
             raise stac_fastapi.types.errors.DatabaseError("unhandled database error")
 
 
-@attr.s
+@attr.attrs
 class Session:
     """Database session management."""
 
-    conn_string: str = attr.ib()
+    conn_string: str = attr.attrib()
 
     @classmethod
     def create_from_settings(cls, settings: SqlalchemySettings) -> "Session":

@@ -42,14 +42,14 @@ extensions = [
 settings = config.SqlalchemySettings()
 
 
-@attr.s
+@attr.attrs
 class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
-    session: Session = attr.ib(default=Session.create_from_settings(settings))
-    collection_table: Type[cads_catalogue.database.Resource] = attr.ib(
+    session: Session = attr.attrib(default=Session.create_from_settings(settings))
+    collection_table: Type[cads_catalogue.database.Resource] = attr.attrib(
         default=cads_catalogue.database.Resource
     )
-    collection_serializer: Type[serializers.Serializer] = attr.ib(
+    collection_serializer: Type[serializers.Serializer] = attr.attrib(
         default=serializers.CollectionSerializer
     )
 
