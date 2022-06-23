@@ -7,7 +7,7 @@ import cads_catalogue.database
 import stac_fastapi.types.links
 
 
-@attr.attrs
+@attr.define
 class Serializer(abc.ABC):
     """Defines serialization methods between the API and the data model."""
 
