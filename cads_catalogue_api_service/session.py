@@ -48,6 +48,6 @@ class Session:
             conn_string=settings.connection_string,
         )
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         """Post init handler."""
         self.reader: FastAPISessionMaker = FastAPISessionMaker(self.conn_string)

@@ -1,7 +1,7 @@
 import stac_fastapi.types
 
 
-class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):
+class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
     """Postgres-specific API settings.
 
     Attributes:
@@ -25,7 +25,7 @@ class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):
     indexed_fields: set[str] = {"datetime"}
 
     @property
-    def connection_string(self):
+    def connection_string(self) -> str:
         """Create reader psql connection string."""
         return (
             f"postgresql://{self.postgres_user}"
