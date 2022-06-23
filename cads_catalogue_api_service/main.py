@@ -18,17 +18,16 @@ import urllib
 from typing import Type
 
 import attr
+import cads_catalogue.database
 import fastapi
 import fastapi.responses
 import sqlalchemy.orm
 import stac_fastapi.api.app
 import stac_fastapi.extensions.core
 import stac_fastapi.types
-from stac_pydantic.links import Relations
-from stac_pydantic.shared import MimeTypes
+import stac_pydantic
 
 from . import config, exceptions, serializers
-from . import temp_models as database
 from .session import Session
 
 logger = logging.getLogger(__name__)
@@ -47,15 +46,19 @@ settings = config.SqlalchemySettings()
 class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
     session: Session = attr.ib(default=Session.create_from_settings(settings))
-    collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
+    collection_table: Type[cads_catalogue.database.Resource] = attr.ib(
+        default=cads_catalogue.database.Resource
+    )
     collection_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
     )
 
     @staticmethod
     def _lookup_id(
-        id: str, table: Type[database.BaseModel], session: sqlalchemy.orm.Session
-    ) -> Type[database.BaseModel]:
+        id: str,
+        table: Type[cads_catalogue.database.BaseModel],
+        session: sqlalchemy.orm.Session,
+    ) -> Type[cads_catalogue.database.BaseModel]:
         """Lookup row by id."""
         row = session.query(table).filter(table.id == id).first()
         if not row:
@@ -75,18 +78,18 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             ]
             links = [
                 {
-                    "rel": Relations.root.value,
-                    "type": MimeTypes.json,
+                    "rel": stac_pydantic.links.Relations.root.value,
+                    "type": stac_pydantic.shared.MimeTypes.json,
                     "href": base_url,
                 },
                 {
-                    "rel": Relations.parent.value,
-                    "type": MimeTypes.json,
+                    "rel": stac_pydantic.links.Relations.parent.value,
+                    "type": stac_pydantic.shared.MimeTypes.json,
                     "href": base_url,
                 },
                 {
-                    "rel": Relations.self.value,
-                    "type": MimeTypes.json,
+                    "rel": stac_pydantic.links.Relations.self.value,
+                    "type": stac_pydantic.shared.MimeTypes.json,
                     "href": urllib.parse.urljoin(base_url, "collections"),
                 },
             ]

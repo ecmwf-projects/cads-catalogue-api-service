@@ -3,10 +3,8 @@ import abc
 from typing import TypedDict
 
 import attr
-import stac_fastapi.types
+import cads_catalogue.database
 import stac_fastapi.types.links
-
-from . import temp_models as database
 
 
 @attr.s  # type:ignore
@@ -15,18 +13,20 @@ class Serializer(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def db_to_stac(cls, db_model: database.BaseModel, base_url: str) -> TypedDict:
+    def db_to_stac(
+        cls, db_model: cads_catalogue.database.BaseModel, base_url: str
+    ) -> TypedDict:
         """Transform database model to stac."""
         ...
 
     @classmethod
     @abc.abstractmethod
-    def stac_to_db(cls, stac_data: TypedDict) -> database.BaseModel:
+    def stac_to_db(cls, stac_data: TypedDict) -> cads_catalogue.database.BaseModel:
         """Transform stac to database model."""
         ...
 
     @classmethod
-    def row_to_dict(cls, db_model: database.BaseModel):
+    def row_to_dict(cls, db_model: cads_catalogue.database.BaseModel):
         """Transform a database model to it's dictionary representation."""
         d = {}
         for column in db_model.__table__.columns:
@@ -40,10 +40,12 @@ class CollectionSerializer(Serializer):
     """Serialization methods for STAC collections."""
 
     @classmethod
-    def db_to_stac(cls, db_model: database.Collection, base_url: str) -> TypedDict:
+    def db_to_stac(
+        cls, db_model: cads_catalogue.database.Resource, base_url: str
+    ) -> TypedDict:
         """Transform database model to stac collection."""
         collection_links = stac_fastapi.types.links.CollectionLinks(
-            collection_id=db_model.id, base_url=base_url
+            collection_id=db_model.resource_id, base_url=base_url
         ).create_links()
         # We don't implement items. Let's remove the rel="items" entry
         collection_links = [link for link in collection_links if link["rel"] != "items"]
@@ -54,17 +56,14 @@ class CollectionSerializer(Serializer):
                 db_links, base_url
             )
 
-        stac_extensions = db_model.stac_extensions or []
-
         return stac_fastapi.types.stac.Collection(
             type="Collection",
-            id=db_model.id,
-            stac_extensions=stac_extensions,
+            id=db_model.resource_id,
             stac_version="1.0.0",
             title=db_model.title,
             description=db_model.description,
             keywords=db_model.keywords,
-            license=db_model.license,
+            # license=db_model.license,
             providers=db_model.providers,
             summaries=db_model.summaries,
             extent=db_model.extent,
@@ -72,6 +71,6 @@ class CollectionSerializer(Serializer):
         )
 
     @classmethod
-    def stac_to_db(cls, stac_data: TypedDict) -> database.Collection:
+    def stac_to_db(cls, stac_data: TypedDict) -> cads_catalogue.database.Resource:
         """Transform stac collection to database model."""
-        return database.Collection(**dict(stac_data))
+        return cads_catalogue.database.Resource(**dict(stac_data))
