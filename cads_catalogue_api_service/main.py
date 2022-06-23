@@ -24,11 +24,11 @@ import sqlalchemy.orm
 import stac_fastapi.api.app
 import stac_fastapi.extensions.core
 import stac_fastapi.types
+from cads_catalogue import database
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 
 from . import config, exceptions, serializers
-from . import temp_models as database
 from .session import Session
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ settings = config.SqlalchemySettings()
 class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
     session: Session = attr.ib(default=Session.create_from_settings(settings))
-    collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
+    collection_table: Type[database.Resource] = attr.ib(default=database.Resource)
     collection_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
     )
