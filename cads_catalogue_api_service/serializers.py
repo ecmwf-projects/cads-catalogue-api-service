@@ -63,7 +63,7 @@ class CollectionSerializer(Serializer):
             title=db_model.title,
             description=db_model.description,
             keywords=db_model.keywords,
-            # license=db_model.license,
+            # license=db_model.licences,
             providers=db_model.providers,
             summaries=db_model.summaries,
             extent=db_model.extent,
