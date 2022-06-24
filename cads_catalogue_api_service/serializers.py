@@ -1,7 +1,4 @@
 """Serializers."""
-import abc
-from typing import Any
-
 import attrs
 import cads_catalogue.database
 import stac_fastapi.types.links
@@ -9,35 +6,7 @@ import stac_fastapi.types.stac
 
 
 @attrs.define
-class Serializer(abc.ABC):
-    """Defines serialization methods between the API and the data model."""
-
-    @classmethod
-    @abc.abstractmethod
-    def db_to_stac(
-        cls, db_model: cads_catalogue.database.BaseModel, base_url: str
-    ) -> dict[str, Any]:
-        """Transform database model to stac."""
-        ...
-
-    @classmethod
-    @abc.abstractmethod
-    def stac_to_db(cls, stac_data: dict[str, Any]) -> cads_catalogue.database.BaseModel:
-        """Transform stac to database model."""
-        ...
-
-    @classmethod
-    def row_to_dict(cls, db_model: cads_catalogue.database.BaseModel) -> dict[str, Any]:
-        """Transform a database model to it's dictionary representation."""
-        d = {}
-        for column in db_model.__table__.columns:
-            value = getattr(db_model, column.name)
-            if value:
-                d[column.name] = value
-        return d
-
-
-class CollectionSerializer(Serializer):
+class CollectionSerializer:
     """Serialization methods for STAC collections."""
 
     @classmethod
@@ -70,8 +39,3 @@ class CollectionSerializer(Serializer):
             extent=db_model.extent,
             links=collection_links,
         )
-
-    @classmethod
-    def stac_to_db(cls, stac_data: dict[str, Any]) -> cads_catalogue.database.Resource:
-        """Transform stac collection to database model."""
-        return cads_catalogue.database.Resource(**dict(stac_data))

@@ -49,7 +49,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
     collection_table: Type[cads_catalogue.database.Resource] = attrs.field(
         default=cads_catalogue.database.Resource
     )
-    collection_serializer: Type[serializers.Serializer] = attrs.field(
+    collection_serializer: Type[serializers.CollectionSerializer] = attrs.field(
         default=serializers.CollectionSerializer
     )
 
