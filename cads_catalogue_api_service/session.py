@@ -35,7 +35,7 @@ class FastAPISessionMaker(fastapi_utils.session.FastAPISessionMaker):
             raise stac_fastapi.types.errors.DatabaseError("unhandled database error")
 
 
-@attr.define
+@attrs.define
 class Session:
     """Database session management."""
 
