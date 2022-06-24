@@ -54,6 +54,21 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
         default=serializers.CollectionSerializer
     )
 
+    def _landing_page(
+        self,
+        base_url: str,
+        conformance_classes: list[str],
+        extension_schemas: list[str],
+    ) -> stac_fastapi.types.stac.LandingPage:
+        landing_page = super()._landing_page(
+            base_url, conformance_classes, extension_schemas
+        )
+        # removing link to search as it is not implemented
+        landing_page["links"] = [
+            link for link in landing_page["links"] if link["rel"] != "search"
+        ]
+        return landing_page
+
     def conformance_classes(self) -> list[str]:
         """
         Generate conformance classes by adding extension conformance to base conformance classes.
