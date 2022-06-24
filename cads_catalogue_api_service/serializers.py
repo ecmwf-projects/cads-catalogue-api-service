@@ -5,6 +5,7 @@ from typing import Any
 import attrs
 import cads_catalogue.database
 import stac_fastapi.types.links
+import stac_fastapi.types.stac
 
 
 @attrs.define
