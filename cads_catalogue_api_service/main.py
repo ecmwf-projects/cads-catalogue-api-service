@@ -25,6 +25,7 @@ import sqlalchemy.orm
 import stac_fastapi.api.app
 import stac_fastapi.extensions.core
 import stac_fastapi.types
+import stac_fastapi.types.conformance
 import stac_pydantic
 
 from . import config, exceptions, serializers
@@ -52,6 +53,26 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
     collection_serializer: Type[serializers.Serializer] = attrs.field(
         default=serializers.CollectionSerializer
     )
+
+    def conformance_classes(self) -> list[str]:
+        """
+        Generate conformance classes by adding extension conformance to base conformance classes.
+        Also: remove concoformance classes that are not implemented explicitly by the catalogue API
+        """
+        # base_conformance_classes = self.base_conformance_classes.copy()
+        STACConformanceClasses = stac_fastapi.types.conformance.STACConformanceClasses
+        base_conformance_classes = [
+            STACConformanceClasses.CORE,
+            # FIXME: implemented but not released yet
+            # STACConformanceClasses.COLLECTIONS,
+            "https://api.stacspec.org/v1.0.0-rc.1/collections",
+        ]
+
+        for extension in self.extensions:
+            extension_classes = getattr(extension, "conformance_classes", [])
+            base_conformance_classes.extend(extension_classes)
+
+        return list(set(base_conformance_classes))
 
     @staticmethod
     def _lookup_id(
