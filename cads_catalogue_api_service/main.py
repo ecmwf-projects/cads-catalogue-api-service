@@ -130,11 +130,26 @@ api = stac_fastapi.api.app.StacApi(
     settings=settings,
     extensions=extensions,
     client=CatalogueClient(),
-    # search_get_request_model=create_get_request_model(extensions),
-    # search_post_request_model=post_request_model,
 )
 
 app = api.app
+
+
+def cleanup_openapi(app):
+    """OpenAPI, but with not implemented paths removed"""
+    app._stac_openapi = app.openapi
+
+    def _openapi(*args, **kwargs):
+        openapi = app._stac_openapi()
+        del openapi["paths"]["/collections/{collection_id}/items"]
+        del openapi["paths"]["/collections/{collection_id}/items/{item_id}"]
+        del openapi["paths"]["/search"]
+        return openapi
+
+    return _openapi
+
+
+app.openapi = cleanup_openapi(app)
 
 
 @app.exception_handler(exceptions.FeatureNotImplemented)
