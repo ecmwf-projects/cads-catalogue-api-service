@@ -5,7 +5,6 @@ from typing import Iterator
 
 import attrs
 import fastapi_utils.session
-import psycopg2
 import sqlalchemy
 import stac_fastapi.types
 
@@ -23,11 +22,7 @@ class FastAPISessionMaker(fastapi_utils.session.FastAPISessionMaker):
         try:
             yield from self.get_db()
         except sqlalchemy.exc.StatementError as e:
-            if isinstance(e.orig, psycopg2.errors.UniqueViolation):
-                raise stac_fastapi.types.errors.ConflictError(
-                    "resource already exists"
-                ) from e
-            elif isinstance(e.orig, psycopg2.errors.ForeignKeyViolation):
+            if isinstance(e.orig, sqlalchemy.exc.IntegrityError):
                 raise stac_fastapi.types.errors.ForeignKeyError(
                     "collection does not exist"
                 ) from e
