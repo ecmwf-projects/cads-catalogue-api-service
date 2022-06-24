@@ -3,7 +3,7 @@ import contextlib
 import logging
 from typing import Iterator
 
-import attr
+import attrs
 import fastapi_utils.session
 import psycopg2
 import sqlalchemy
@@ -35,11 +35,12 @@ class FastAPISessionMaker(fastapi_utils.session.FastAPISessionMaker):
             raise stac_fastapi.types.errors.DatabaseError("unhandled database error")
 
 
-@attr.s
+@attrs.define
 class Session:
     """Database session management."""
 
-    conn_string: str = attr.ib()
+    conn_string: str = attrs.field()
+    reader: FastAPISessionMaker = attrs.field(init=False)
 
     @classmethod
     def create_from_settings(cls, settings: SqlalchemySettings) -> "Session":
@@ -50,4 +51,4 @@ class Session:
 
     def __attrs_post_init__(self) -> None:
         """Post init handler."""
-        self.reader: FastAPISessionMaker = FastAPISessionMaker(self.conn_string)
+        self.reader = FastAPISessionMaker(self.conn_string)

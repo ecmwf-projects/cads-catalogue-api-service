@@ -15,9 +15,9 @@
 
 import logging
 import urllib
-from typing import Type
+from typing import Any, Type
 
-import attr
+import attrs
 import cads_catalogue.database
 import fastapi
 import fastapi.responses
@@ -42,14 +42,14 @@ extensions = [
 settings = config.SqlalchemySettings()
 
 
-@attr.s
+@attrs.define
 class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
 
-    session: Session = attr.ib(default=Session.create_from_settings(settings))
-    collection_table: Type[cads_catalogue.database.Resource] = attr.ib(
+    session: Session = attrs.field(default=Session.create_from_settings(settings))
+    collection_table: Type[cads_catalogue.database.Resource] = attrs.field(
         default=cads_catalogue.database.Resource
     )
-    collection_serializer: Type[serializers.Serializer] = attr.ib(
+    collection_serializer: Type[serializers.Serializer] = attrs.field(
         default=serializers.CollectionSerializer
     )
 
@@ -60,7 +60,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
         session: sqlalchemy.orm.Session,
     ) -> Type[cads_catalogue.database.BaseModel]:
         """Lookup row by id."""
-        row = session.query(table).filter(table.id == id).first()
+        row = session.query(table).filter(table.resource_id == id).first()
         if not row:
             raise stac_fastapi.types.errors.NotFoundError(
                 f"{table.__name__} {id} not found"
@@ -109,14 +109,16 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
             collection = self._lookup_id(collection_id, self.collection_table, session)
             return self.collection_serializer.db_to_stac(collection, base_url)
 
-    def get_item(self) -> None:
+    def get_item(self, **kwargs: dict[str, Any]) -> None:
         raise exceptions.FeatureNotImplemented("STAC item is not implemented")
 
-    def get_search(self) -> None:
+    def get_search(self, **kwargs: dict[str, Any]) -> None:
         """GET search catalog."""
         raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
-    def item_collection(self) -> stac_fastapi.types.stac.ItemCollection:
+    def item_collection(
+        self, **kwargs: dict[str, Any]
+    ) -> stac_fastapi.types.stac.ItemCollection:
         """Read an item collection from the database."""
         raise exceptions.FeatureNotImplemented("STAC items is not implemented")
 
