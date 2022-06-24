@@ -20,6 +20,7 @@ from typing import Any, Type
 import attrs
 import cads_catalogue.database
 import fastapi
+import fastapi.openapi
 import fastapi.responses
 import sqlalchemy.orm
 import stac_fastapi.api.app
@@ -135,24 +136,25 @@ api = stac_fastapi.api.app.StacApi(
 app = api.app
 
 
-def cleanup_openapi(app):
+def catalogue_openapi() -> dict[str, Any]:
     """OpenAPI, but with not implemented paths removed"""
-    app._stac_openapi = app.openapi
 
-    def _openapi(*args, **kwargs):
-        openapi = app._stac_openapi()
-        del openapi["paths"]["/collections/{collection_id}/items"]
-        del openapi["paths"]["/collections/{collection_id}/items/{item_id}"]
-        del openapi["paths"]["/search"]
-        return openapi
+    openapi_schema = fastapi.openapi.utils.get_openapi(
+        title="CADS Catalogue", version=api.api_version, routes=api.app.routes
+    )
 
-    return _openapi
+    del openapi_schema["paths"]["/collections/{collection_id}/items"]
+    del openapi_schema["paths"]["/collections/{collection_id}/items/{item_id}"]
+    del openapi_schema["paths"]["/search"]
 
-
-app.openapi = cleanup_openapi(app)
+    api.app.openapi_schema = openapi_schema
+    return openapi_schema
 
 
-@app.exception_handler(exceptions.FeatureNotImplemented)
+app.openapi = catalogue_openapi
+
+
+@app.exception_handler(exceptions.FeatureNotImplemented)  # type: ignore
 async def unicorn_exception_handler(
     request: fastapi.Request, exc: exceptions.FeatureNotImplemented
 ) -> fastapi.responses.JSONResponse:
