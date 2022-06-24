@@ -17,7 +17,7 @@ import logging
 import urllib
 from typing import Any, Type
 
-import attr
+import attrs
 import cads_catalogue.database
 import fastapi
 import fastapi.responses
@@ -42,14 +42,14 @@ extensions = [
 settings = config.SqlalchemySettings()
 
 
-@attr.define
+@attrs.define
 class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
 
-    session: Session = attr.field(default=Session.create_from_settings(settings))
-    collection_table: Type[cads_catalogue.database.Resource] = attr.field(
+    session: Session = attrs.field(default=Session.create_from_settings(settings))
+    collection_table: Type[cads_catalogue.database.Resource] = attrs.field(
         default=cads_catalogue.database.Resource
     )
-    collection_serializer: Type[serializers.Serializer] = attr.field(
+    collection_serializer: Type[serializers.Serializer] = attrs.field(
         default=serializers.CollectionSerializer
     )
 

@@ -3,7 +3,7 @@ import contextlib
 import logging
 from typing import Iterator
 
-import attr
+import attrs
 import fastapi_utils.session
 import psycopg2
 import sqlalchemy
@@ -39,8 +39,8 @@ class FastAPISessionMaker(fastapi_utils.session.FastAPISessionMaker):
 class Session:
     """Database session management."""
 
-    conn_string: str = attr.field()
-    reader: FastAPISessionMaker = attr.field(init=False)
+    conn_string: str = attrs.field()
+    reader: FastAPISessionMaker = attrs.field(init=False)
 
     @classmethod
     def create_from_settings(cls, settings: SqlalchemySettings) -> "Session":
