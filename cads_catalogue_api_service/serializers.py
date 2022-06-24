@@ -2,12 +2,12 @@
 import abc
 from typing import Any
 
-import attr
+import attrs
 import cads_catalogue.database
 import stac_fastapi.types.links
 
 
-@attr.define
+@attrs.define
 class Serializer(abc.ABC):
     """Defines serialization methods between the API and the data model."""
 
