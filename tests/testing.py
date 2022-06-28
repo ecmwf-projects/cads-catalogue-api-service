@@ -17,7 +17,7 @@ import datetime
 import cads_catalogue.database
 
 
-def get_record(id):
+def get_record(id: str) -> cads_catalogue.database.Record:
     return cads_catalogue.database.Resource(
         resource_id=id,
         title="ERA5",

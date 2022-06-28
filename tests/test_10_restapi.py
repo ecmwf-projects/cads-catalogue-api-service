@@ -14,11 +14,14 @@
 
 import json
 
+import cads_catalogue.database
 import fastapi.testclient
 import pytest
+import starlette
 from testing import get_record
 
 import cads_catalogue_api_service.main
+import cads_catalogue_api_service.session
 from cads_catalogue_api_service import main
 
 client = fastapi.testclient.TestClient(main.app)
@@ -55,54 +58,54 @@ expected = {
 }
 
 
-class Request:
-    def __init__(self, base_url):
+class Request(starlette.requests.Request):
+    def __init__(self, base_url: str) -> None:
         self.base_url = base_url
 
 
 class ResultSet:
-    def __init__(self):
+    def __init__(self) -> None:
         self._results = [get_record("era5-something"), get_record("soil-mosture")]
 
-    def all(self):
+    def all(self) -> list[cads_catalogue.database.Resource]:
         return self._results
 
-    def first(self):
+    def first(self):  # type: ignore
         return self._results[0]
 
 
 class DBSession:
-    def query(*args, **kwargs):
+    def query(*args, **kwargs):  # type: ignore
         return ResultSet()
 
-    def filter(*args, **kwargs):
+    def filter(*args, **kwargs):  # type: ignore
         return ResultSet()
 
 
 class Table:
     @property
-    def resource_id(self):
+    def resource_id(self):  # type: ignore
         return "foo-table"
 
 
 class ContextSession:
-    def __enter__(self):
+    def __enter__(self):  # type: ignore
         return DBSession()
 
-    def __exit__(self, *args):
+    def __exit__(self, *args):  # type: ignore
         pass
 
 
 class Context:
-    def context_session(self):
+    def context_session(self):  # type: ignore
         return ContextSession()
 
 
-class Session:
-    def __init__(self):
+class Session(cads_catalogue_api_service.session.Session):
+    def __init__(self) -> None:
         self.reader = Context()
 
-    def query(*args, **kwargs):
+    def query(*args, **kwargs):  # type: ignore
         return DBSession()
 
 
@@ -117,7 +120,7 @@ def test_error_handler() -> None:
     assert response.status_code == 501
 
 
-def test_get_all_collections():
+def test_get_all_collections() -> None:
     client = cads_catalogue_api_service.main.CatalogueClient()
     client.session = Session()
 
@@ -127,7 +130,7 @@ def test_get_all_collections():
     assert json.dumps(results["collections"][0]) == json.dumps(expected)
 
 
-def test_lookup_id():
+def test_lookup_id() -> None:
     lookup_id = cads_catalogue_api_service.main.CatalogueClient._lookup_id
     session = Session()
 
@@ -137,7 +140,7 @@ def test_lookup_id():
     assert result.description == expected["description"]
 
 
-def test_openapi():
+def test_openapi() -> None:
     result = main.app.openapi()
 
     assert result["openapi"] >= "3.0.0"
