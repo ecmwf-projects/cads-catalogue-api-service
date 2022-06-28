@@ -35,12 +35,10 @@ class FastAPISessionMaker(fastapi_utils.session.FastAPISessionMaker):
         try:
             yield from self.get_db()
         except sqlalchemy.exc.StatementError as e:
-            if isinstance(e.orig, sqlalchemy.exc.IntegrityError):
-                raise stac_fastapi.types.errors.ForeignKeyError(
-                    "collection does not exist"
-                ) from e
             logger.error(e, exc_info=True)
-            raise stac_fastapi.types.errors.DatabaseError("unhandled database error")
+            raise stac_fastapi.types.errors.DatabaseError(
+                "unhandled database error"
+            ) from e
 
 
 @attrs.define
