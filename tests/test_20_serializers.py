@@ -14,17 +14,15 @@
 
 from testing import get_record
 
-import cads_catalogue_api_service.serializers
+import cads_catalogue_api_service.main
 
 
 def test_collection_serializer() -> None:
     """Test serialization from db record to STAC."""
     base_url = "https://mycatalogue.org/catalogue"
     record = get_record("era5-something")
-    stac_record = (
-        cads_catalogue_api_service.serializers.CollectionSerializer.db_to_stac(
-            record, base_url
-        )
+    stac_record = cads_catalogue_api_service.main.CatalogueClient.collection_serializer(
+        record, base_url
     )
     expected = {
         "type": "Collection",

@@ -26,9 +26,10 @@ import stac_fastapi.api.app
 import stac_fastapi.extensions.core
 import stac_fastapi.types
 import stac_fastapi.types.conformance
+import stac_fastapi.types.links
 import stac_pydantic
 
-from . import config, exceptions, serializers
+from . import config, exceptions
 from .session import Session
 
 logger = logging.getLogger(__name__)
@@ -50,9 +51,6 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
     collection_table: Type[cads_catalogue.database.Resource] = attrs.field(
         default=cads_catalogue.database.Resource
     )
-    collection_serializer: Type[serializers.CollectionSerializer] = attrs.field(
-        default=serializers.CollectionSerializer
-    )
 
     def _landing_page(
         self,
@@ -68,6 +66,37 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
             link for link in landing_page["links"] if link["rel"] != "search"
         ]
         return landing_page
+
+    @staticmethod
+    def collection_serializer(
+        db_model: cads_catalogue.database.Resource, base_url: str
+    ) -> stac_fastapi.types.stac.Collection:
+        """Transform database model to stac collection."""
+        collection_links = stac_fastapi.types.links.CollectionLinks(
+            collection_id=db_model.resource_id, base_url=base_url
+        ).create_links()
+        # We don't implement items. Let's remove the rel="items" entry
+        collection_links = [link for link in collection_links if link["rel"] != "items"]
+
+        db_links = db_model.links
+        if db_links:
+            collection_links += stac_fastapi.types.links.resolve_links(
+                db_links, base_url
+            )
+
+        return stac_fastapi.types.stac.Collection(
+            type="Collection",
+            id=db_model.resource_id,
+            stac_version="1.0.0",
+            title=db_model.title,
+            description=db_model.description,
+            keywords=db_model.keywords,
+            # license=db_model.licences,
+            providers=db_model.providers,
+            summaries=db_model.summaries,
+            extent=db_model.extent,
+            links=collection_links,
+        )
 
     def conformance_classes(self) -> list[str]:
         """
@@ -111,7 +140,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
         with self.session.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
             serialized_collections = [
-                self.collection_serializer.db_to_stac(collection, base_url=base_url)
+                self.collection_serializer(collection, base_url=base_url)
                 for collection in collections
             ]
             links = [
@@ -143,7 +172,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
         base_url = str(request.base_url)
         with self.session.reader.context_session() as session:
             collection = self._lookup_id(collection_id, self.collection_table, session)
-            return self.collection_serializer.db_to_stac(collection, base_url)
+            return self.collection_serializer(collection, base_url)
 
     def get_item(self, **kwargs: dict[str, Any]) -> None:
         raise exceptions.FeatureNotImplemented("STAC item is not implemented")
