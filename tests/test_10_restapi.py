@@ -17,7 +17,6 @@ import json
 import cads_catalogue.database
 import fastapi.testclient
 import pytest
-import starlette
 from testing import get_record
 
 import cads_catalogue_api_service.main
@@ -58,7 +57,7 @@ expected = {
 }
 
 
-class Request(starlette.requests.Request):
+class Request:
     def __init__(self, base_url: str) -> None:
         self.base_url = base_url
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import stac_fastapi.types
+import stac_fastapi.types.config
 
 
 class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
