@@ -21,7 +21,7 @@ def test_collection_serializer() -> None:
     """Test serialization from db record to STAC."""
     base_url = "https://mycatalogue.org/catalogue"
     record = get_record("era5-something")
-    stac_record = cads_catalogue_api_service.main.CatalogueClient.collection_serializer(
+    stac_record = cads_catalogue_api_service.main.collection_serializer(
         record, base_url
     )
     expected = {

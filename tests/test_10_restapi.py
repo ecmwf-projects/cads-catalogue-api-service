@@ -130,7 +130,7 @@ def test_get_all_collections() -> None:
 
 
 def test_lookup_id() -> None:
-    lookup_id = cads_catalogue_api_service.main.CatalogueClient._lookup_id
+    lookup_id = cads_catalogue_api_service.main.CatalogueClient.lookup_id
     session = Session()
 
     result = lookup_id("era5-something", Table(), session)
