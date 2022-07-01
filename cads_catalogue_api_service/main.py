@@ -46,15 +46,15 @@ settings = config.SqlalchemySettings()
 
 def lookup_id(
     id: str,
-    table: Type[cads_catalogue.database.BaseModel],
+    record: Type[cads_catalogue.database.BaseModel],
     session: sqlalchemy.orm.Session,
 ) -> Type[cads_catalogue.database.BaseModel]:
     """Lookup row by id."""
     try:
-        row = session.query(table).filter(table.resource_id == id).one()
+        row = session.query(record).filter(record.resource_id == id).one()
     except sqlalchemy.orm.exc.NoResultFound:
         raise stac_fastapi.types.errors.NotFoundError(
-            f"{table.__name__} {id} not found"
+            f"{record.__name__} {id} not found"
         )
     return row
 

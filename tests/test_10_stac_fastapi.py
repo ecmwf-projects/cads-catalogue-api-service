@@ -17,6 +17,8 @@ import json
 import cads_catalogue.database
 import fastapi.testclient
 import pytest
+import sqlalchemy.orm
+import stac_fastapi.types
 from testing import get_record
 
 import cads_catalogue_api_service.main
@@ -63,28 +65,41 @@ class Request:
 
 
 class ResultSet:
-    def __init__(self) -> None:
-        self._results = [get_record("era5-something"), get_record("soil-mosture")]
+    def __init__(self, items: list[str] = []) -> None:
+        self._results = [get_record(item) for item in items]
 
     def all(self) -> list[cads_catalogue.database.Resource]:
         return self._results
 
-    def first(self):  # type: ignore
-        return self._results[0]
+    def filter(self, condition, *args, **kwargs):  # type: ignore
+        if condition:
+            return ResultSet(["era5-something", "soil-mosture"])
+        return ResultSet()
+
+    def one(self):  # type: ignore
+        try:
+            return self._results[0]
+        except IndexError:
+            raise (sqlalchemy.orm.exc.NoResultFound)
 
 
 class DBSession:
-    def query(*args, **kwargs):  # type: ignore
+    def query(self, *args, **kwargs):  # type: ignore
+        return ResultSet(["era5-something", "soil-mosture"])
+
+    def filter(self, condition, *args, **kwargs):  # type: ignore
+        if condition:
+            return ResultSet(["era5-something", "soil-mosture"])
         return ResultSet()
 
-    def filter(*args, **kwargs):  # type: ignore
-        return ResultSet()
 
+class Record:
 
-class Table:
+    __name__ = "a-table"
+
     @property
     def resource_id(self):  # type: ignore
-        return "foo-table"
+        return "era5-something"
 
 
 class ContextSession:
@@ -104,7 +119,7 @@ class Session(cads_catalogue_api_service.session.Session):
     def __init__(self) -> None:
         self.reader = Context()
 
-    def query(*args, **kwargs):  # type: ignore
+    def query(self, *args, **kwargs):  # type: ignore
         return DBSession()
 
 
@@ -130,13 +145,27 @@ def test_get_all_collections() -> None:
 
 
 def test_lookup_id() -> None:
-    lookup_id = cads_catalogue_api_service.main.CatalogueClient.lookup_id
+    lookup_id = cads_catalogue_api_service.main.lookup_id
     session = Session()
 
-    result = lookup_id("era5-something", Table(), session)
+    result = lookup_id("era5-something", Record(), session)
 
     assert result.resource_id == expected["id"]
     assert result.description == expected["description"]
+
+    with pytest.raises(stac_fastapi.types.errors.NotFoundError):
+        lookup_id("will-not-find-this", Record(), session)
+
+
+def test_get_collection() -> None:
+    client = cads_catalogue_api_service.main.CatalogueClient()
+    client.collection_table = Record()
+    client.session = Session()
+
+    result = client.get_collection("era5-something", Request("http://foo.org"))
+
+    assert result["id"] == expected["id"]
+    assert result["description"] == expected["description"]
 
 
 def test_openapi() -> None:
