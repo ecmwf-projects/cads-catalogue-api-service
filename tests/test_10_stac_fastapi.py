@@ -71,10 +71,8 @@ class ResultSet:
     def all(self) -> list[cads_catalogue.database.Resource]:
         return self._results
 
-    def filter(self, condition, *args, **kwargs):  # type: ignore
-        if condition:
-            return ResultSet(["era5-something", "soil-mosture"])
-        return ResultSet()
+    def filter(self, *args, **kwargs):  # type: ignore
+        return ResultSet(["era5-something", "soil-mosture"])
 
     def one(self):  # type: ignore
         try:
@@ -176,5 +174,7 @@ def test_openapi() -> None:
     assert "/collections/{collection_id}" in result["paths"].keys()
     with pytest.raises(KeyError):
         result["paths"]["/search"]
+    with pytest.raises(KeyError):
         result["paths"]["/collections/{id}/items"]
+    with pytest.raises(KeyError):
         result["paths"]["/collections/{collection_id}/items/{item_id}"]
