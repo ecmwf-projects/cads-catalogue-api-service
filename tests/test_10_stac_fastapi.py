@@ -22,7 +22,6 @@ import stac_fastapi.types
 from testing import get_record
 
 import cads_catalogue_api_service.main
-import cads_catalogue_api_service.session
 from cads_catalogue_api_service import main
 
 client = fastapi.testclient.TestClient(main.app)
@@ -108,17 +107,19 @@ class ContextSession:
         pass
 
 
-class Context:
+class Reader:
     def context_session(self):  # type: ignore
         return ContextSession()
 
 
-class Session(cads_catalogue_api_service.session.Session):
-    def __init__(self) -> None:
-        self.reader = Context()
-
+class Session(sqlalchemy.orm.Session):
     def query(self, *args, **kwargs):  # type: ignore
         return DBSession()
+
+
+class Extension:
+    def __init__(self) -> None:
+        self.conformance_classes = ["foo bar", "baz"]
 
 
 def test_error_handler() -> None:
@@ -134,7 +135,7 @@ def test_error_handler() -> None:
 
 def test_get_all_collections() -> None:
     client = cads_catalogue_api_service.main.CatalogueClient()
-    client.session = Session()
+    client.reader = Reader()
 
     results = client.all_collections(Request("http://foo.org"))
 
@@ -158,12 +159,26 @@ def test_lookup_id() -> None:
 def test_get_collection() -> None:
     client = cads_catalogue_api_service.main.CatalogueClient()
     client.collection_table = Record()
-    client.session = Session()
+    client.reader = Reader()
 
     result = client.get_collection("era5-something", Request("http://foo.org"))
 
     assert result["id"] == expected["id"]
     assert result["description"] == expected["description"]
+
+
+def test_conformance_classes() -> None:
+    client = cads_catalogue_api_service.main.CatalogueClient()
+    client.extensions = [Extension()]
+
+    conformance_classes = client.conformance_classes()
+
+    assert "foo bar" in conformance_classes
+    assert "baz" in conformance_classes
+    assert (
+        stac_fastapi.types.conformance.STACConformanceClasses.CORE
+        in conformance_classes
+    )
 
 
 def test_openapi() -> None:

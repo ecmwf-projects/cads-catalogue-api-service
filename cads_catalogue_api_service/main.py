@@ -21,6 +21,7 @@ import cads_catalogue.database
 import fastapi
 import fastapi.openapi
 import fastapi.responses
+import fastapi_utils.session
 import sqlalchemy.orm
 import stac_fastapi.api.app
 import stac_fastapi.extensions.core
@@ -30,7 +31,6 @@ import stac_fastapi.types.links
 import stac_pydantic
 
 from . import config, exceptions
-from .session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,10 @@ def collection_serializer(
 @attrs.define
 class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
 
-    session: Session = attrs.field(default=Session.create_from_settings(settings))
+    reader: fastapi_utils.session.FastAPISessionMaker = attrs.field(
+        default=fastapi_utils.session.FastAPISessionMaker(settings.connection_string),
+        init=False,
+    )
     collection_table: Type[cads_catalogue.database.Resource] = attrs.field(
         default=cads_catalogue.database.Resource
     )
@@ -136,7 +139,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
     ) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the database."""
         base_url = str(request.base_url)
-        with self.session.reader.context_session() as session:
+        with self.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
             serialized_collections = [
                 collection_serializer(collection, base_url=base_url)
@@ -169,7 +172,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
     ) -> stac_fastapi.types.stac.Collection:
         """Get collection by id."""
         base_url = str(request.base_url)
-        with self.session.reader.context_session() as session:
+        with self.reader.context_session() as session:
             collection = lookup_id(collection_id, self.collection_table, session)
             return collection_serializer(collection, base_url)
 
