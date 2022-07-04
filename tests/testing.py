@@ -31,7 +31,6 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         variables=["var1", "var2"],
         providers=["provider 1", "provider 2"],
         extent=[[-180, 180], [-90, 90]],
-        links=[{"rel": "foo", "href": "http://foo.com"}],
         documentation="documentation",
         previewimage="img",
         publication_date=datetime.datetime.strptime(
@@ -43,4 +42,12 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         resource_update=datetime.datetime.strptime(
             "2020-02-05T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
         ),
+        licences=[
+            cads_catalogue.database.Licence(
+                licence_id="creative-commons",
+                revision=2,
+                title="Creative Commons Attribution 4.0 International",
+                download_filename="license.docx",
+            )
+        ],
     )

@@ -41,7 +41,8 @@ extensions = [
 ]
 
 
-settings = config.SqlalchemySettings()
+dbsettings = config.SqlalchemySettings()
+settings = config.Settings()
 
 
 def lookup_id(
@@ -69,9 +70,18 @@ def collection_serializer(
     # We don't implement items. Let's remove the rel="items" entry
     collection_links = [link for link in collection_links if link["rel"] != "items"]
 
-    db_links = db_model.links
-    if db_links:
-        collection_links += stac_fastapi.types.links.resolve_links(db_links, base_url)
+    additional_links = [
+        {
+            "rel": "license",
+            "href": f"{settings.datastore_base_url}/{license.download_filename}",
+            "title": license.title,
+        }
+        for license in db_model.licences
+    ]
+    collection_links += stac_fastapi.types.links.resolve_links(
+        additional_links, base_url
+    )
+    print(collection_links)
 
     return stac_fastapi.types.stac.Collection(
         type="Collection",
@@ -80,7 +90,7 @@ def collection_serializer(
         title=db_model.title,
         description=db_model.description,
         keywords=db_model.keywords,
-        # license=db_model.licences,
+        license=db_model.licences[0].licence_id if db_model.licences else None,
         providers=db_model.providers,
         summaries=db_model.summaries,
         extent=db_model.extent,
@@ -92,7 +102,7 @@ def collection_serializer(
 class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
 
     reader: fastapi_utils.session.FastAPISessionMaker = attrs.field(
-        default=fastapi_utils.session.FastAPISessionMaker(settings.connection_string),
+        default=fastapi_utils.session.FastAPISessionMaker(dbsettings.connection_string),
         init=False,
     )
     collection_table: Type[cads_catalogue.database.Resource] = attrs.field(
@@ -194,7 +204,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
 
 
 api = stac_fastapi.api.app.StacApi(
-    settings=settings,
+    settings=dbsettings,
     extensions=extensions,
     client=CatalogueClient(),
 )

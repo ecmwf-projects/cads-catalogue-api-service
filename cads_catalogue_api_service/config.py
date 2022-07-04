@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pydantic
 import stac_fastapi.types.config
 
 
@@ -46,3 +47,7 @@ class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
             f":{self.postgres_password}@{self.postgres_host}"
             f":{self.postgres_port}/{self.postgres_dbname}"
         )
+
+
+class Settings(pydantic.BaseSettings):
+    datastore_base_url: str = "http://localhost:8080/datastore"

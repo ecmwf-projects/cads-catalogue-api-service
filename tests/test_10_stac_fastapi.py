@@ -34,6 +34,7 @@ expected = {
     "title": "ERA5",
     "description": {"description": "aaaa"},
     "keywords": ["label 1", "label 2"],
+    "license": "creative-commons",
     "providers": ["provider 1", "provider 2"],
     "summaries": None,
     "extent": [[-180, 180], [-90, 90]],
@@ -53,7 +54,11 @@ expected = {
             "type": "application/json",
             "href": "http://foo.org",
         },
-        {"rel": "foo", "href": "http://foo.com"},
+        {
+            "rel": "license",
+            "href": "http://localhost:8080/datastore/license.docx",
+            "title": "Creative Commons Attribution 4.0 International",
+        },
     ],
 }
 
