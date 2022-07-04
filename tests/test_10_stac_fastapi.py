@@ -17,10 +17,11 @@ import json
 import cads_catalogue.database
 import fastapi.testclient
 import pytest
+import sqlalchemy.orm
+import stac_fastapi.types
 from testing import get_record
 
 import cads_catalogue_api_service.main
-import cads_catalogue_api_service.session
 from cads_catalogue_api_service import main
 
 client = fastapi.testclient.TestClient(main.app)
@@ -63,28 +64,39 @@ class Request:
 
 
 class ResultSet:
-    def __init__(self) -> None:
-        self._results = [get_record("era5-something"), get_record("soil-mosture")]
+    def __init__(self, items: list[str] = []) -> None:
+        self._results = [get_record(item) for item in items]
 
     def all(self) -> list[cads_catalogue.database.Resource]:
         return self._results
 
-    def first(self):  # type: ignore
-        return self._results[0]
+    def filter(self, *args, **kwargs):  # type: ignore
+        return ResultSet(["era5-something", "soil-mosture"])
+
+    def one(self):  # type: ignore
+        try:
+            return self._results[0]
+        except IndexError:
+            raise (sqlalchemy.orm.exc.NoResultFound)
 
 
 class DBSession:
-    def query(*args, **kwargs):  # type: ignore
+    def query(self, *args, **kwargs):  # type: ignore
+        return ResultSet(["era5-something", "soil-mosture"])
+
+    def filter(self, condition, *args, **kwargs):  # type: ignore
+        if condition:
+            return ResultSet(["era5-something", "soil-mosture"])
         return ResultSet()
 
-    def filter(*args, **kwargs):  # type: ignore
-        return ResultSet()
 
+class Record:
 
-class Table:
+    __name__ = "a-table"
+
     @property
     def resource_id(self):  # type: ignore
-        return "foo-table"
+        return "era5-something"
 
 
 class ContextSession:
@@ -95,17 +107,19 @@ class ContextSession:
         pass
 
 
-class Context:
+class Reader:
     def context_session(self):  # type: ignore
         return ContextSession()
 
 
-class Session(cads_catalogue_api_service.session.Session):
-    def __init__(self) -> None:
-        self.reader = Context()
-
-    def query(*args, **kwargs):  # type: ignore
+class Session(sqlalchemy.orm.Session):
+    def query(self, *args, **kwargs):  # type: ignore
         return DBSession()
+
+
+class Extension:
+    def __init__(self) -> None:
+        self.conformance_classes = ["foo bar", "baz"]
 
 
 def test_error_handler() -> None:
@@ -121,7 +135,7 @@ def test_error_handler() -> None:
 
 def test_get_all_collections() -> None:
     client = cads_catalogue_api_service.main.CatalogueClient()
-    client.session = Session()
+    client.reader = Reader()
 
     results = client.all_collections(Request("http://foo.org"))
 
@@ -130,13 +144,41 @@ def test_get_all_collections() -> None:
 
 
 def test_lookup_id() -> None:
-    lookup_id = cads_catalogue_api_service.main.CatalogueClient._lookup_id
+    lookup_id = cads_catalogue_api_service.main.lookup_id
     session = Session()
 
-    result = lookup_id("era5-something", Table(), session)
+    result = lookup_id("era5-something", Record(), session)
 
     assert result.resource_id == expected["id"]
     assert result.description == expected["description"]
+
+    with pytest.raises(stac_fastapi.types.errors.NotFoundError):
+        lookup_id("will-not-find-this", Record(), session)
+
+
+def test_get_collection() -> None:
+    client = cads_catalogue_api_service.main.CatalogueClient()
+    client.collection_table = Record()
+    client.reader = Reader()
+
+    result = client.get_collection("era5-something", Request("http://foo.org"))
+
+    assert result["id"] == expected["id"]
+    assert result["description"] == expected["description"]
+
+
+def test_conformance_classes() -> None:
+    client = cads_catalogue_api_service.main.CatalogueClient()
+    client.extensions = [Extension()]
+
+    conformance_classes = client.conformance_classes()
+
+    assert "foo bar" in conformance_classes
+    assert "baz" in conformance_classes
+    assert (
+        stac_fastapi.types.conformance.STACConformanceClasses.CORE
+        in conformance_classes
+    )
 
 
 def test_openapi() -> None:
@@ -147,5 +189,7 @@ def test_openapi() -> None:
     assert "/collections/{collection_id}" in result["paths"].keys()
     with pytest.raises(KeyError):
         result["paths"]["/search"]
+    with pytest.raises(KeyError):
         result["paths"]["/collections/{id}/items"]
+    with pytest.raises(KeyError):
         result["paths"]["/collections/{collection_id}/items/{item_id}"]

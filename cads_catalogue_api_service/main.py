@@ -21,15 +21,16 @@ import cads_catalogue.database
 import fastapi
 import fastapi.openapi
 import fastapi.responses
+import fastapi_utils.session
 import sqlalchemy.orm
 import stac_fastapi.api.app
 import stac_fastapi.extensions.core
 import stac_fastapi.types
 import stac_fastapi.types.conformance
+import stac_fastapi.types.links
 import stac_pydantic
 
-from . import config, exceptions, serializers
-from .session import Session
+from . import config, exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -43,15 +44,59 @@ extensions = [
 settings = config.SqlalchemySettings()
 
 
+def lookup_id(
+    id: str,
+    record: Type[cads_catalogue.database.BaseModel],
+    session: sqlalchemy.orm.Session,
+) -> Type[cads_catalogue.database.BaseModel]:
+    """Lookup row by id."""
+    try:
+        row = session.query(record).filter(record.resource_id == id).one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        raise stac_fastapi.types.errors.NotFoundError(
+            f"{record.__name__} {id} not found"
+        )
+    return row
+
+
+def collection_serializer(
+    db_model: cads_catalogue.database.Resource, base_url: str
+) -> stac_fastapi.types.stac.Collection:
+    """Transform database model to stac collection."""
+    collection_links = stac_fastapi.types.links.CollectionLinks(
+        collection_id=db_model.resource_id, base_url=base_url
+    ).create_links()
+    # We don't implement items. Let's remove the rel="items" entry
+    collection_links = [link for link in collection_links if link["rel"] != "items"]
+
+    db_links = db_model.links
+    if db_links:
+        collection_links += stac_fastapi.types.links.resolve_links(db_links, base_url)
+
+    return stac_fastapi.types.stac.Collection(
+        type="Collection",
+        id=db_model.resource_id,
+        stac_version="1.0.0",
+        title=db_model.title,
+        description=db_model.description,
+        keywords=db_model.keywords,
+        # license=db_model.licences,
+        providers=db_model.providers,
+        summaries=db_model.summaries,
+        extent=db_model.extent,
+        links=collection_links,
+    )
+
+
 @attrs.define
 class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
 
-    session: Session = attrs.field(default=Session.create_from_settings(settings))
+    reader: fastapi_utils.session.FastAPISessionMaker = attrs.field(
+        default=fastapi_utils.session.FastAPISessionMaker(settings.connection_string),
+        init=False,
+    )
     collection_table: Type[cads_catalogue.database.Resource] = attrs.field(
         default=cads_catalogue.database.Resource
-    )
-    collection_serializer: Type[serializers.CollectionSerializer] = attrs.field(
-        default=serializers.CollectionSerializer
     )
 
     def _landing_page(
@@ -89,29 +134,15 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
 
         return list(set(base_conformance_classes))
 
-    @staticmethod
-    def _lookup_id(
-        id: str,
-        table: Type[cads_catalogue.database.BaseModel],
-        session: sqlalchemy.orm.Session,
-    ) -> Type[cads_catalogue.database.BaseModel]:
-        """Lookup row by id."""
-        row = session.query(table).filter(table.resource_id == id).first()
-        if not row:
-            raise stac_fastapi.types.errors.NotFoundError(
-                f"{table.__name__} {id} not found"
-            )
-        return row
-
     def all_collections(
         self, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the database."""
         base_url = str(request.base_url)
-        with self.session.reader.context_session() as session:
+        with self.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
             serialized_collections = [
-                self.collection_serializer.db_to_stac(collection, base_url=base_url)
+                collection_serializer(collection, base_url=base_url)
                 for collection in collections
             ]
             links = [
@@ -141,9 +172,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
     ) -> stac_fastapi.types.stac.Collection:
         """Get collection by id."""
         base_url = str(request.base_url)
-        with self.session.reader.context_session() as session:
-            collection = self._lookup_id(collection_id, self.collection_table, session)
-            return self.collection_serializer.db_to_stac(collection, base_url)
+        with self.reader.context_session() as session:
+            collection = lookup_id(collection_id, self.collection_table, session)
+            return collection_serializer(collection, base_url)
 
     def get_item(self, **kwargs: dict[str, Any]) -> None:
         raise exceptions.FeatureNotImplemented("STAC item is not implemented")
