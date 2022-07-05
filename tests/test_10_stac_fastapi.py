@@ -198,3 +198,19 @@ def test_openapi() -> None:
         result["paths"]["/collections/{id}/items"]
     with pytest.raises(KeyError):
         result["paths"]["/collections/{collection_id}/items/{item_id}"]
+
+
+def test_generate_assets() -> None:
+    model = cads_catalogue.database.Resource(
+        resource_id="era5-something", previewimage="foo/bar/baz/preview.webp"
+    )
+
+    assets = cads_catalogue_api_service.main.generate_assets(model, "http://foo.org")
+
+    assert assets == {
+        "thumbnail": {
+            "href": "http://foo.org/foo/bar/baz/preview.webp",
+            "roles": ["thumbnail"],
+            "type": "image/jpg",
+        },
+    }

@@ -60,12 +60,12 @@ def lookup_id(
     return row
 
 
-def collection_serializer(
-    db_model: cads_catalogue.database.Resource, base_url: str
-) -> stac_fastapi.types.stac.Collection:
-    """Transform database model to stac collection."""
+def generate_collection_links(
+    model: cads_catalogue.database.Resource, base_url: str
+) -> list[dict[str, Any]]:
+    """Generate collection links."""
     collection_links = stac_fastapi.types.links.CollectionLinks(
-        collection_id=db_model.resource_id, base_url=base_url
+        collection_id=model.resource_id, base_url=base_url
     ).create_links()
     # We don't implement items. Let's remove the rel="items" entry
     collection_links = [link for link in collection_links if link["rel"] != "items"]
@@ -76,12 +76,37 @@ def collection_serializer(
             "href": f"{settings.datastore_base_url}/{license.download_filename}",
             "title": license.title,
         }
-        for license in db_model.licences
+        for license in model.licences
     ]
     collection_links += stac_fastapi.types.links.resolve_links(
         additional_links, base_url
     )
-    print(collection_links)
+    return collection_links
+
+
+def generate_assets(model, base_url) -> dict[str, dict]:
+    """Generate STAC assets for collections"""
+    assets = {}
+    if model.previewimage:
+        assets["thumbnail"] = {
+            "href": urllib.parse.urljoin(base_url, model.previewimage),
+            "type": "image/jpg",
+            "roles": ["thumbnail"],
+        }
+    return assets
+
+
+def collection_serializer(
+    db_model: cads_catalogue.database.Resource, base_url: str
+) -> stac_fastapi.types.stac.Collection:
+    """Transform database model to stac collection."""
+    collection_links = generate_collection_links(model=db_model, base_url=base_url)
+
+    assets = generate_assets(model=db_model, base_url=settings.datastore_base_url)
+
+    additional_properties = {
+        **({"assets": assets} if assets else {}),
+    }
 
     return stac_fastapi.types.stac.Collection(
         type="Collection",
@@ -95,6 +120,7 @@ def collection_serializer(
         summaries=db_model.summaries,
         extent=db_model.extent,
         links=collection_links,
+        **additional_properties,
     )
 
 

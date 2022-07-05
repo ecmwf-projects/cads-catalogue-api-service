@@ -32,7 +32,6 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         providers=["provider 1", "provider 2"],
         extent=[[-180, 180], [-90, 90]],
         documentation="documentation",
-        previewimage="img",
         publication_date=datetime.datetime.strptime(
             "2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
         ),
