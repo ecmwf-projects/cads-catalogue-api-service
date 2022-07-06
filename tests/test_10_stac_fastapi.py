@@ -100,7 +100,7 @@ class Record:
     __name__ = "a-table"
 
     @property
-    def resource_id(self):  # type: ignore
+    def resource_uid(self):  # type: ignore
         return "era5-something"
 
 
@@ -154,7 +154,7 @@ def test_lookup_id() -> None:
 
     result = lookup_id("era5-something", Record(), session)
 
-    assert result.resource_id == expected["id"]
+    assert result.resource_uid == expected["id"]
     assert result.description == expected["description"]
 
     with pytest.raises(stac_fastapi.types.errors.NotFoundError):
@@ -202,7 +202,7 @@ def test_openapi() -> None:
 
 def test_generate_assets() -> None:
     model = cads_catalogue.database.Resource(
-        resource_id="era5-something", previewimage="foo/bar/baz/preview.webp"
+        resource_uid="era5-something", previewimage="foo/bar/baz/preview.webp"
     )
 
     assets = cads_catalogue_api_service.main.generate_assets(model, "http://foo.org")

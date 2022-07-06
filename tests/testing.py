@@ -19,7 +19,7 @@ import cads_catalogue.database
 
 def get_record(id: str) -> cads_catalogue.database.Resource:
     return cads_catalogue.database.Resource(
-        resource_id=id,
+        resource_uid=id,
         title="ERA5",
         description={"description": "aaaa"},
         abstract="Lorem ipsum dolor",

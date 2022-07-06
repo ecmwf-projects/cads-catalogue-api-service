@@ -52,7 +52,7 @@ def lookup_id(
 ) -> Type[cads_catalogue.database.BaseModel]:
     """Lookup row by id."""
     try:
-        row = session.query(record).filter(record.resource_id == id).one()
+        row = session.query(record).filter(record.resource_uid == id).one()
     except sqlalchemy.orm.exc.NoResultFound:
         raise stac_fastapi.types.errors.NotFoundError(
             f"{record.__name__} {id} not found"
@@ -65,7 +65,7 @@ def generate_collection_links(
 ) -> list[dict[str, Any]]:
     """Generate collection links."""
     collection_links = stac_fastapi.types.links.CollectionLinks(
-        collection_id=model.resource_id, base_url=base_url
+        collection_id=model.resource_uid, base_url=base_url
     ).create_links()
     # We don't implement items. Let's remove the rel="items" entry
     collection_links = [link for link in collection_links if link["rel"] != "items"]
@@ -110,7 +110,7 @@ def collection_serializer(
 
     return stac_fastapi.types.stac.Collection(
         type="Collection",
-        id=db_model.resource_id,
+        id=db_model.resource_uid,
         stac_version="1.0.0",
         title=db_model.title,
         description=db_model.description,
