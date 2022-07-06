@@ -2,11 +2,35 @@
 
 STAC based API service for the Climate & Atmosphere Data Store
 
+## REST API description
+
+Let say that WSGI service root is configured at `http://localhost:8080/api/catalogue`
+
+The Swagger/OpenAPI documentation can be accessed at <http://localhost:8080/api/catalogue/api.html>
+
+To access the list of all datasets (STAC collections index):
+
+```bash
+curl http://localhost:8080/api/catalogue/collections | jq
+```
+
+To access a dataset by id (STAC collection):
+
+```bash
+curl http://localhost:8080/api/catalogue/collections/reanalysis-era5-land-monthly-means | jq
+```
+
+To download the thumbnail image of a dataset:
+
+```bash
+curl http://localhost:8080/api/catalogue/collections/reanalysis-era5-land-monthly-means | jq -r .assets.thumbnail.href
+```
+
 ## Workflow for developers/contributors
 
 For best experience create a new conda environment (e.g. DEVELOP) with Python 3.10:
 
-```
+```bash
 conda create -n DEVELOP -c conda-forge python=3.10
 conda activate DEVELOP
 ```
@@ -22,7 +46,7 @@ Before pushing to GitHub, run the following commands:
 
 ## License
 
-```
+```plain
 Copyright 2022, European Centre for Medium-Range Weather Forecasts (ECMWF).
 
 Licensed under the Apache License, Version 2.0 (the "License");
