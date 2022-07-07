@@ -70,14 +70,38 @@ def generate_collection_links(
     # We don't implement items. Let's remove the rel="items" entry
     collection_links = [link for link in collection_links if link["rel"] != "items"]
 
+    # Licenses
     additional_links = [
         {
             "rel": "license",
-            "href": f"{settings.datastore_base_url}/{license.download_filename}",
+            "href": urllib.parse.urljoin(
+                settings.datastore_base_url, license.download_filename
+            ),
             "title": license.title,
         }
         for license in model.licences
     ]
+
+    # References
+    additional_links += [
+        {
+            "rel": "reference",
+            "href": "/TODO.html",  # FIXME: reference HTML implementation to be defined
+            "title": reference["title"],
+        }
+        for reference in model.references
+    ]
+
+    # Documentation
+    # additional_links += [
+    #     {
+    #         "rel": "documentation",
+    #         "href": doc["url"],
+    #         "title": doc["title"],
+    #     }
+    #     for doc in model.documentation
+    # ]
+
     collection_links += stac_fastapi.types.links.resolve_links(
         additional_links, base_url
     )
