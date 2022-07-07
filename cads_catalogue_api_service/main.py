@@ -30,7 +30,7 @@ import stac_fastapi.types.conformance
 import stac_fastapi.types.links
 import stac_pydantic
 
-from . import config, exceptions
+from . import config, exceptions, models
 
 logger = logging.getLogger(__name__)
 
@@ -130,9 +130,14 @@ def collection_serializer(
 
     additional_properties = {
         **({"assets": assets} if assets else {}),
+        **(
+            {"publication_date": db_model.publication_date.strftime("%Y-%m-%d")}
+            if db_model.publication_date
+            else {}
+        ),
     }
 
-    return stac_fastapi.types.stac.Collection(
+    return models.Dataset(
         type="Collection",
         id=db_model.resource_uid,
         stac_version="1.0.0",
