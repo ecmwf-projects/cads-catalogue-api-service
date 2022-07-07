@@ -93,14 +93,14 @@ def generate_collection_links(
     ]
 
     # Documentation
-    # additional_links += [
-    #     {
-    #         "rel": "documentation",
-    #         "href": doc["url"],
-    #         "title": doc["title"],
-    #     }
-    #     for doc in model.documentation
-    # ]
+    additional_links += [
+        {
+            "rel": "documentation",
+            "href": doc["url"],
+            "title": doc["title"],
+        }
+        for doc in model.documentation
+    ]
 
     collection_links += stac_fastapi.types.links.resolve_links(
         additional_links, base_url
