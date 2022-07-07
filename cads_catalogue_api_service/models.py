@@ -13,12 +13,28 @@
 # limitations under the License.
 
 import datetime
-from typing import Type
+from typing import Any, Type, TypedDict
 
 import stac_fastapi.types
 
+# class Dataset(stac_fastapi.types.stac.Collection):
+#     """Dataset, extention of STAC Collection."""
 
-class Dataset(stac_fastapi.types.stac.Collection):
-    """Dataset, extention of STAC Collection."""
+#     publication_date: Type[datetime.date] = None
+#     # redefinition of description from stac_fastapi.types.stac.Catalog, which is an str
+#     description: dict[str, Any]
+#     variables: dict[str, Any]
 
-    publication_date: Type[datetime.date] = None
+
+DatasetBase = TypedDict(
+    "DatasetBase",
+    {
+        "description": dict[str, Any],
+        "tmp:publication_date": Type[datetime.date],
+        "tmp:variables": dict[str, Any],
+    },
+)
+
+
+class Dataset(stac_fastapi.types.stac.Collection, DatasetBase):
+    pass

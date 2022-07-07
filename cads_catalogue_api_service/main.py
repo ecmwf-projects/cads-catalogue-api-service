@@ -102,6 +102,14 @@ def generate_collection_links(
         for doc in model.documentation
     ]
 
+    # Form definition
+    additional_links.append(
+        {
+            "rel": "form",
+            "href": urllib.parse.urljoin(settings.datastore_base_url, model.form),
+        }
+    )
+
     collection_links += stac_fastapi.types.links.resolve_links(
         additional_links, base_url
     )
@@ -121,7 +129,7 @@ def generate_assets(model, base_url) -> dict[str, dict]:
 
 
 def collection_serializer(
-    db_model: cads_catalogue.database.Resource, base_url: str
+    db_model: cads_catalogue.database.Resource, base_url: str, preview: bool = False
 ) -> stac_fastapi.types.stac.Collection:
     """Transform database model to stac collection."""
     collection_links = generate_collection_links(model=db_model, base_url=base_url)
@@ -131,24 +139,35 @@ def collection_serializer(
     additional_properties = {
         **({"assets": assets} if assets else {}),
         **(
-            {"publication_date": db_model.publication_date.strftime("%Y-%m-%d")}
+            {"tmp:publication_date": db_model.publication_date.strftime("%Y-%m-%d")}
             if db_model.publication_date
             else {}
         ),
     }
+
+    # properties not shown in preview mode
+    full_view_propeties = (
+        {}
+        if preview
+        else {
+            "tmp:variables": db_model.variables,
+            "tmp:description": db_model.description,
+        }
+    )
 
     return models.Dataset(
         type="Collection",
         id=db_model.resource_uid,
         stac_version="1.0.0",
         title=db_model.title,
-        description=db_model.description,
+        description=db_model.abstract,
         keywords=db_model.keywords,
         license=db_model.licences[0].licence_id if db_model.licences else None,
         providers=db_model.providers,
         summaries=db_model.summaries,
         extent=db_model.extent,
         links=collection_links,
+        **full_view_propeties,
         **additional_properties,
     )
 
@@ -207,7 +226,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
         with self.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
             serialized_collections = [
-                collection_serializer(collection, base_url=base_url)
+                collection_serializer(collection, base_url=base_url, preview=True)
                 for collection in collections
             ]
             links = [
