@@ -1,3 +1,8 @@
+"""Configuration of the service.
+
+Options are based on pydantic.BaseSettings, so they automatically get values from the environment.
+"""
+
 # Copyright 2022, European Union.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,12 +24,11 @@ import stac_fastapi.types.config
 class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
     """Postgres-specific API settings.
 
-    Attributes:
-        postgres_user: postgres username.
-        postgres_password: postgres password.
-        postgres_host: hostname for the connection.
-        postgres_port: database port.
-        postgres_dbname: database name.
+    - ``postgres_user``: postgres username.
+    - ``postgres_password``: postgres password.
+    - ``postgres_host``: hostname for the connection.
+    - ``postgres_port``: database port.
+    - ``postgres_dbname``: database name.
     """
 
     postgres_user: str = "catalogue"
@@ -50,4 +54,9 @@ class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
 
 
 class Settings(pydantic.BaseSettings):
+    """Other general settings.
+
+    - ``document_storage_base_url``: Base URI to identify the document storage
+    """
+
     document_storage_base_url: str = "http://localhost:8080/document-storage"

@@ -1,3 +1,8 @@
+"""Main STAC based API module.
+
+This largely depends on stac_fastapi to generate the RESTful API.
+"""
+
 # Copyright 2022, European Union.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -119,7 +124,7 @@ def generate_collection_links(
 
 
 def generate_assets(model, base_url) -> dict[str, dict]:
-    """Generate STAC assets for collections"""
+    """Generate STAC assets for collections."""
     assets = {}
     if model.previewimage:
         assets["thumbnail"] = {
@@ -177,7 +182,12 @@ def collection_serializer(
 
 
 @attrs.define
-class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
+class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
+    """stac-fastapi custom client implementation for the CADS catalogue.
+
+    This is based on cads-catalogue models, and redefines some STAC features that
+    are not implemented.
+    """
 
     reader: fastapi_utils.session.FastAPISessionMaker = attrs.field(
         default=fastapi_utils.session.FastAPISessionMaker(dbsettings.connection_string),
@@ -203,9 +213,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
         return landing_page
 
     def conformance_classes(self) -> list[str]:
-        """
-        Generate conformance classes by adding extension conformance to base conformance classes.
-        Also: remove concoformance classes that are not implemented explicitly by the catalogue API
+        """Generate conformance classes by adding extension conformance to base conformance classes.
+
+        Also: remove conformance classes that are not implemented explicitly by the catalogue API.
         """
         # base_conformance_classes = self.base_conformance_classes.copy()
         STACConformanceClasses = stac_fastapi.types.conformance.STACConformanceClasses
@@ -258,17 +268,18 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
     def get_collection(
         self, collection_id: str, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collection:
-        """Get collection by id."""
+        """Get a STAC collection by id."""
         base_url = str(request.base_url)
         with self.reader.context_session() as session:
             collection = lookup_id(collection_id, self.collection_table, session)
             return collection_serializer(collection, base_url)
 
     def get_item(self, **kwargs: dict[str, Any]) -> None:
+        """Access to STAC items: explicitly not implemented."""
         raise exceptions.FeatureNotImplemented("STAC item is not implemented")
 
     def get_search(self, **kwargs: dict[str, Any]) -> None:
-        """GET search catalog."""
+        """GET search catalog. Explicitly not implemented."""
         raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
     def item_collection(
@@ -278,6 +289,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
         raise exceptions.FeatureNotImplemented("STAC items is not implemented")
 
     def post_search(self) -> None:
+        """POST search catalog. Explicitly not implemented."""
         raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
 
@@ -291,8 +303,7 @@ app = api.app
 
 
 def catalogue_openapi() -> dict[str, Any]:
-    """OpenAPI, but with not implemented paths removed"""
-
+    """OpenAPI, but with not implemented paths removed."""
     openapi_schema = fastapi.openapi.utils.get_openapi(
         title="CADS Catalogue", version=api.api_version, routes=api.app.routes
     )
@@ -312,6 +323,7 @@ app.openapi = catalogue_openapi
 async def unicorn_exception_handler(
     request: fastapi.Request, exc: exceptions.FeatureNotImplemented
 ) -> fastapi.responses.JSONResponse:
+    """Catch FeatureNotImplemented exceptions to properly trigger an HTTP 501."""
     return fastapi.responses.JSONResponse(
         status_code=501,
         content={"message": exc.message},

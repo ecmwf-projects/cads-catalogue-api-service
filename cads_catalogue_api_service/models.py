@@ -1,3 +1,5 @@
+"""Custom models that extends the OGC/STAC ones."""
+
 # Copyright 2022, European Union.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,15 +19,6 @@ from typing import Any, Type, TypedDict
 
 import stac_fastapi.types
 
-# class Dataset(stac_fastapi.types.stac.Collection):
-#     """Dataset, extention of STAC Collection."""
-
-#     publication_date: Type[datetime.date] = None
-#     # redefinition of description from stac_fastapi.types.stac.Catalog, which is an str
-#     description: dict[str, Any]
-#     variables: dict[str, Any]
-
-
 DatasetBase = TypedDict(
     "DatasetBase",
     {
@@ -37,4 +30,7 @@ DatasetBase = TypedDict(
 
 
 class Dataset(stac_fastapi.types.stac.Collection, DatasetBase):
-    pass
+    """STAC based dataset.
+
+    This class extends the OGC/STAC Collection with additional non-STAC fields.
+    """

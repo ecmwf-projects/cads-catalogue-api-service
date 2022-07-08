@@ -1,3 +1,5 @@
+"""Custom exceptions."""
+
 # Copyright 2022, European Union.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +16,7 @@
 
 
 class FeatureNotImplemented(NotImplementedError):
-    """This STAC feature is not implemented yet."""
+    """Exception class to track STAC feature is not implemented yet."""
 
     def __init__(self, message: str = "This STAC feature is not implemented yet."):
         super().__init__(message)
