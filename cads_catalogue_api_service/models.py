@@ -1,4 +1,4 @@
-"""Custom exceptions."""
+"""Custom models that extends the OGC/STAC ones."""
 
 # Copyright 2022, European Union.
 #
@@ -14,10 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+from typing import Any, Type, TypedDict
 
-class FeatureNotImplemented(NotImplementedError):
-    """Exception class to track STAC feature is not implemented yet."""
+import stac_fastapi.types
 
-    def __init__(self, message: str = "This STAC feature is not implemented yet."):
-        super().__init__(message)
-        self.message = message
+DatasetBase = TypedDict(
+    "DatasetBase",
+    {
+        "description": dict[str, Any],
+        "tmp:publication_date": Type[datetime.date],
+        "tmp:variables": dict[str, Any],
+    },
+)
+
+
+class Dataset(stac_fastapi.types.stac.Collection, DatasetBase):
+    """STAC based dataset.
+
+    This class extends the OGC/STAC Collection with additional non-STAC fields.
+    """

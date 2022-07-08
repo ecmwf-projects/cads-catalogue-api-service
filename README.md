@@ -2,11 +2,35 @@
 
 STAC based API service for the Climate & Atmosphere Data Store
 
+## REST API description
+
+Let say that WSGI service root is configured at `http://localhost:8080/api/catalogue`
+
+The Swagger/OpenAPI documentation can be accessed at <http://localhost:8080/api/catalogue/api.html>
+
+To access the list of all datasets (STAC collections index):
+
+```bash
+curl http://localhost:8080/api/catalogue/collections | jq
+```
+
+To access a dataset by id (STAC collection):
+
+```bash
+curl http://localhost:8080/api/catalogue/collections/reanalysis-era5-land-monthly-means | jq
+```
+
+To download the thumbnail image of a dataset:
+
+```bash
+curl http://localhost:8080/api/catalogue/collections/reanalysis-era5-land-monthly-means | jq -r .assets.thumbnail.href
+```
+
 ## Workflow for developers/contributors
 
 For best experience create a new conda environment (e.g. DEVELOP) with Python 3.10:
 
-```
+```bash
 conda create -n DEVELOP -c conda-forge python=3.10
 conda activate DEVELOP
 ```
@@ -19,10 +43,11 @@ Before pushing to GitHub, run the following commands:
 1. Run quality assurance checks: `make qa`
 1. Run tests: `make test`
 1. Run the static type checker: `make type-check`
+1. Build the documentation (see [Sphinx tutorial](https://www.sphinx-doc.org/en/master/tutorial/)): `make build-docs`
 
 ## License
 
-```
+```plain
 Copyright 2022, European Centre for Medium-Range Weather Forecasts (ECMWF).
 
 Licensed under the Apache License, Version 2.0 (the "License");

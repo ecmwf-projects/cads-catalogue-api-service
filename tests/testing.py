@@ -13,27 +13,52 @@
 # limitations under the License.
 
 import datetime
+import urllib
 
 import cads_catalogue.database
 
 
 def get_record(id: str) -> cads_catalogue.database.Resource:
     return cads_catalogue.database.Resource(
-        resource_id=id,
+        resource_uid=id,
         title="ERA5",
-        description={"description": "aaaa"},
+        description={
+            "file-format": "GRIB",
+            "data-type": "Gridded",
+            "projection": "Regular latitude-longitude grid.",
+        },
         abstract="Lorem ipsum dolor",
         contact=["aaaa", "bbbb"],
-        form="form",
-        citation="",
+        form="resources/reanalysis-era5-pressure-levels/form.json",
         keywords=["label 1", "label 2"],
         version="1.0.0",
         variables=["var1", "var2"],
         providers=["provider 1", "provider 2"],
         extent=[[-180, 180], [-90, 90]],
-        links=[{"rel": "foo", "href": "http://foo.com"}],
-        documentation="documentation",
-        previewimage="img",
+        documentation=[
+            {
+                "url": "https://rtd.org/foo-bar",
+                "title": "ERA5 data documentation",
+                "description": (
+                    "Detailed information relating to the ERA5 data archive "
+                    "can be found in the web link above."
+                ),
+            }
+        ],
+        references=[
+            {
+                "title": "Citation",
+                "content": "resources/reanalysis-era5-pressure-levels/a-document-to-show.html",
+                "url": None,
+                "download_file": None,
+            },
+            {
+                "title": "Reference manual",
+                "content": None,
+                "url": None,
+                "download_file": "resources/reanalysis-era5-pressure-levels/manual.pdf",
+            },
+        ],
         publication_date=datetime.datetime.strptime(
             "2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
         ),
@@ -43,4 +68,94 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         resource_update=datetime.datetime.strptime(
             "2020-02-05T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
         ),
+        licences=[
+            cads_catalogue.database.Licence(
+                licence_id="creative-commons",
+                revision=2,
+                title="Creative Commons Attribution 4.0 International",
+                download_filename="license.docx",
+            )
+        ],
     )
+
+
+def generate_expected(base_url="http://foo.org", preview=False) -> dict:
+    expected = {
+        "type": "Collection",
+        "id": "era5-something",
+        "stac_version": "1.0.0",
+        "title": "ERA5",
+        "description": "Lorem ipsum dolor",
+        "keywords": ["label 1", "label 2"],
+        "license": "creative-commons",
+        "providers": ["provider 1", "provider 2"],
+        "summaries": None,
+        "extent": [[-180, 180], [-90, 90]],
+        "links": [
+            {
+                "rel": "self",
+                "type": "application/json",
+                "href": urllib.parse.urljoin(base_url, "collections/era5-something"),
+            },
+            {
+                "rel": "parent",
+                "type": "application/json",
+                "href": base_url,
+            },
+            {
+                "rel": "root",
+                "type": "application/json",
+                "href": base_url,
+            },
+            {
+                "rel": "license",
+                "href": "http://localhost:8080/license.docx",
+                "title": "Creative Commons Attribution 4.0 International",
+            },
+        ]
+        + (
+            []
+            if preview
+            else [
+                {
+                    "rel": "reference",
+                    "href": urllib.parse.urljoin(
+                        base_url,
+                        "resources/reanalysis-era5-pressure-levels/a-document-to-show.html",
+                    ),
+                    "title": "Citation",
+                },
+                {
+                    "rel": "attachment",
+                    "href": urllib.parse.urljoin(
+                        base_url, "resources/reanalysis-era5-pressure-levels/manual.pdf"
+                    ),
+                    "title": "Reference manual",
+                },
+                {
+                    "rel": "documentation",
+                    "href": "https://rtd.org/foo-bar",
+                    "title": "ERA5 data documentation",
+                },
+                {
+                    "rel": "form",
+                    "href": "http://localhost:8080/resources/reanalysis-era5-pressure-levels/form.json",
+                    "type": "application/json",
+                },
+            ]
+        ),
+        "tmp:publication_date": "2020-01-01",
+    }
+    if not preview:
+        expected = {
+            **expected,
+            **{
+                "tmp:description": {
+                    "file-format": "GRIB",
+                    "data-type": "Gridded",
+                    "projection": "Regular latitude-longitude grid.",
+                },
+                "tmp:variables": ["var1", "var2"],
+            },
+        }
+    return expected

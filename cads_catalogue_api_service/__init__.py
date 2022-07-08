@@ -1,3 +1,5 @@
+"""STAC based API service for the Climate & Atmosphere Data Store."""
+
 # Copyright 2022, European Union.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,4 +22,13 @@ except ImportError:  # pragma: no cover
     # Local copy or not installed with setuptools
     __version__ = "999"
 
-__all__ = ["__version__"]
+from .config import Settings, SqlalchemySettings
+from .main import CatalogueClient, collection_serializer
+
+__all__ = [
+    "__version__",
+    "CatalogueClient",
+    "SqlalchemySettings",
+    "Settings",
+    "collection_serializer",
+]

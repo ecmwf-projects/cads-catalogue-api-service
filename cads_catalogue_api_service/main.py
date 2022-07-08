@@ -1,3 +1,8 @@
+"""Main STAC based API module.
+
+This largely depends on stac_fastapi to generate the RESTful API.
+"""
+
 # Copyright 2022, European Union.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +35,7 @@ import stac_fastapi.types.conformance
 import stac_fastapi.types.links
 import stac_pydantic
 
-from . import config, exceptions
+from . import config, exceptions, models
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +46,8 @@ extensions = [
 ]
 
 
-settings = config.SqlalchemySettings()
+dbsettings = config.SqlalchemySettings()
+settings = config.Settings()
 
 
 def lookup_id(
@@ -51,7 +57,7 @@ def lookup_id(
 ) -> Type[cads_catalogue.database.BaseModel]:
     """Lookup row by id."""
     try:
-        row = session.query(record).filter(record.resource_id == id).one()
+        row = session.query(record).filter(record.resource_uid == id).one()
     except sqlalchemy.orm.exc.NoResultFound:
         raise stac_fastapi.types.errors.NotFoundError(
             f"{record.__name__} {id} not found"
@@ -59,40 +65,136 @@ def lookup_id(
     return row
 
 
-def collection_serializer(
-    db_model: cads_catalogue.database.Resource, base_url: str
-) -> stac_fastapi.types.stac.Collection:
-    """Transform database model to stac collection."""
+def generate_collection_links(
+    model: cads_catalogue.database.Resource, base_url: str, preview: bool = False
+) -> list[dict[str, Any]]:
+    """Generate collection links."""
     collection_links = stac_fastapi.types.links.CollectionLinks(
-        collection_id=db_model.resource_id, base_url=base_url
+        collection_id=model.resource_uid, base_url=base_url
     ).create_links()
     # We don't implement items. Let's remove the rel="items" entry
     collection_links = [link for link in collection_links if link["rel"] != "items"]
 
-    db_links = db_model.links
-    if db_links:
-        collection_links += stac_fastapi.types.links.resolve_links(db_links, base_url)
+    # Licenses
+    additional_links = [
+        {
+            "rel": "license",
+            "href": urllib.parse.urljoin(
+                settings.document_storage_base_url, license.download_filename
+            ),
+            "title": license.title,
+        }
+        for license in model.licences
+    ]
 
-    return stac_fastapi.types.stac.Collection(
+    if not preview:
+        # References: we have two types of them, based on use of "content" or "download_file"
+        additional_links += [
+            {
+                "rel": "reference" if reference["content"] else "attachment",
+                "href": reference["content"] or reference["download_file"],
+                "title": reference["title"],
+            }
+            for reference in model.references
+        ]
+
+        # Documentation
+        additional_links += [
+            {
+                "rel": "documentation",
+                "href": doc["url"],
+                "title": doc["title"],
+            }
+            for doc in model.documentation
+        ]
+
+        # Form definition
+        additional_links.append(
+            {
+                "rel": "form",
+                "href": urllib.parse.urljoin(
+                    settings.document_storage_base_url, model.form
+                ),
+                "type": "application/json",
+            }
+        )
+
+    collection_links += stac_fastapi.types.links.resolve_links(
+        additional_links, base_url
+    )
+    return collection_links
+
+
+def generate_assets(model, base_url) -> dict[str, dict]:
+    """Generate STAC assets for collections."""
+    assets = {}
+    if model.previewimage:
+        assets["thumbnail"] = {
+            "href": urllib.parse.urljoin(base_url, model.previewimage),
+            "type": "image/jpg",
+            "roles": ["thumbnail"],
+        }
+    return assets
+
+
+def collection_serializer(
+    db_model: cads_catalogue.database.Resource, base_url: str, preview: bool = False
+) -> stac_fastapi.types.stac.Collection:
+    """Transform database model to stac collection."""
+    collection_links = generate_collection_links(
+        model=db_model, base_url=base_url, preview=preview
+    )
+
+    assets = generate_assets(
+        model=db_model, base_url=settings.document_storage_base_url
+    )
+
+    additional_properties = {
+        **({"assets": assets} if assets else {}),
+        **(
+            {"tmp:publication_date": db_model.publication_date.strftime("%Y-%m-%d")}
+            if db_model.publication_date
+            else {}
+        ),
+    }
+
+    # properties not shown in preview mode
+    full_view_propeties = (
+        {}
+        if preview
+        else {
+            "tmp:variables": db_model.variables,
+            "tmp:description": db_model.description,
+        }
+    )
+
+    return models.Dataset(
         type="Collection",
-        id=db_model.resource_id,
+        id=db_model.resource_uid,
         stac_version="1.0.0",
         title=db_model.title,
-        description=db_model.description,
+        description=db_model.abstract,
         keywords=db_model.keywords,
-        # license=db_model.licences,
+        license=db_model.licences[0].licence_id if db_model.licences else None,
         providers=db_model.providers,
         summaries=db_model.summaries,
         extent=db_model.extent,
         links=collection_links,
+        **full_view_propeties,
+        **additional_properties,
     )
 
 
 @attrs.define
-class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
+class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
+    """stac-fastapi custom client implementation for the CADS catalogue.
+
+    This is based on cads-catalogue models, and redefines some STAC features that
+    are not implemented.
+    """
 
     reader: fastapi_utils.session.FastAPISessionMaker = attrs.field(
-        default=fastapi_utils.session.FastAPISessionMaker(settings.connection_string),
+        default=fastapi_utils.session.FastAPISessionMaker(dbsettings.connection_string),
         init=False,
     )
     collection_table: Type[cads_catalogue.database.Resource] = attrs.field(
@@ -115,9 +217,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
         return landing_page
 
     def conformance_classes(self) -> list[str]:
-        """
-        Generate conformance classes by adding extension conformance to base conformance classes.
-        Also: remove concoformance classes that are not implemented explicitly by the catalogue API
+        """Generate conformance classes by adding extension conformance to base conformance classes.
+
+        Also: remove conformance classes that are not implemented explicitly by the catalogue API.
         """
         # base_conformance_classes = self.base_conformance_classes.copy()
         STACConformanceClasses = stac_fastapi.types.conformance.STACConformanceClasses
@@ -142,7 +244,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
         with self.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
             serialized_collections = [
-                collection_serializer(collection, base_url=base_url)
+                collection_serializer(collection, base_url=base_url, preview=True)
                 for collection in collections
             ]
             links = [
@@ -170,17 +272,18 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
     def get_collection(
         self, collection_id: str, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collection:
-        """Get collection by id."""
+        """Get a STAC collection by id."""
         base_url = str(request.base_url)
         with self.reader.context_session() as session:
             collection = lookup_id(collection_id, self.collection_table, session)
-            return collection_serializer(collection, base_url)
+            return collection_serializer(collection, base_url=base_url, preview=False)
 
     def get_item(self, **kwargs: dict[str, Any]) -> None:
+        """Access to STAC items: explicitly not implemented."""
         raise exceptions.FeatureNotImplemented("STAC item is not implemented")
 
     def get_search(self, **kwargs: dict[str, Any]) -> None:
-        """GET search catalog."""
+        """GET search catalog. Explicitly not implemented."""
         raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
     def item_collection(
@@ -190,11 +293,12 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):  # type: ignore
         raise exceptions.FeatureNotImplemented("STAC items is not implemented")
 
     def post_search(self) -> None:
+        """POST search catalog. Explicitly not implemented."""
         raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
 
 api = stac_fastapi.api.app.StacApi(
-    settings=settings,
+    settings=dbsettings,
     extensions=extensions,
     client=CatalogueClient(),
 )
@@ -203,8 +307,7 @@ app = api.app
 
 
 def catalogue_openapi() -> dict[str, Any]:
-    """OpenAPI, but with not implemented paths removed"""
-
+    """OpenAPI, but with not implemented paths removed."""
     openapi_schema = fastapi.openapi.utils.get_openapi(
         title="CADS Catalogue", version=api.api_version, routes=api.app.routes
     )
@@ -224,6 +327,7 @@ app.openapi = catalogue_openapi
 async def unicorn_exception_handler(
     request: fastapi.Request, exc: exceptions.FeatureNotImplemented
 ) -> fastapi.responses.JSONResponse:
+    """Catch FeatureNotImplemented exceptions to properly trigger an HTTP 501."""
     return fastapi.responses.JSONResponse(
         status_code=501,
         content={"message": exc.message},
