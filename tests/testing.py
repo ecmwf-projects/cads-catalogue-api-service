@@ -106,21 +106,27 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                 "href": "http://localhost:8080/license.docx",
                 "title": "Creative Commons Attribution 4.0 International",
             },
-            {
-                "rel": "reference",
-                "href": urllib.parse.urljoin(base_url, "TODO.html"),
-                "title": "Citation",
-            },
-            {
-                "rel": "documentation",
-                "href": "https://rtd.org/foo-bar",
-                "title": "ERA5 data documentation",
-            },
-            {
-                "rel": "form",
-                "href": "http://localhost:8080/resources/reanalysis-era5-pressure-levels/form.json",
-            },
-        ],
+        ]
+        + (
+            []
+            if preview
+            else [
+                {
+                    "rel": "reference",
+                    "href": urllib.parse.urljoin(base_url, "TODO.html"),
+                    "title": "Citation",
+                },
+                {
+                    "rel": "documentation",
+                    "href": "https://rtd.org/foo-bar",
+                    "title": "ERA5 data documentation",
+                },
+                {
+                    "rel": "form",
+                    "href": "http://localhost:8080/resources/reanalysis-era5-pressure-levels/form.json",
+                },
+            ]
+        ),
         "tmp:publication_date": "2020-01-01",
     }
     if not preview:

@@ -66,7 +66,7 @@ def lookup_id(
 
 
 def generate_collection_links(
-    model: cads_catalogue.database.Resource, base_url: str
+    model: cads_catalogue.database.Resource, base_url: str, preview: bool = False
 ) -> list[dict[str, Any]]:
     """Generate collection links."""
     collection_links = stac_fastapi.types.links.CollectionLinks(
@@ -87,35 +87,36 @@ def generate_collection_links(
         for license in model.licences
     ]
 
-    # References
-    additional_links += [
-        {
-            "rel": "reference",
-            "href": "TODO.html",  # FIXME: reference HTML implementation to be defined
-            "title": reference["title"],
-        }
-        for reference in model.references
-    ]
+    if not preview:
+        # References
+        additional_links += [
+            {
+                "rel": "reference",
+                "href": "TODO.html",  # FIXME: reference HTML implementation to be defined
+                "title": reference["title"],
+            }
+            for reference in model.references
+        ]
 
-    # Documentation
-    additional_links += [
-        {
-            "rel": "documentation",
-            "href": doc["url"],
-            "title": doc["title"],
-        }
-        for doc in model.documentation
-    ]
+        # Documentation
+        additional_links += [
+            {
+                "rel": "documentation",
+                "href": doc["url"],
+                "title": doc["title"],
+            }
+            for doc in model.documentation
+        ]
 
-    # Form definition
-    additional_links.append(
-        {
-            "rel": "form",
-            "href": urllib.parse.urljoin(
-                settings.document_storage_base_url, model.form
-            ),
-        }
-    )
+        # Form definition
+        additional_links.append(
+            {
+                "rel": "form",
+                "href": urllib.parse.urljoin(
+                    settings.document_storage_base_url, model.form
+                ),
+            }
+        )
 
     collection_links += stac_fastapi.types.links.resolve_links(
         additional_links, base_url
@@ -139,7 +140,9 @@ def collection_serializer(
     db_model: cads_catalogue.database.Resource, base_url: str, preview: bool = False
 ) -> stac_fastapi.types.stac.Collection:
     """Transform database model to stac collection."""
-    collection_links = generate_collection_links(model=db_model, base_url=base_url)
+    collection_links = generate_collection_links(
+        model=db_model, base_url=base_url, preview=preview
+    )
 
     assets = generate_assets(
         model=db_model, base_url=settings.document_storage_base_url
@@ -272,7 +275,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         base_url = str(request.base_url)
         with self.reader.context_session() as session:
             collection = lookup_id(collection_id, self.collection_table, session)
-            return collection_serializer(collection, base_url)
+            return collection_serializer(collection, base_url=base_url, preview=False)
 
     def get_item(self, **kwargs: dict[str, Any]) -> None:
         """Access to STAC items: explicitly not implemented."""
