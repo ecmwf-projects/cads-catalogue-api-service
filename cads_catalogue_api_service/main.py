@@ -75,7 +75,7 @@ def generate_collection_links(
         {
             "rel": "license",
             "href": urllib.parse.urljoin(
-                settings.datastore_base_url, license.download_filename
+                settings.document_storage_base_url, license.download_filename
             ),
             "title": license.title,
         }
@@ -106,7 +106,9 @@ def generate_collection_links(
     additional_links.append(
         {
             "rel": "form",
-            "href": urllib.parse.urljoin(settings.datastore_base_url, model.form),
+            "href": urllib.parse.urljoin(
+                settings.document_storage_base_url, model.form
+            ),
         }
     )
 
@@ -134,7 +136,9 @@ def collection_serializer(
     """Transform database model to stac collection."""
     collection_links = generate_collection_links(model=db_model, base_url=base_url)
 
-    assets = generate_assets(model=db_model, base_url=settings.datastore_base_url)
+    assets = generate_assets(
+        model=db_model, base_url=settings.document_storage_base_url
+    )
 
     additional_properties = {
         **({"assets": assets} if assets else {}),

@@ -50,4 +50,4 @@ class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
 
 
 class Settings(pydantic.BaseSettings):
-    datastore_base_url: str = "http://localhost:8080/datastore"
+    document_storage_base_url: str = "http://localhost:8080/document-storage"
