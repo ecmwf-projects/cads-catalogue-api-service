@@ -115,6 +115,7 @@ def generate_collection_links(
                 "href": urllib.parse.urljoin(
                     settings.document_storage_base_url, model.form
                 ),
+                "type": "application/json",
             }
         )
 

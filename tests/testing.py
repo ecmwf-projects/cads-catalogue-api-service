@@ -140,6 +140,7 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                 {
                     "rel": "form",
                     "href": "http://localhost:8080/resources/reanalysis-era5-pressure-levels/form.json",
+                    "type": "application/json",
                 },
             ]
         ),
