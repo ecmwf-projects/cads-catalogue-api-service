@@ -48,10 +48,16 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         references=[
             {
                 "title": "Citation",
-                "content": "resources/reanalysis-era5-pressure-levels/citation.html",
+                "content": "resources/reanalysis-era5-pressure-levels/a-document-to-show.html",
                 "url": None,
                 "download_file": None,
-            }
+            },
+            {
+                "title": "Reference manual",
+                "content": None,
+                "url": None,
+                "download_file": "resources/reanalysis-era5-pressure-levels/manual.pdf",
+            },
         ],
         publication_date=datetime.datetime.strptime(
             "2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
@@ -113,8 +119,18 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
             else [
                 {
                     "rel": "reference",
-                    "href": urllib.parse.urljoin(base_url, "TODO.html"),
+                    "href": urllib.parse.urljoin(
+                        base_url,
+                        "resources/reanalysis-era5-pressure-levels/a-document-to-show.html",
+                    ),
                     "title": "Citation",
+                },
+                {
+                    "rel": "attachment",
+                    "href": urllib.parse.urljoin(
+                        base_url, "resources/reanalysis-era5-pressure-levels/manual.pdf"
+                    ),
+                    "title": "Reference manual",
                 },
                 {
                     "rel": "documentation",

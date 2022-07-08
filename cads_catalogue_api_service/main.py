@@ -88,11 +88,11 @@ def generate_collection_links(
     ]
 
     if not preview:
-        # References
+        # References: we have two types of them, based on use of "content" or "download_file"
         additional_links += [
             {
-                "rel": "reference",
-                "href": "TODO.html",  # FIXME: reference HTML implementation to be defined
+                "rel": "reference" if reference["content"] else "attachment",
+                "href": reference["content"] or reference["download_file"],
                 "title": reference["title"],
             }
             for reference in model.references
