@@ -5,6 +5,7 @@ dependencies:
 - python>=3.10
 - make
 - mypy
+- myst-parser
 - pre-commit
 - pip
 - pytest
@@ -20,3 +21,8 @@ dependencies:
   - stac_fastapi.api
   - stac_fastapi.extensions
   - stac_fastapi.types
+- pydata-sphinx-theme
+- pytest
+- pytest-cov
+- sphinx
+- sphinxcontrib-apidoc

@@ -1,3 +1,5 @@
+"""STAC based API service for the Climate & Atmosphere Data Store."""
+
 # Copyright 2022, European Union.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

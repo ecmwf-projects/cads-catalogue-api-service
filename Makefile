@@ -26,6 +26,8 @@ docker-run:
 template-update:
 	pre-commit run --all-files cruft -c .pre-commit-config-weekly.yaml
 
-
 start:
 	uvicorn --reload cads_catalogue_api_service.api:app
+
+build-docs:
+	cd docs && rm -fr _api && make clean && make html
