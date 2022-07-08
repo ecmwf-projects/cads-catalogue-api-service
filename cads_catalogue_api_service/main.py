@@ -86,7 +86,7 @@ def generate_collection_links(
     additional_links += [
         {
             "rel": "reference",
-            "href": "/TODO.html",  # FIXME: reference HTML implementation to be defined
+            "href": "TODO.html",  # FIXME: reference HTML implementation to be defined
             "title": reference["title"],
         }
         for reference in model.references

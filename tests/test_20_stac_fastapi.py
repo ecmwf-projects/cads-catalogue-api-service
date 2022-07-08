@@ -12,55 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
 import cads_catalogue.database
 import fastapi.testclient
 import pytest
 import sqlalchemy.orm
 import stac_fastapi.types
-from testing import get_record
+from testing import generate_expected, get_record
 
 import cads_catalogue_api_service.main
 from cads_catalogue_api_service import main
 
 client = fastapi.testclient.TestClient(main.app)
-
-
-expected = {
-    "type": "Collection",
-    "id": "era5-something",
-    "stac_version": "1.0.0",
-    "title": "ERA5",
-    "description": {"description": "aaaa"},
-    "keywords": ["label 1", "label 2"],
-    "license": "creative-commons",
-    "providers": ["provider 1", "provider 2"],
-    "summaries": None,
-    "extent": [[-180, 180], [-90, 90]],
-    "links": [
-        {
-            "rel": "self",
-            "type": "application/json",
-            "href": "http://foo.org/collections/era5-something",
-        },
-        {
-            "rel": "parent",
-            "type": "application/json",
-            "href": "http://foo.org",
-        },
-        {
-            "rel": "root",
-            "type": "application/json",
-            "href": "http://foo.org",
-        },
-        {
-            "rel": "license",
-            "href": "http://localhost:8080/datastore/license.docx",
-            "title": "Creative Commons Attribution 4.0 International",
-        },
-    ],
-}
 
 
 class Request:
@@ -127,17 +89,6 @@ class Extension:
         self.conformance_classes = ["foo bar", "baz"]
 
 
-def test_error_handler() -> None:
-    """Test that an HTTP 501 is returned in case of not implemented (but still valid) STAC routes."""
-    response = client.get("/collections/a-dataset/items")
-
-    assert response.status_code == 501
-
-    response = client.get("/collections/a-dataset/items/ad-item")
-
-    assert response.status_code == 501
-
-
 def test_get_all_collections() -> None:
     client = cads_catalogue_api_service.main.CatalogueClient()
     client.reader = Reader()
@@ -145,17 +96,18 @@ def test_get_all_collections() -> None:
     results = client.all_collections(Request("http://foo.org"))
 
     assert len(results["collections"]) == 2
-    assert json.dumps(results["collections"][0]) == json.dumps(expected)
+    assert results["collections"][0] == generate_expected(preview=True)
 
 
 def test_lookup_id() -> None:
     lookup_id = cads_catalogue_api_service.main.lookup_id
     session = Session()
+    expected = generate_expected()
 
     result = lookup_id("era5-something", Record(), session)
 
     assert result.resource_uid == expected["id"]
-    assert result.description == expected["description"]
+    assert result.description == expected["tmp:description"]
 
     with pytest.raises(stac_fastapi.types.errors.NotFoundError):
         lookup_id("will-not-find-this", Record(), session)
@@ -165,6 +117,7 @@ def test_get_collection() -> None:
     client = cads_catalogue_api_service.main.CatalogueClient()
     client.collection_table = Record()
     client.reader = Reader()
+    expected = generate_expected()
 
     result = client.get_collection("era5-something", Request("http://foo.org"))
 
@@ -214,3 +167,23 @@ def test_generate_assets() -> None:
             "type": "image/jpg",
         },
     }
+
+
+def test_error_handler() -> None:
+    """Test that an HTTP 501 is returned in case of not implemented (but still valid) STAC routes."""
+    response = client.get("/collections/a-dataset/items")
+
+    assert response.status_code == 501
+
+    response = client.get("/collections/a-dataset/items/ad-item")
+
+    assert response.status_code == 501
+
+
+def test_search_not_implemented() -> None:
+    response = client.get("/search")
+
+    assert response.status_code == 501
+    assert response.json()["message"] == "STAC search is not implemented"
+
+    # TODO testing client.post("/search") which is not working due to stac_fastapi internal details.
