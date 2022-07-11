@@ -52,9 +52,9 @@ settings = config.Settings()
 
 def lookup_id(
     id: str,
-    record: Type[cads_catalogue.database.BaseModel],
+    record: Type[cads_catalogue.database.Resource],
     session: sqlalchemy.orm.Session,
-) -> Type[cads_catalogue.database.BaseModel]:
+) -> cads_catalogue.database.Resource:
     """Lookup row by id."""
     try:
         row = session.query(record).filter(record.resource_uid == id).one()
@@ -123,7 +123,9 @@ def generate_collection_links(
     return collection_links
 
 
-def generate_assets(model, base_url) -> dict[str, dict]:
+def generate_assets(
+    model: cads_catalogue.database.Resource, base_url: str
+) -> dict[str, dict[str, Any]]:
     """Generate STAC assets for collections."""
     assets = {}
     if model.previewimage:
