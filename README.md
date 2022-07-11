@@ -4,9 +4,9 @@ STAC based API service for the Climate & Atmosphere Data Store
 
 ## REST API description
 
-Let say that WSGI service root is configured at `http://localhost:8080/api/catalogue`
+Let say that WSGI service root is configured to serve the API at `http://localhost:8080/api/catalogue`.
 
-The Swagger/OpenAPI documentation can be accessed at <http://localhost:8080/api/catalogue/api.html>
+The Swagger/OpenAPI documentation can be accessed at <http://localhost:8080/api/catalogue/api.html>.
 
 To access the list of all datasets (STAC collections index):
 
@@ -20,11 +20,25 @@ To access a dataset by id (STAC collection):
 curl http://localhost:8080/api/catalogue/collections/reanalysis-era5-land-monthly-means | jq
 ```
 
-To download the thumbnail image of a dataset:
+To obtain the thumbnail image of a dataset:
 
 ```bash
 curl http://localhost:8080/api/catalogue/collections/reanalysis-era5-land-monthly-means | jq -r .assets.thumbnail.href
 ```
+
+### Links
+
+Many related information are obtained using hypermedia-like resources (as defined by the OGC standard itself).  \
+Every dataset provides a `links` array.
+
+**Licenses** are provided using links with `rel="license"` (the first license is also found in the `license` field), as defined by the STAC Collection.
+
+**References** are provided using links with `rel=reference"`, although the implementation is currently partial (only reference to resource to be shown on the Web is provided, for example: links to markdown documents).
+
+**Documentation** are provided using links with `rel=documentation"`.  \
+Only title and URL are provided for now.
+
+**Form** is a single link with `rel=form"`.
 
 ## Workflow for developers/contributors
 
