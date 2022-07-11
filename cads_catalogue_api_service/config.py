@@ -56,7 +56,7 @@ class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
 class Settings(pydantic.BaseSettings):
     """Other general settings.
 
-    - ``document_storage_base_url``: Base URI to identify the document storage
+    - ``document_storage_url``: Base URI to identify the document storage
     """
 
-    document_storage_base_url: str = "http://localhost:8080/document-storage"
+    document_storage_url: str = "http://localhost:8080/document-storage"

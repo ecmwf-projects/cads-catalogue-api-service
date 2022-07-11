@@ -80,7 +80,7 @@ def generate_collection_links(
         {
             "rel": "license",
             "href": urllib.parse.urljoin(
-                settings.document_storage_base_url, license.download_filename
+                settings.document_storage_url, license.download_filename
             ),
             "title": license.title,
         }
@@ -112,9 +112,7 @@ def generate_collection_links(
         additional_links.append(
             {
                 "rel": "form",
-                "href": urllib.parse.urljoin(
-                    settings.document_storage_base_url, model.form
-                ),
+                "href": urllib.parse.urljoin(settings.document_storage_url, model.form),
                 "type": "application/json",
             }
         )
@@ -145,9 +143,7 @@ def collection_serializer(
         model=db_model, base_url=base_url, preview=preview
     )
 
-    assets = generate_assets(
-        model=db_model, base_url=settings.document_storage_base_url
-    )
+    assets = generate_assets(model=db_model, base_url=settings.document_storage_url)
 
     additional_properties = {
         **({"assets": assets} if assets else {}),
