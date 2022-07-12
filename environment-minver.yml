@@ -2,6 +2,17 @@ channels:
 - conda-forge
 - nodefaults
 dependencies:
-- make
+- python>=3.10
+- attrs
+- fastapi
+- pip
 - pytest
 - pytest-cov
+- requests
+- sqlalchemy
+- sqlalchemy-stubs
+- pip:
+  - fastapi-utils
+  - stac_fastapi.api
+  - stac_fastapi.extensions
+  - stac_fastapi.types
