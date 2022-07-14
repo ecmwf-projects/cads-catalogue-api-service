@@ -92,7 +92,10 @@ def generate_collection_links(
         additional_links += [
             {
                 "rel": "reference" if reference["content"] else "attachment",
-                "href": reference["content"] or reference["download_file"],
+                "href": urllib.parse.urljoin(
+                    settings.document_storage_url,
+                    reference["content"] or reference["download_file"],
+                ),
                 "title": reference["title"],
             }
             for reference in model.references

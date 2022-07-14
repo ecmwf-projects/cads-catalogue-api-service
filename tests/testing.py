@@ -121,14 +121,15 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                     "rel": "reference",
                     "href": urllib.parse.urljoin(
                         base_url,
-                        "resources/reanalysis-era5-pressure-levels/a-document-to-show.html",
+                        "document-storage/resources/reanalysis-era5-pressure-levels/a-document-to-show.html",
                     ),
                     "title": "Citation",
                 },
                 {
                     "rel": "attachment",
                     "href": urllib.parse.urljoin(
-                        base_url, "resources/reanalysis-era5-pressure-levels/manual.pdf"
+                        base_url,
+                        "document-storage/resources/reanalysis-era5-pressure-levels/manual.pdf",
                     ),
                     "title": "Reference manual",
                 },
