@@ -117,6 +117,18 @@ def generate_collection_links(
             }
         )
 
+        # Retrieve process
+        additional_links.append(
+            {
+                "rel": "retrieve-process",
+                "href": urllib.parse.urljoin(
+                    settings.processes_base_url,
+                    f"processes/retrieve-{model.resource_uid}",
+                ),
+                "type": "application/json",
+            }
+        )
+
     collection_links += stac_fastapi.types.links.resolve_links(
         additional_links, base_url
     )

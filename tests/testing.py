@@ -109,7 +109,7 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
             },
             {
                 "rel": "license",
-                "href": "http://localhost:8080/license.docx",
+                "href": urllib.parse.urljoin(base_url, "document-storage/license.docx"),
                 "title": "Creative Commons Attribution 4.0 International",
             },
         ]
@@ -139,7 +139,17 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                 },
                 {
                     "rel": "form",
-                    "href": "http://localhost:8080/resources/reanalysis-era5-pressure-levels/form.json",
+                    "href": urllib.parse.urljoin(
+                        base_url,
+                        "document-storage/resources/reanalysis-era5-pressure-levels/form.json",
+                    ),
+                    "type": "application/json",
+                },
+                {
+                    "rel": "retrieve-process",
+                    "href": urllib.parse.urljoin(
+                        base_url, "api/processing/processes/retrieve-era5-something"
+                    ),
                     "type": "application/json",
                 },
             ]

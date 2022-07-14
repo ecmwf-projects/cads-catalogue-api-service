@@ -19,7 +19,7 @@ import cads_catalogue_api_service.main
 
 def test_collection_serializer() -> None:
     """Test serialization from db record to STAC."""
-    base_url = "https://mycatalogue.org/catalogue/"  # note the final slash!
+    base_url = "https://mycatalogue.org/"  # note the final slash!
     record = get_record("era5-something")
     stac_record = cads_catalogue_api_service.main.collection_serializer(
         record, base_url

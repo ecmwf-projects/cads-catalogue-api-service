@@ -59,4 +59,5 @@ class Settings(pydantic.BaseSettings):
     - ``document_storage_url``: Base URI to identify the document storage
     """
 
-    document_storage_url: str = "http://localhost:8080/document-storage"
+    document_storage_url: str = "/document-storage/"
+    processes_base_url: str = "/api/processing/"
