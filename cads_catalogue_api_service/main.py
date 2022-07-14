@@ -314,7 +314,8 @@ def catalogue_openapi() -> dict[str, Any]:
     del openapi_schema["paths"]["/collections/{collection_id}/items/{item_id}"]
     del openapi_schema["paths"]["/search"]
 
-    api.app.openapi_schema = openapi_schema
+    openapi_schema["servers"] = [{"url": "/api/catalogue"}]
+
     return openapi_schema
 
 
