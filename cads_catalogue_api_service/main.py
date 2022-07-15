@@ -104,7 +104,7 @@ def generate_collection_links(
         # Documentation
         additional_links += [
             {
-                "rel": "documentation",
+                "rel": "describedby",
                 "href": doc["url"],
                 "title": doc["title"],
             }

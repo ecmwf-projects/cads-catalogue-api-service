@@ -134,7 +134,7 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                     "title": "Reference manual",
                 },
                 {
-                    "rel": "documentation",
+                    "rel": "describedby",
                     "href": "https://rtd.org/foo-bar",
                     "title": "ERA5 data documentation",
                 },
