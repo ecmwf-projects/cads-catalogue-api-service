@@ -18,6 +18,14 @@ import urllib
 import cads_catalogue.database
 
 
+class Request:
+    def __init__(self, base_url: str) -> None:
+        self.base_url = base_url
+
+    def url_for(self, name: str, **kwargs: str) -> str:
+        return "/collections"
+
+
 def get_record(id: str) -> cads_catalogue.database.Resource:
     return cads_catalogue.database.Resource(
         resource_uid=id,
@@ -73,6 +81,11 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
                 revision=2,
                 title="Creative Commons Attribution 4.0 International",
                 download_filename="license.docx",
+            )
+        ],
+        related_resources=[
+            cads_catalogue.database.Resource(
+                resource_uid="another-dataset", title="Yet another dataset"
             )
         ],
     )
@@ -156,6 +169,13 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                         base_url, "api/processing/processes/retrieve-era5-something"
                     ),
                     "type": "application/json",
+                },
+                {
+                    "rel": "related",
+                    "href": urllib.parse.urljoin(
+                        base_url, "/collections/another-dataset"
+                    ),
+                    "title": "Yet another dataset",
                 },
             ]
         ),

@@ -95,9 +95,12 @@ def get_reference(reference: dict[str, Any], base_url: str) -> dict[str, Any]:
 
 
 def generate_collection_links(
-    model: cads_catalogue.database.Resource, base_url: str, preview: bool = False
+    model: cads_catalogue.database.Resource,
+    request: fastapi.Request,
+    preview: bool = False,
 ) -> list[dict[str, Any]]:
     """Generate collection links."""
+    base_url = str(request.base_url)
     collection_links = stac_fastapi.types.links.CollectionLinks(
         collection_id=model.resource_uid, base_url=base_url
     ).create_links()
@@ -163,6 +166,16 @@ def generate_collection_links(
             }
         )
 
+        # Related datasets
+        additional_links += [
+            {
+                "rel": "related",
+                "href": f"{request.url_for(name='Get Collections')}/{related.resource_uid}",
+                "title": related.title,
+            }
+            for related in model.related_resources
+        ]
+
     collection_links += stac_fastapi.types.links.resolve_links(
         additional_links, base_url
     )
@@ -184,11 +197,13 @@ def generate_assets(
 
 
 def collection_serializer(
-    db_model: cads_catalogue.database.Resource, base_url: str, preview: bool = False
+    db_model: cads_catalogue.database.Resource,
+    request: fastapi.Request,
+    preview: bool = False,
 ) -> stac_fastapi.types.stac.Collection:
     """Transform database model to stac collection."""
     collection_links = generate_collection_links(
-        model=db_model, base_url=base_url, preview=preview
+        model=db_model, request=request, preview=preview
     )
 
     assets = generate_assets(model=db_model, base_url=settings.document_storage_url)
@@ -288,7 +303,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         with self.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
             serialized_collections = [
-                collection_serializer(collection, base_url=base_url, preview=True)
+                collection_serializer(collection, request=request, preview=True)
                 for collection in collections
             ]
             links = [
@@ -317,10 +332,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         self, collection_id: str, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collection:
         """Get a STAC collection by id."""
-        base_url = str(request.base_url)
         with self.reader.context_session() as session:
             collection = lookup_id(collection_id, self.collection_table, session)
-            return collection_serializer(collection, base_url=base_url, preview=False)
+            return collection_serializer(collection, request=request, preview=False)
 
     def get_item(self, **kwargs: dict[str, Any]) -> None:
         """Access to STAC items: explicitly not implemented."""
