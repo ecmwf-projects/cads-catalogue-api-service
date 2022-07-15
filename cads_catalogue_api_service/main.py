@@ -65,6 +65,35 @@ def lookup_id(
     return row
 
 
+def get_reference(reference: dict[str, Any], base_url: str) -> dict[str, Any]:
+    """Get the proper reference link data.
+
+    We have multiple type of reference:
+
+    - when "content" is provided (commonly for data for be show contextually)
+    - when "url" is provided (for external resources)
+
+    TODO: download_file not implemented yet.
+    """
+    response_reference = {
+        "title": reference.get("title"),
+    }
+    if reference["content"]:
+        response_reference["rel"] = "reference"
+        response_reference["href"] = urllib.parse.urljoin(
+            base_url, reference["content"]
+        )
+    elif reference["url"]:
+        response_reference["rel"] = "external"
+        response_reference["href"] = urllib.parse.urljoin(
+            settings.document_storage_url, reference["url"]
+        )
+    else:
+        response_reference["rel"] = "unknown"
+        logger.error(f"Cannot obtain reference data for {reference}")
+    return response_reference
+
+
 def generate_collection_links(
     model: cads_catalogue.database.Resource, base_url: str, preview: bool = False
 ) -> list[dict[str, Any]]:
@@ -88,17 +117,8 @@ def generate_collection_links(
     ]
 
     if not preview:
-        # References: we have two types of them, based on use of "content" or "download_file"
         additional_links += [
-            {
-                "rel": "reference" if reference["content"] else "attachment",
-                "href": urllib.parse.urljoin(
-                    settings.document_storage_url,
-                    reference["content"] or reference["download_file"],
-                ),
-                "title": reference["title"],
-            }
-            for reference in model.references
+            get_reference(reference, base_url) for reference in model.references
         ]
 
         # Documentation

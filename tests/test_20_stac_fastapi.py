@@ -20,9 +20,8 @@ import stac_fastapi.types
 from testing import generate_expected, get_record
 
 import cads_catalogue_api_service.main
-from cads_catalogue_api_service import main
 
-client = fastapi.testclient.TestClient(main.app)
+client = fastapi.testclient.TestClient(cads_catalogue_api_service.main.app)
 
 
 class Request:
@@ -140,7 +139,7 @@ def test_conformance_classes() -> None:
 
 
 def test_openapi() -> None:
-    result = main.app.openapi()
+    result = cads_catalogue_api_service.main.app.openapi()
 
     assert result["openapi"] >= "3.0.0"
     assert "/collections" in result["paths"].keys()
