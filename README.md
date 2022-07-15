@@ -33,12 +33,14 @@ Every dataset provides a `links` array.
 
 **Licenses** are provided using links with `rel="license"` (the first license is also found in the `license` field), as defined by the STAC Collection.
 
-**References** are provided using links with `rel=reference"`, although the implementation is currently partial (only reference to resource to be shown on the Web is provided, for example: links to markdown documents).
+**References** are provided using links with `rel=reference"` or `rel="external"`.
 
-**Documentation** are provided using links with `rel=documentation"`.  \
+**Documentation** are provided using links with `rel=describedby"`.  \
 Only title and URL are provided for now.
 
 **Form** is a single link with `rel=form"`.
+
+**Constraints** is a single link with `rel=constraints"`.
 
 ## Workflow for developers/contributors
 

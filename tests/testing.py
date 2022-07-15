@@ -30,6 +30,7 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         abstract="Lorem ipsum dolor",
         contact=["aaaa", "bbbb"],
         form="resources/reanalysis-era5-pressure-levels/form.json",
+        constraints="resources/reanalysis-era5-pressure-levels/constraints.json",
         keywords=["label 1", "label 2"],
         version="1.0.0",
         variables=["var1", "var2"],
@@ -138,6 +139,14 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                     "href": urllib.parse.urljoin(
                         base_url,
                         "document-storage/resources/reanalysis-era5-pressure-levels/form.json",
+                    ),
+                    "type": "application/json",
+                },
+                {
+                    "rel": "constraints",
+                    "href": urllib.parse.urljoin(
+                        base_url,
+                        "document-storage/resources/reanalysis-era5-pressure-levels/constraints.json",
                     ),
                     "type": "application/json",
                 },

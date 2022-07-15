@@ -140,6 +140,17 @@ def generate_collection_links(
             }
         )
 
+        # Constraints
+        additional_links.append(
+            {
+                "rel": "constraints",
+                "href": urllib.parse.urljoin(
+                    settings.document_storage_url, model.constraints
+                ),
+                "type": "application/json",
+            }
+        )
+
         # Retrieve process
         additional_links.append(
             {
