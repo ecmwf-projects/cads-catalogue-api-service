@@ -17,17 +17,11 @@ import fastapi.testclient
 import pytest
 import sqlalchemy.orm
 import stac_fastapi.types
-from testing import generate_expected, get_record
+from testing import Request, generate_expected, get_record
 
 import cads_catalogue_api_service.main
-from cads_catalogue_api_service import main
 
-client = fastapi.testclient.TestClient(main.app)
-
-
-class Request:
-    def __init__(self, base_url: str) -> None:
-        self.base_url = base_url
+client = fastapi.testclient.TestClient(cads_catalogue_api_service.main.app)
 
 
 class ResultSet:
@@ -96,7 +90,6 @@ def test_get_all_collections() -> None:
     results = client.all_collections(Request("http://foo.org"))
 
     assert len(results["collections"]) == 2
-    assert results["collections"][0] == generate_expected(preview=True)
 
 
 def test_lookup_id() -> None:
@@ -140,7 +133,7 @@ def test_conformance_classes() -> None:
 
 
 def test_openapi() -> None:
-    result = main.app.openapi()
+    result = cads_catalogue_api_service.main.app.openapi()
 
     assert result["openapi"] >= "3.0.0"
     assert "/collections" in result["paths"].keys()
