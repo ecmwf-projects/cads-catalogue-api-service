@@ -215,6 +215,7 @@ def collection_serializer(
             if db_model.publication_date
             else {}
         ),
+        "tmp:doi": db_model.doi,
     }
 
     # properties not shown in preview mode
@@ -284,7 +285,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         STACConformanceClasses = stac_fastapi.types.conformance.STACConformanceClasses
         base_conformance_classes = [
             STACConformanceClasses.CORE,
-            # FIXME: implemented but not released yet
+            # TODO: implemented but not released yet
             # STACConformanceClasses.COLLECTIONS,
             "https://api.stacspec.org/v1.0.0-rc.1/collections",
         ]

@@ -44,6 +44,7 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         variables=["var1", "var2"],
         providers=["provider 1", "provider 2"],
         extent=[[-180, 180], [-90, 90]],
+        doi="11.2222/cads.12345",
         documentation=[
             {
                 "url": "https://rtd.org/foo-bar",
@@ -180,6 +181,7 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
             ]
         ),
         "tmp:publication_date": "2020-01-01",
+        "tmp:doi": "11.2222/cads.12345",
     }
     if not preview:
         expected = {
