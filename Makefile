@@ -3,12 +3,12 @@ CONDA := conda
 CONDAFLAGS :=
 COV_REPORT := html
 
-default: qa test type-check
+default: qa unit-tests type-check
 
 qa:
 	pre-commit run --all-files
 
-test:
+unit-tests:
 	python -m pytest -vv --cov=. --cov-report=$(COV_REPORT)
 
 type-check:
@@ -26,8 +26,8 @@ docker-run:
 template-update:
 	pre-commit run --all-files cruft -c .pre-commit-config-weekly.yaml
 
+docs-build:
+	cd docs && rm -fr _api && make clean && make html
+
 start:
 	uvicorn --reload cads_catalogue_api_service.main:app
-
-build-docs:
-	cd docs && rm -fr _api && make clean && make html

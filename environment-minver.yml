@@ -4,10 +4,11 @@ channels:
 dependencies:
 - python>=3.10
 - attrs
-- fastapi
 - pip
 - pytest
 - pytest-cov
+# DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
+- fastapi
 - requests
 - sqlalchemy
 - sqlalchemy-stubs
