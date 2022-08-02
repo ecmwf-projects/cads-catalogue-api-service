@@ -157,10 +157,10 @@ def generate_collection_links(
         # Retrieve process
         additional_links.append(
             {
-                "rel": "retrieve-process",
+                "rel": "retrieve",
                 "href": urllib.parse.urljoin(
                     settings.processes_base_url,
-                    f"processes/retrieve-{model.resource_uid}",
+                    f"processes/{model.resource_uid}",
                 ),
                 "type": "application/json",
             }
