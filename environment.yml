@@ -16,12 +16,13 @@ dependencies:
 - sphinxcontrib-apidoc
 # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
 - fastapi
+- pystac
 - requests
 - sqlalchemy
 - sqlalchemy-stubs
 - uvicorn
 - pip:
   - fastapi-utils
-  - stac_fastapi.api
-  - stac_fastapi.extensions
-  - stac_fastapi.types
+  - stac_fastapi.api==2.3.0
+  - stac_fastapi.extensions==2.3.0
+  - stac_fastapi.types==2.3.0
