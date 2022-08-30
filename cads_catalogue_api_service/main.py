@@ -129,9 +129,10 @@ def generate_collection_links(
             {
                 "rel": "describedby",
                 "href": doc["url"],
-                "title": doc["title"],
+                "title": doc.get("title"),
             }
             for doc in model.documentation
+            if doc.get("url")
         ]
 
         # Form definition
@@ -235,7 +236,7 @@ def collection_serializer(
         title=db_model.title,
         description=db_model.abstract,
         keywords=db_model.keywords,
-        license=db_model.licences[0].licence_id if db_model.licences else None,
+        license=db_model.licences[0].title if db_model.licences else None,
         providers=db_model.providers,
         summaries=db_model.summaries,
         extent=db_model.extent,
