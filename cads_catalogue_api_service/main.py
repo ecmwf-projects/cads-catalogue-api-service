@@ -78,18 +78,18 @@ def get_reference(reference: dict[str, Any], base_url: str) -> dict[str, Any]:
     response_reference = {
         "title": reference.get("title"),
     }
-    if reference["content"]:
+    if reference.get("content"):
         response_reference["rel"] = "reference"
         response_reference["href"] = urllib.parse.urljoin(
             base_url, reference["content"]
         )
-    elif reference["url"]:
+    elif reference.get("url"):
         response_reference["rel"] = "external"
         response_reference["href"] = urllib.parse.urljoin(
             settings.document_storage_url, reference["url"]
         )
     else:
-        response_reference["rel"] = "unknown"
+        response_reference = None
         logger.error(f"Cannot obtain reference data for {reference}")
     return response_reference
 
@@ -121,7 +121,9 @@ def generate_collection_links(
 
     if not preview:
         additional_links += [
-            get_reference(reference, base_url) for reference in model.references
+            get_reference(reference, base_url)
+            for reference in model.references
+            if reference is not None
         ]
 
         # Documentation
@@ -129,9 +131,10 @@ def generate_collection_links(
             {
                 "rel": "describedby",
                 "href": doc["url"],
-                "title": doc["title"],
+                "title": doc.get("title"),
             }
             for doc in model.documentation
+            if doc.get("url")
         ]
 
         # Form definition
@@ -235,7 +238,7 @@ def collection_serializer(
         title=db_model.title,
         description=db_model.abstract,
         keywords=db_model.keywords,
-        license=db_model.licences[0].licence_id if db_model.licences else None,
+        license=db_model.licences[0].title if db_model.licences else None,
         providers=db_model.providers,
         summaries=db_model.summaries,
         extent=db_model.extent,
@@ -253,13 +256,14 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
     are not implemented.
     """
 
-    reader: fastapi_utils.session.FastAPISessionMaker = attrs.field(
-        default=fastapi_utils.session.FastAPISessionMaker(dbsettings.connection_string),
-        init=False,
-    )
     collection_table: Type[cads_catalogue.database.Resource] = attrs.field(
         default=cads_catalogue.database.Resource
     )
+
+    @property
+    def reader(self) -> fastapi_utils.session.FastAPISessionMaker:
+        """Return the reader for the catalogue database."""
+        return fastapi_utils.session.FastAPISessionMaker(dbsettings.connection_string)
 
     def _landing_page(
         self,
