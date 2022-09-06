@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "/schemas/datasets.json",
+  "title": "CADS catalogues API",
+  "description": "Description of the CADS catalogue API for obtaining the list of datasets",
+  "type": "object",
+  "properties": {
+    "collections": {
+      "title": "STAC collections",
+      "description": "Datasets in the stac catalogue",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "https://raw.githubusercontent.com/radiantearth/stac-spec/master/collection-spec/json-schema/collection.json"
+          }
+        ],
+        "properties": {
+          "tmp:publication_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Publication date",
+            "description": "Date of publication of the dataset"
+          }
+        },
+        "required": ["tmp:publication_date"]
+      }
+    }
+  }
+}
