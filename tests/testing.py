@@ -100,7 +100,7 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
         "title": "ERA5",
         "description": "Lorem ipsum dolor",
         "keywords": ["label 1", "label 2"],
-        "license": "creative-commons",
+        "license": "Creative Commons Attribution 4.0 International",
         "providers": ["provider 1", "provider 2"],
         "summaries": None,
         "extent": [[-180, 180], [-90, 90]],
@@ -165,9 +165,9 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                     "type": "application/json",
                 },
                 {
-                    "rel": "retrieve-process",
+                    "rel": "retrieve",
                     "href": urllib.parse.urljoin(
-                        base_url, "api/processing/processes/retrieve-era5-something"
+                        base_url, "api/processing/processes/era5-something"
                     ),
                     "type": "application/json",
                 },

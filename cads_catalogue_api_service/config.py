@@ -17,25 +17,13 @@ Options are based on pydantic.BaseSettings, so they automatically get values fro
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import cads_catalogue.config
 import pydantic
 import stac_fastapi.types.config
 
 
 class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
-    """Postgres-specific API settings.
-
-    - ``postgres_user``: postgres username.
-    - ``postgres_password``: postgres password.
-    - ``postgres_host``: hostname for the connection.
-    - ``postgres_port``: database port.
-    - ``postgres_dbname``: database name.
-    """
-
-    postgres_user: str = "catalogue"
-    postgres_password: str = "password"
-    postgres_host: str = "localhost"
-    postgres_port: str = "5432"
-    postgres_dbname: str = "catalogue"
+    """Postgres-specific API settings."""
 
     # Fields which are defined by STAC but not included in the database model
     forbidden_fields: set[str] = {"type"}
@@ -46,11 +34,7 @@ class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
     @property
     def connection_string(self) -> str:
         """Create reader psql connection string."""
-        return (
-            f"postgresql://{self.postgres_user}"
-            f":{self.postgres_password}@{self.postgres_host}"
-            f":{self.postgres_port}/{self.postgres_dbname}"
-        )
+        return cads_catalogue.config.ensure_settings().connection_string
 
 
 class Settings(pydantic.BaseSettings):
