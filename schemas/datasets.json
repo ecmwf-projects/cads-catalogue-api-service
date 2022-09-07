@@ -13,7 +13,7 @@
         "type": "object",
         "allOf": [
           {
-            "$ref": "/schemas/dataset"
+            "$ref": "/schemas/dataset_preview"
           }
         ]
       }

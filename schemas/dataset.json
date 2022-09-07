@@ -6,19 +6,38 @@
   "type": "object",
   "allOf": [
     {
-      "$ref": "https://raw.githubusercontent.com/radiantearth/stac-spec/master/collection-spec/json-schema/collection.json"
+      "$ref": "/schemas/dataset_preview"
     }
   ],
   "properties": {
-    "license": {
-      "enum": ["various", "proprietary"]
+    "tmp:variables": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "/schemas/base_variables"
+          }
+        ],
+        "properties": {
+          "units": {
+            "title": "Units",
+            "description": "Units of measure",
+            "type": "string"
+          }
+        },
+        "required": ["units"]
+      }
     },
-    "tmp:publication_date": {
-      "type": "string",
-      "format": "date",
-      "title": "Publication date",
-      "description": "Date of publication of the dataset"
+    "tmp:description": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "/schemas/base_variables"
+          }
+        ]
+      }
     }
   },
-  "required": ["tmp:publication_date"]
+  "required": ["tmp:description"]
 }

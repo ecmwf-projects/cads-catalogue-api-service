@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "/schemas/dataset_preview",
+  "title": "CADS dataset",
+  "description": "Description of a CADS dataset",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "https://raw.githubusercontent.com/radiantearth/stac-spec/master/collection-spec/json-schema/collection.json"
+    }
+  ],
+  "properties": {
+    "license": {
+      "enum": ["various", "proprietary"]
+    },
+    "tmp:publication_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Publication date",
+      "description": "Date of publication of the dataset"
+    }
+  },
+  "required": ["tmp:publication_date"]
+}

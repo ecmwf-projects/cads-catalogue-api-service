@@ -7,36 +7,40 @@ import requests
 API_ROOT_PATH = os.environ.get("API_ROOT_PATH", "")
 API_ROOT_PATH = API_ROOT_PATH if API_ROOT_PATH.endswith("/") else f"{API_ROOT_PATH}/"
 
-with open(
-    os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), "..", "schemas/datasets.json"
-    ),
-    "r",
-) as f:
-    collection_set_schema = json.load(f)
+ref_mapping = {}
 
-with open(
-    os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), "..", "schemas/dataset.json"
-    ),
-    "r",
-) as f:
-    collection_schema = json.load(f)
+for schema_def in (
+    "base_variables",
+    "dataset_preview",
+    "dataset",
+    "datasets",
+):
+    with open(
+        os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            "..",
+            "schemas",
+            f"{schema_def}.json",
+        ),
+        "r",
+    ) as f:
+        ref_mapping[f"/schemas/{schema_def}"] = json.load(f)
 
-ref_mapping = {
-    "/schemas/datasets": collection_set_schema,
-    "/schemas/dataset": collection_schema,
-}
 
-CollectionSetValidator = jsonschema.validators.validator_for(collection_set_schema)
-CollectionValidator = jsonschema.validators.validator_for(collection_schema)
+CollectionSetValidator = jsonschema.validators.validator_for(
+    ref_mapping["/schemas/datasets"]
+)
+CollectionValidator = jsonschema.validators.validator_for(
+    ref_mapping["/schemas/dataset"]
+)
 
 collection_set_validator = CollectionSetValidator(
-    schema=collection_set_schema,
+    schema=ref_mapping["/schemas/datasets"],
     resolver=jsonschema.RefResolver("", {}, store=ref_mapping),
 )
 collection_validator = CollectionValidator(
-    schema=collection_schema, resolver=jsonschema.RefResolver("", {}, store=ref_mapping)
+    schema=ref_mapping["/schemas/dataset_preview"],
+    resolver=jsonschema.RefResolver("", {}, store=ref_mapping),
 )
 
 
@@ -44,7 +48,10 @@ def test_stac_collection_set_conformance() -> None:
     r = requests.get(f"{API_ROOT_PATH}collections")
 
     assert r.status_code == 200
-    assert collection_set_validator.validate(r.json(), collection_set_schema) is None
+    assert (
+        collection_set_validator.validate(r.json(), ref_mapping["/schemas/datasets"])
+        is None
+    )
 
 
 def test_stac_collection_conformance() -> None:
@@ -57,4 +64,7 @@ def test_stac_collection_conformance() -> None:
         r = requests.get(collections_url)
 
         assert r.status_code == 200
-        assert collection_validator.validate(r.json(), collection_schema) is None
+        assert (
+            collection_validator.validate(r.json(), ref_mapping["/schemas/dataset"])
+            is None
+        )
