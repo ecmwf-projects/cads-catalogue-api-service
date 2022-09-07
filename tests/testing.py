@@ -100,10 +100,13 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
         "title": "ERA5",
         "description": "Lorem ipsum dolor",
         "keywords": ["label 1", "label 2"],
-        "license": "Creative Commons Attribution 4.0 International",
+        "license": "proprietary",
         "providers": ["provider 1", "provider 2"],
-        "summaries": None,
-        "extent": [[-180, 180], [-90, 90]],
+        "summaries": {},
+        "extent": {
+            "spatial": {"bbox": [[-180.0, -90.0, 180.0, 90.0]]},
+            "temporal": {"interval": [["1950-01-01T00:00:00Z", None]]},
+        },
         "links": [
             {
                 "rel": "self",

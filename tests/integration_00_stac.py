@@ -14,9 +14,8 @@ with open("schemas/datasets.json", "r") as f:
     schema = json.load(f)
 
 
-def test_version() -> None:
+def test_stac_collection_set_conformance() -> None:
     r = requests.get(f"{API_ROOT_PATH}collections")
 
     assert r.status_code == 200
-
     assert jsonschema.validate(r.json(), schema) is None

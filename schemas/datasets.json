@@ -17,6 +17,9 @@
           }
         ],
         "properties": {
+          "license": {
+            "enum": ["avarious", "aproprietary"]
+          },
           "tmp:publication_date": {
             "type": "string",
             "format": "date",
