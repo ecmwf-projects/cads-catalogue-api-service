@@ -85,9 +85,7 @@ def get_reference(reference: dict[str, Any], base_url: str) -> dict[str, Any]:
         )
     elif reference.get("url"):
         response_reference["rel"] = "external"
-        response_reference["href"] = urllib.parse.urljoin(
-            settings.document_storage_url, reference["url"]
-        )
+        response_reference["href"] = urllib.parse.urljoin(base_url, reference["url"])
     else:
         response_reference = None
         logger.error(f"Cannot obtain reference data for {reference}")
@@ -121,7 +119,7 @@ def generate_collection_links(
 
     if not preview:
         additional_links += [
-            get_reference(reference, base_url)
+            get_reference(reference, settings.document_storage_url)
             for reference in model.references
             if reference is not None
         ]
