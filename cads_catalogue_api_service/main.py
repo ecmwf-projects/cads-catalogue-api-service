@@ -69,12 +69,24 @@ def get_extent(
     model: cads_catalogue.database.Resource,
 ) -> stac_pydantic.collection.Extent:
     """Get extent from model."""
+    spatial = model.geo_extent or {}
+    begin_date = (
+        f"{model.begin_date.isoformat()}T00:00:00Z" if model.begin_date else None
+    )
+    end_date = f"{model.end_date.isoformat()}T00:00:00Z" if model.end_date else None
     return stac_pydantic.collection.Extent(
         spatial=stac_pydantic.collection.SpatialExtent(
-            bbox=[[-180, -90, 180, 90]],
+            bbox=[
+                [
+                    spatial.get("bboxW", -180),
+                    spatial.get("bboxS", -90),
+                    spatial.get("bboxN", 180),
+                    spatial.get("bboxE", 90),
+                ]
+            ],
         ),
         temporal=stac_pydantic.collection.TimeInterval(
-            interval=[["1950-01-01T00:00:00Z", None]],
+            interval=[[begin_date, end_date]],
         ),
     ).dict()
 
@@ -254,7 +266,7 @@ def collection_serializer(
         license="various" if len(db_model.licences) > 1 else "proprietary",
         providers=db_model.providers or [],
         summaries=db_model.summaries or {},
-        extent=get_extent(db_model.extent),
+        extent=get_extent(db_model),
         links=collection_links,
         **full_view_propeties,
         **additional_properties,
