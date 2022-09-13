@@ -66,12 +66,19 @@ def lookup_id(
 
 
 def get_extent(
-    model: cads_catalogue.database.Resource,
+    extent: dict[str, Any],
 ) -> stac_pydantic.collection.Extent:
     """Get extent from model."""
     return stac_pydantic.collection.Extent(
         spatial=stac_pydantic.collection.SpatialExtent(
-            bbox=[[-180, -90, 180, 90]],
+            bbox=[
+                [
+                    extent.get("bboxW", -180),
+                    extent.get("bboxS", -90),
+                    extent.get("bboxN", 180),
+                    extent.get("bboxE", 90),
+                ]
+            ],
         ),
         temporal=stac_pydantic.collection.TimeInterval(
             interval=[["1950-01-01T00:00:00Z", None]],
@@ -254,7 +261,7 @@ def collection_serializer(
         license="various" if len(db_model.licences) > 1 else "proprietary",
         providers=db_model.providers or [],
         summaries=db_model.summaries or {},
-        extent=get_extent(db_model.extent),
+        extent=get_extent(db_model.geo_extent or {}),
         links=collection_links,
         **full_view_propeties,
         **additional_properties,

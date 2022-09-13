@@ -43,7 +43,7 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         version="1.0.0",
         variables=["var1", "var2"],
         providers=["provider 1", "provider 2"],
-        extent=[[-180, 180], [-90, 90]],
+        geo_extent={"bboxN": 50, "bboxW": -0.5, "bboxS": 45, "bboxE": 15},
         doi="11.2222/cads.12345",
         documentation=[
             {
@@ -58,7 +58,7 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         references=[
             {
                 "title": "Citation",
-                "content": "resources/reanalysis-era5-pressure-levels/a-document-to-show.html",
+                "content": "resources/reanalysis-era5-pressure-levels/a-document.html",
                 "url": None,
             },
             {
@@ -81,7 +81,7 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
                 licence_id="creative-commons",
                 revision=2,
                 title="Creative Commons Attribution 4.0 International",
-                download_filename="license.docx",
+                download_filename="licences/license.docx",
             )
         ],
         related_resources=[
@@ -92,7 +92,9 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
     )
 
 
-def generate_expected(base_url="http://foo.org", preview=False) -> dict:
+def generate_expected(
+    base_url="http://foo.org/", document_storage_url="/document-storage/", preview=False
+) -> dict:
     expected = {
         "type": "Collection",
         "id": "era5-something",
@@ -104,7 +106,7 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
         "providers": ["provider 1", "provider 2"],
         "summaries": {},
         "extent": {
-            "spatial": {"bbox": [[-180.0, -90.0, 180.0, 90.0]]},
+            "spatial": {"bbox": [[-0.5, 45.0, 50.0, 15.0]]},
             "temporal": {"interval": [["1950-01-01T00:00:00Z", None]]},
         },
         "links": [
@@ -125,7 +127,10 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
             },
             {
                 "rel": "license",
-                "href": urllib.parse.urljoin(base_url, "document-storage/license.docx"),
+                "href": urllib.parse.urljoin(
+                    base_url,
+                    f"{document_storage_url}licences/license.docx",
+                ),
                 "title": "Creative Commons Attribution 4.0 International",
             },
         ]
@@ -137,7 +142,7 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                     "rel": "reference",
                     "href": urllib.parse.urljoin(
                         base_url,
-                        "resources/reanalysis-era5-pressure-levels/a-document-to-show.html",
+                        f"{document_storage_url}resources/reanalysis-era5-pressure-levels/a-document.html",
                     ),
                     "title": "Citation",
                 },
@@ -155,7 +160,7 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                     "rel": "form",
                     "href": urllib.parse.urljoin(
                         base_url,
-                        "document-storage/resources/reanalysis-era5-pressure-levels/form.json",
+                        f"{document_storage_url}resources/reanalysis-era5-pressure-levels/form.json",
                     ),
                     "type": "application/json",
                 },
@@ -163,7 +168,7 @@ def generate_expected(base_url="http://foo.org", preview=False) -> dict:
                     "rel": "constraints",
                     "href": urllib.parse.urljoin(
                         base_url,
-                        "document-storage/resources/reanalysis-era5-pressure-levels/constraints.json",
+                        f"{document_storage_url}resources/reanalysis-era5-pressure-levels/constraints.json",
                     ),
                     "type": "application/json",
                 },
