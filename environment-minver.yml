@@ -12,6 +12,7 @@ dependencies:
 - requests
 - sqlalchemy
 - sqlalchemy-stubs
+- jsonschema
 - pip:
   - fastapi-utils
   - stac_fastapi.api

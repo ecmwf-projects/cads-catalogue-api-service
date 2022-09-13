@@ -21,6 +21,7 @@ dependencies:
 - sqlalchemy
 - sqlalchemy-stubs
 - uvicorn
+- jsonschema
 - pip:
   - fastapi-utils
   - stac_fastapi.api==2.3.0

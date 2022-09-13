@@ -65,6 +65,20 @@ def lookup_id(
     return row
 
 
+def get_extent(
+    model: cads_catalogue.database.Resource,
+) -> stac_pydantic.collection.Extent:
+    """Get extent from model."""
+    return stac_pydantic.collection.Extent(
+        spatial=stac_pydantic.collection.SpatialExtent(
+            bbox=[[-180, -90, 180, 90]],
+        ),
+        temporal=stac_pydantic.collection.TimeInterval(
+            interval=[["1950-01-01T00:00:00Z", None]],
+        ),
+    ).dict()
+
+
 def get_reference(reference: dict[str, Any], base_url: str) -> dict[str, Any]:
     """Get the proper reference link data.
 
@@ -236,10 +250,11 @@ def collection_serializer(
         title=db_model.title,
         description=db_model.abstract,
         keywords=db_model.keywords,
-        license=db_model.licences[0].title if db_model.licences else None,
-        providers=db_model.providers,
-        summaries=db_model.summaries,
-        extent=db_model.extent,
+        # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
+        license="various" if len(db_model.licences) > 1 else "proprietary",
+        providers=db_model.providers or [],
+        summaries=db_model.summaries or {},
+        extent=get_extent(db_model.extent),
         links=collection_links,
         **full_view_propeties,
         **additional_properties,

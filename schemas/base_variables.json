@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "/schemas/base_variables",
+  "title": "Variable definition base",
+  "description": "Common variables properties",
+  "type": "object",
+  "properties": {
+    "id": {
+      "title": "ID",
+      "description": "Unique identifier in the set",
+      "type": "string"
+    },
+    "label": {
+      "title": "Label",
+      "description": "Human readable name for the variable",
+      "type": "string"
+    },
+    "description": {
+      "title": "Description",
+      "description": "Long description of th variable",
+      "type": "string"
+    }
+  },
+  "required": ["id", "label"]
+}
