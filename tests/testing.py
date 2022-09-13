@@ -44,6 +44,7 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         variables=["var1", "var2"],
         providers=["provider 1", "provider 2"],
         geo_extent={"bboxN": 50, "bboxW": -0.5, "bboxS": 45, "bboxE": 15},
+        begin_date=datetime.date(1980, 1, 1),
         doi="11.2222/cads.12345",
         documentation=[
             {
@@ -107,7 +108,7 @@ def generate_expected(
         "summaries": {},
         "extent": {
             "spatial": {"bbox": [[-0.5, 45.0, 50.0, 15.0]]},
-            "temporal": {"interval": [["1950-01-01T00:00:00Z", None]]},
+            "temporal": {"interval": [["1980-01-01T00:00:00Z", None]]},
         },
         "links": [
             {
