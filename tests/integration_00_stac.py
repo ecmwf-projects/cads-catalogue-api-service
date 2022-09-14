@@ -7,14 +7,24 @@ import requests
 API_ROOT_PATH = os.environ.get("API_ROOT_PATH", "")
 API_ROOT_PATH = API_ROOT_PATH if API_ROOT_PATH.endswith("/") else f"{API_ROOT_PATH}/"
 
-ref_mapping = {}
+with open(
+    os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        "..",
+        "schemas",
+        "cads-extension.json",
+    ),
+    "r",
+) as f:
+    stac_extension_validation = json.load(f)
 
-for schema_def in (
-    "base_variables",
-    "dataset_preview",
-    "dataset",
-    "datasets",
-):
+
+ref_mapping = {
+    "https://raw.githubusercontent.com/ecmwf-projects/cads-catalogue-api-service/main/schemas/cads-extension.json": stac_extension_validation  # noqa E501
+}
+
+
+for schema_def in ("dataset_preview", "dataset", "datasets"):
     with open(
         os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
@@ -39,7 +49,7 @@ collection_set_validator = CollectionSetValidator(
     resolver=jsonschema.RefResolver("", {}, store=ref_mapping),
 )
 collection_validator = CollectionValidator(
-    schema=ref_mapping["/schemas/dataset_preview"],
+    schema=ref_mapping["/schemas/dataset"],
     resolver=jsonschema.RefResolver("", {}, store=ref_mapping),
 )
 

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "/schemas/dataset_preview",
   "title": "CADS dataset",
-  "description": "Description of a CADS dataset",
+  "description": "Description of a CADS dataset seens as a collection item (wo with very limited number of attributes)",
   "type": "object",
   "allOf": [
     {
@@ -13,12 +13,12 @@
     "license": {
       "enum": ["various", "proprietary"]
     },
-    "tmp:publication_date": {
+    "cads:publication_date": {
       "type": "string",
       "format": "date",
       "title": "Publication date",
       "description": "Date of publication of the dataset"
     }
   },
-  "required": ["tmp:publication_date"]
+  "required": ["cads:publication_date"]
 }

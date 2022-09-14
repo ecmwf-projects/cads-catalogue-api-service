@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/ecmwf-projects/cads-catalogue-api-service/main/schemas/cads-extension.json",
+  "title": "CADS STAC Extension",
+  "description": "STAC Extension for CADS datasets as STAC collections.",
+  "allOf": [
+    {
+      "type": "object",
+      "required": ["cads:description", "cads:publication_date"],
+      "properties": {
+        "license": {
+          "enum": ["various", "proprietary"]
+        },
+        "cads:variables": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/cads:variables"
+              }
+            ],
+            "properties": {
+              "units": {
+                "title": "Units",
+                "description": "Units of measure",
+                "type": "string"
+              }
+            },
+            "required": ["units"]
+          }
+        },
+        "cads:description": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/cads:description"
+              }
+            ]
+          }
+        },
+        "cads:publication_date": {
+          "type": "string",
+          "format": "date",
+          "title": "Publication date",
+          "description": "Date of publication of the dataset"
+        }
+      }
+    },
+    {
+      "$ref": "#/definitions/stac_extensions"
+    }
+  ],
+  "definitions": {
+    "stac_extensions": {
+      "type": "object",
+      "required": ["stac_extensions"],
+      "properties": {
+        "stac_extensions": {
+          "type": "array",
+          "contains": {
+            "const": "https://raw.githubusercontent.com/ecmwf-projects/cads-catalogue-api-service/main/schemas/cads-extension.json"
+          }
+        }
+      }
+    },
+    "base_variables": {
+      "type": "object",
+      "properties": {
+        "projects": {
+          "id": {
+            "title": "ID",
+            "description": "Unique identifier in the set",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "description": "Human readable name for the variable",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "description": "Long description of th variable",
+            "type": "string"
+          }
+        }
+      },
+      "patternProperties": {
+        "^(?!cads:)": {
+          "$comment": "Above, change `template` to the prefix of this extension"
+        }
+      },
+      "additionalProperties": false
+    },
+    "cads:variables": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/base_variables"
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "units": {
+          "title": "Units",
+          "description": "Units of measure",
+          "type": "string"
+        }
+      }
+    },
+    "cads:description": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/base_variables"
+        }
+      ]
+    }
+  }
+}

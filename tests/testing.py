@@ -105,6 +105,9 @@ def generate_expected(
         "keywords": ["label 1", "label 2"],
         "license": "proprietary",
         "providers": ["provider 1", "provider 2"],
+        "stac_extensions": [
+            "https://raw.githubusercontent.com/ecmwf-projects/cads-catalogue-api-service/main/schemas/cads-extension.json"  # noqa: E501
+        ],
         "summaries": {},
         "extent": {
             "spatial": {"bbox": [[-0.5, 45.0, 50.0, 15.0]]},
@@ -189,19 +192,19 @@ def generate_expected(
                 },
             ]
         ),
-        "tmp:publication_date": "2020-01-01",
-        "tmp:doi": "11.2222/cads.12345",
+        "cads:publication_date": "2020-01-01",
+        "cads:doi": "11.2222/cads.12345",
     }
     if not preview:
         expected = {
             **expected,
             **{
-                "tmp:description": {
+                "cads:description": {
                     "file-format": "GRIB",
                     "data-type": "Gridded",
                     "projection": "Regular latitude-longitude grid.",
                 },
-                "tmp:variables": ["var1", "var2"],
+                "cads:variables": ["var1", "var2"],
             },
         }
     return expected

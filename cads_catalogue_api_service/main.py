@@ -35,14 +35,21 @@ import stac_fastapi.types.conformance
 import stac_fastapi.types.links
 import stac_pydantic
 
-from . import config, exceptions, models
+from . import config, exceptions
+from . import extension as custom_extension
+from . import models
 
 logger = logging.getLogger(__name__)
+
+
+cads_extension = custom_extension.CADSExtension()
 
 
 extensions = [
     # This extenstion is required, seems for a bad implementation
     stac_fastapi.extensions.core.TokenPaginationExtension(),
+    # Custom STAC extension for COPDS datasets
+    cads_extension,
 ]
 
 
@@ -238,11 +245,16 @@ def collection_serializer(
     additional_properties = {
         **({"assets": assets} if assets else {}),
         **(
-            {"tmp:publication_date": db_model.publication_date.strftime("%Y-%m-%d")}
+            {"cads:publication_date": db_model.publication_date.strftime("%Y-%m-%d")}
             if db_model.publication_date
             else {}
         ),
-        "tmp:doi": db_model.doi,
+        "cads:doi": db_model.doi,
+        # NOTE: seems that stac_fastapi has more or less no support for this
+        # I would expect that extensions to be automatically taken someway
+        "stac_extensions": [
+            cads_extension.schema_href,
+        ],
     }
 
     # properties not shown in preview mode
@@ -250,8 +262,8 @@ def collection_serializer(
         {}
         if preview
         else {
-            "tmp:variables": db_model.variables,
-            "tmp:description": db_model.description,
+            "cads:variables": db_model.variables,
+            "cads:description": db_model.description,
         }
     )
 
@@ -317,6 +329,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             # TODO: implemented but not released yet
             # STACConformanceClasses.COLLECTIONS,
             "https://api.stacspec.org/v1.0.0-rc.1/collections",
+            # TODO: Is there missing conformance class for CADS?
         ]
 
         for extension in self.extensions:
