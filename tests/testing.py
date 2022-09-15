@@ -193,7 +193,6 @@ def generate_expected(
             ]
         ),
         "cads:publication_date": "2020-01-01",
-        "cads:doi": "11.2222/cads.12345",
     }
     if not preview:
         expected = {

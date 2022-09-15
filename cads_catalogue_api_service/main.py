@@ -249,7 +249,6 @@ def collection_serializer(
             if db_model.publication_date
             else {}
         ),
-        "cads:doi": db_model.doi,
         # NOTE: seems that stac_fastapi has more or less no support for this
         # I would expect that extensions to be automatically taken someway
         "stac_extensions": [

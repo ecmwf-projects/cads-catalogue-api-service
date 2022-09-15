@@ -25,7 +25,7 @@ DatasetBase = TypedDict(
         "description": dict[str, Any],
         "cads:publication_date": Type[datetime.date],
         "cads:variables": dict[str, Any],
-        "cads:doi": str,
+        "cads:description": dict[str, Any],
     },
 )
 
