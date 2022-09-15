@@ -7,7 +7,7 @@ dependencies:
 - pip
 - pytest
 - pytest-cov
-# DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
+    # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
 - fastapi
 - requests
 - sqlalchemy
@@ -18,3 +18,4 @@ dependencies:
   - stac_fastapi.api
   - stac_fastapi.extensions
   - stac_fastapi.types
+  - git+https://github.com/ecmwf-projects/cads-catalogue.git@main
