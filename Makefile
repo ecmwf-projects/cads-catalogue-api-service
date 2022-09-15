@@ -2,6 +2,7 @@ PROJECT := cads_catalogue_api_service
 CONDA := conda
 CONDAFLAGS :=
 COV_REPORT := html
+API_ROOT_PATH := http://localhost:8080/api/catalogue/v1/
 
 default: qa unit-tests type-check
 
@@ -33,3 +34,6 @@ docs-build:
 
 start:
 	uvicorn --reload cads_catalogue_api_service.main:app
+
+integration-tests:
+	API_ROOT_PATH=$(API_ROOT_PATH) pytest -vv tests/integration_*.py

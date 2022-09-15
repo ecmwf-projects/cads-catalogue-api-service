@@ -22,7 +22,7 @@ import urllib
 from typing import Any, Type
 
 import attrs
-import cads_catalogue.database
+import cads_catalogue
 import fastapi
 import fastapi.openapi
 import fastapi.responses
@@ -74,7 +74,7 @@ def lookup_id(
 
 def get_extent(
     model: cads_catalogue.database.Resource,
-) -> stac_pydantic.collection.Extent:
+) -> dict[str, Any]:
     """Get extent from model."""
     spatial = model.geo_extent or {}
     begin_date = (
@@ -98,7 +98,7 @@ def get_extent(
     ).dict()
 
 
-def get_reference(reference: dict[str, Any], base_url: str) -> dict[str, Any]:
+def get_reference(reference: dict[str, Any], base_url: str) -> dict[str, Any] | None:
     """Get the proper reference link data.
 
     We have multiple type of reference:
@@ -245,7 +245,9 @@ def collection_serializer(
     additional_properties = {
         **({"assets": assets} if assets else {}),
         **(
-            {"cads:publication_date": db_model.publication_date.strftime("%Y-%m-%d")}
+            {
+                "cads:publication_date": f"{db_model.publication_date.isoformat()}T00:00:00Z"
+            }
             if db_model.publication_date
             else {}
         ),
