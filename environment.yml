@@ -28,3 +28,4 @@ dependencies:
   - stac_fastapi.api==2.3.0
   - stac_fastapi.extensions==2.3.0
   - stac_fastapi.types==2.3.0
+  - starlette_exporter
