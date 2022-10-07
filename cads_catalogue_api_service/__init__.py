@@ -22,8 +22,8 @@ except ImportError:  # pragma: no cover
     # Local copy or not installed with setuptools
     __version__ = "999"
 
+from .client import CatalogueClient, collection_serializer
 from .config import Settings, SqlalchemySettings
-from .main import CatalogueClient, collection_serializer
 
 __all__ = [
     "__version__",

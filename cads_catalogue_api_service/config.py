@@ -45,3 +45,7 @@ class Settings(pydantic.BaseSettings):
 
     document_storage_url: str = "/document-storage/"
     processes_base_url: str = "/api/processing/"
+
+
+dbsettings = SqlalchemySettings()
+settings = Settings()
