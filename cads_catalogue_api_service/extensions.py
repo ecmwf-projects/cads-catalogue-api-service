@@ -37,13 +37,16 @@ class FilterExtensionRequest(
     """Filter extension GET request model."""
 
     q: Optional[str] = attr.ib(default=None)
+    kw: Optional[list[str]] = attr.ib(default=[])
 
 
 async def get_datasets_search(
-    request: fastapi.Request, q: Optional[str] = None
+    request: fastapi.Request,
+    q: str = None,
+    kw: list[str] | None = fastapi.Query(default=[]),
 ) -> dict[str, Any]:
     """Filter datasets based on search parameters."""
-    return client.cads_client.all_collections(request=request)
+    return client.cads_client.all_datasets(request=request, q=q, kw=kw)
 
 
 @attr.s

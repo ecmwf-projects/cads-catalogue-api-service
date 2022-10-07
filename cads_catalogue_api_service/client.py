@@ -22,6 +22,7 @@ import attrs
 import cads_catalogue.database
 import fastapi
 import fastapi_utils.session
+import sqlalchemy.dialects
 import sqlalchemy.orm
 import stac_fastapi.types
 import stac_fastapi.types.core
@@ -313,13 +314,27 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         return list(set(base_conformance_classes))
 
-    def all_collections(
-        self, request: fastapi.Request
+    def all_datasets(
+        self,
+        request: fastapi.Request,
+        q: str = None,
+        kw: list[str] = [],
     ) -> stac_fastapi.types.stac.Collections:
-        """Read all collections from the database."""
+        """Read all datasets from the database."""
+        print(q, kw)
         base_url = str(request.base_url)
         with self.reader.context_session() as session:
-            collections = session.query(self.collection_table).all()
+            search = session.query(self.collection_table)
+            if q:
+                search = search.filter(
+                    cads_catalogue.database.Resource.title.ilike(f"%{q}%")
+                )
+            if kw:
+                search = search.filter(
+                    cads_catalogue.database.Resource.keywords.contains(kw)
+                )
+
+            collections = search.all()
             serialized_collections = [
                 collection_serializer(collection, request=request, preview=True)
                 for collection in collections
@@ -345,6 +360,12 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 collections=serialized_collections or [], links=links
             )
             return collection_list
+
+    def all_collections(
+        self, request: fastapi.Request
+    ) -> stac_fastapi.types.stac.Collections:
+        """Read all collections from the database."""
+        return self.all_datasets(request)
 
     def get_collection(
         self, collection_id: str, request: fastapi.Request
