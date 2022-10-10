@@ -17,6 +17,7 @@ import fastapi.testclient
 import pytest
 import stac_fastapi.types
 
+import cads_catalogue_api_service.client
 import cads_catalogue_api_service.main
 
 client = fastapi.testclient.TestClient(cads_catalogue_api_service.main.app)
@@ -28,7 +29,7 @@ class Extension:
 
 
 def test_conformance_classes() -> None:
-    client = cads_catalogue_api_service.main.CatalogueClient()
+    client = cads_catalogue_api_service.client.CatalogueClient()
     client.extensions = [Extension()]
 
     conformance_classes = client.conformance_classes()
@@ -60,7 +61,7 @@ def test_generate_assets() -> None:
         resource_uid="era5-something", previewimage="foo/bar/baz/preview.webp"
     )
 
-    assets = cads_catalogue_api_service.main.generate_assets(model, "http://foo.org")
+    assets = cads_catalogue_api_service.client.generate_assets(model, "http://foo.org")
 
     assert assets == {
         "thumbnail": {
@@ -92,7 +93,7 @@ def test_search_not_implemented() -> None:
 
 
 def test_get_reference() -> None:
-    references = cads_catalogue_api_service.main.get_reference(
+    references = cads_catalogue_api_service.client.get_reference(
         {"title": "Unknown", "ignored": True}, "http://foo.org/"
     )
 

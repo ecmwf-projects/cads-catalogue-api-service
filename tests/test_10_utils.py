@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cads_catalogue_api_service.main
+import cads_catalogue_api_service.client
 
 
 def test_get_reference() -> None:
     SITE = "https://mysite.org/"
     reference = {"content": "https://foo.org/something.rst", "url": None}
 
-    assert cads_catalogue_api_service.main.get_reference(reference, SITE) == {
+    assert cads_catalogue_api_service.client.get_reference(reference, SITE) == {
         "href": "https://foo.org/something.rst",
         "rel": "reference",
         "title": None,
@@ -29,7 +29,7 @@ def test_get_reference() -> None:
         "content": "something.rst",
     }
 
-    assert cads_catalogue_api_service.main.get_reference(reference, SITE) == {
+    assert cads_catalogue_api_service.client.get_reference(reference, SITE) == {
         "href": "https://mysite.org/something.rst",
         "rel": "reference",
         "title": None,
@@ -40,7 +40,7 @@ def test_get_reference_external() -> None:
     SITE = "https://mysite.org/"
     reference = {"content": None, "url": "https://foo.org/something.pdf"}
 
-    assert cads_catalogue_api_service.main.get_reference(reference, SITE) == {
+    assert cads_catalogue_api_service.client.get_reference(reference, SITE) == {
         "href": "https://foo.org/something.pdf",
         "rel": "external",
         "title": None,

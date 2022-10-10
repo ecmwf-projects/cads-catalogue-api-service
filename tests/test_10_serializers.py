@@ -14,20 +14,20 @@
 
 from testing import Request, generate_expected, get_record
 
-import cads_catalogue_api_service.main
+import cads_catalogue_api_service.client
 
 
 def test_collection_serializer() -> None:
     """Test serialization from db record to STAC."""
     request = Request("https://mycatalogue.org/")  # note the final slash!
     record = get_record("era5-something")
-    stac_record = cads_catalogue_api_service.main.collection_serializer(
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
         record, request=request
     )
 
     assert stac_record == generate_expected(request.base_url)
 
-    stac_record = cads_catalogue_api_service.main.collection_serializer(
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
         record, request=request, preview=True
     )
 
