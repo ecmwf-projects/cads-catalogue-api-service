@@ -33,6 +33,16 @@ from . import config, exceptions, models
 logger = logging.getLogger(__name__)
 
 
+def get_sorting_clause(model: cads_catalogue.database.Resource, sort: str) -> dict:
+    """Get the sorting clause."""
+    supported_sorts = {
+        "update": (model.resource_update, sqlalchemy.desc),
+        "title": (model.title, sqlalchemy.asc),
+        "id": (model.resource_uid, sqlalchemy.asc),
+    }
+    return supported_sorts.get(sort)
+
+
 def get_extent(
     model: cads_catalogue.database.Resource,
 ) -> stac_pydantic.collection.Extent:
@@ -319,9 +329,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         request: fastapi.Request,
         q: str = None,
         kw: list[str] = [],
+        sorting: str = None,
     ) -> stac_fastapi.types.stac.Collections:
-        """Read all datasets from the database."""
-        print(q, kw)
+        """Read datasets from the catalogue."""
         base_url = str(request.base_url)
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
@@ -333,6 +343,13 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 search = search.filter(
                     cads_catalogue.database.Resource.keywords.contains(kw)
                 )
+
+            sorting_clause = get_sorting_clause(
+                cads_catalogue.database.Resource, sorting
+            )
+            if sorting and sorting_clause:
+                sort_by, sort_order_fn = sorting_clause
+                search = search.order_by(sort_order_fn(sort_by))
 
             collections = search.all()
             serialized_collections = [
@@ -364,7 +381,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
     def all_collections(
         self, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collections:
-        """Read all collections from the database."""
+        """Read all collections from the catalogue."""
         return self.all_datasets(request)
 
     def get_collection(

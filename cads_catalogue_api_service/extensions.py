@@ -24,9 +24,7 @@ import stac_fastapi.types.extension
 
 from . import client
 
-CONFORMANCE_CLASS = (
-    "https://api.cds.climate.copernicus.eu/v1.0.0-rc.1/datasets-search#filter"
-)
+CONFORMANCE_CLASS = "https://api.cads.copernicus.eu/v1.0.0-rc.1/datasets-search#filter"
 
 
 @attr.s
@@ -38,15 +36,17 @@ class FilterExtensionRequest(
 
     q: Optional[str] = attr.ib(default=None)
     kw: Optional[list[str]] = attr.ib(default=[])
+    sorting: Optional[str] = attr.ib(default="resource_update")
 
 
-async def get_datasets_search(
+async def datasets_search(
     request: fastapi.Request,
     q: str = None,
     kw: list[str] | None = fastapi.Query(default=[]),
+    sorting: str = "resource_update",
 ) -> dict[str, Any]:
     """Filter datasets based on search parameters."""
-    return client.cads_client.all_datasets(request=request, q=q, kw=kw)
+    return client.cads_client.all_datasets(request=request, q=q, kw=kw, sorting=sorting)
 
 
 @attr.s
@@ -84,10 +84,10 @@ class DatasetsSearchExtension(stac_fastapi.types.extension.ApiExtension):
             path="/datasets",
             methods=["GET"],
             # endpoint=stac_fastapi.api.routes.create_async_endpoint(
-            #     get_datasets_search,
+            #     datasets_search,
             #     stac_fastapi.api.models.EmptyRequest,
             #     self.response_class,
             # ),
-            endpoint=get_datasets_search,
+            endpoint=datasets_search,
         )
         app.include_router(self.router, tags=["Datasets Search Extension"])
