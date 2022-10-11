@@ -14,29 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional
+from typing import Any
 
 import attr
 import fastapi
-import pydantic
 import stac_fastapi.api
 import stac_fastapi.types.extension
 
 from . import client
 
 CONFORMANCE_CLASS = "https://api.cads.copernicus.eu/v1.0.0-rc.1/datasets-search#filter"
-
-
-@attr.s
-class FilterExtensionRequest(
-    # stac_fastapi.api.models.APIRequest,
-    pydantic.BaseModel,
-):
-    """Filter extension GET request model."""
-
-    q: Optional[str] = attr.ib(default=None)
-    kw: Optional[list[str]] = attr.ib(default=[])
-    sorting: Optional[str] = attr.ib(default="resource_update")
 
 
 async def datasets_search(
@@ -56,9 +43,6 @@ class DatasetsSearchExtension(stac_fastapi.types.extension.ApiExtension):
     This filter extension adds a new /datasets endpoint
     (can't be "/search" because STAC reserves it for search on items).
     """
-
-    GET = FilterExtensionRequest
-    POST = FilterExtensionRequest
 
     conformance_classes: list[str] = attr.ib(default=[CONFORMANCE_CLASS])
     router: fastapi.APIRouter = attr.ib(factory=fastapi.APIRouter)
