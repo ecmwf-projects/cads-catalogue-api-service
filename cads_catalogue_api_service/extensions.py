@@ -21,7 +21,7 @@ import fastapi
 import stac_fastapi.api
 import stac_fastapi.types.extension
 
-from . import client
+from . import client, config
 
 CONFORMANCE_CLASS = "https://api.cads.copernicus.eu/v1.0.0-rc.1/datasets-search#filter"
 
@@ -30,10 +30,21 @@ async def datasets_search(
     request: fastapi.Request,
     q: str = None,
     kw: list[str] | None = fastapi.Query(default=[]),
-    sorting: str = "resource_update",
+    sorting: str = "update",
+    cursor: str = None,
+    limit: int = fastapi.Query(default=20, ge=1, le=config.MAX_LIMIT),
+    back: bool = False,
 ) -> dict[str, Any]:
     """Filter datasets based on search parameters."""
-    return client.cads_client.all_datasets(request=request, q=q, kw=kw, sorting=sorting)
+    return client.cads_client.all_datasets(
+        request=request,
+        q=q,
+        kw=kw,
+        sorting=sorting,
+        cursor=cursor,
+        limit=limit,
+        back=back,
+    )
 
 
 @attr.s

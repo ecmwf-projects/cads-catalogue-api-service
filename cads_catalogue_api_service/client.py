@@ -33,14 +33,80 @@ from . import config, exceptions, models
 logger = logging.getLogger(__name__)
 
 
-def get_sorting_clause(model: cads_catalogue.database.Resource, sort: str) -> dict:
+def get_sorting_clause(
+    model: cads_catalogue.database.Resource, sort: str, inverse: bool
+) -> dict:
     """Get the sorting clause."""
     supported_sorts = {
-        "update": (model.resource_update, sqlalchemy.desc),
-        "title": (model.title, sqlalchemy.asc),
-        "id": (model.resource_uid, sqlalchemy.asc),
+        "update": (
+            model.resource_update,
+            sqlalchemy.desc if not inverse else sqlalchemy.asc,
+        ),
+        "title": (model.title, sqlalchemy.asc if not inverse else sqlalchemy.desc),
+        "id": (model.resource_uid, sqlalchemy.asc if not inverse else sqlalchemy.desc),
     }
-    return supported_sorts.get(sort)
+    return supported_sorts.get(sort) or supported_sorts["update"]
+
+
+def get_cursor_compare_criteria(sorting: str, back: bool) -> str:
+    """Get the sorting criteria for cursor based on sorting."""
+    defined_criteria = (
+        {
+            "update": "__le__",
+            "title": "__ge__",
+            "id": "__ge__",
+        }
+        if not back
+        else {
+            "update": "__gt__",
+            "title": "__lt__",
+            "id": "__lt__",
+        }
+    )
+    return defined_criteria.get(sorting, "__ge__" if not back else "__lt__")
+
+
+def apply_sorting(
+    search: sqlalchemy.orm.Query,
+    sorting: str,
+    cursor: str,
+    limit: int,
+    inverse: bool,
+):
+    sorting_clause = get_sorting_clause(
+        cads_catalogue.database.Resource, sorting, inverse
+    )
+    sort_by, sort_order_fn = sorting_clause
+    search = search.order_by(sort_order_fn(sort_by))
+
+    get_cursor_direction = get_cursor_compare_criteria(sorting, inverse)
+    print(get_cursor_direction, limit)
+
+    # cursor meaning is based on the sorting criteria
+    if cursor:
+        sort_expr = getattr(sort_by, get_cursor_direction)(cursor)
+        search = search.filter(*(sort_expr,))
+
+    # limit is +1 for getting the next page
+    search = search.limit(limit + 1)
+
+    return search, sort_by
+
+
+def apply_filters(search: sqlalchemy.orm.Query, q: str, kw: list):
+    """Apply allowed search filters to the running query.
+
+    Args
+    ----
+        search (sqlalchemy.orm.Query): current query
+        q (str): search query (full text search)
+        kw (list): list of keywords query
+    """
+    if q:
+        search = search.filter(cads_catalogue.database.Resource.title.ilike(f"%{q}%"))
+    if kw:
+        search = search.filter(cads_catalogue.database.Resource.keywords.contains(kw))
+    return search
 
 
 def get_extent(
@@ -328,34 +394,41 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         self,
         request: fastapi.Request,
         q: str = None,
-        kw: list[str] = [],
-        sorting: str = None,
+        kw: list = [],
+        sorting: str = "update",
+        cursor: str = None,
+        limit: int = 20,
+        back: bool = False,
     ) -> stac_fastapi.types.stac.Collections:
         """Read datasets from the catalogue."""
         base_url = str(request.base_url)
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
-            if q:
-                search = search.filter(
-                    cads_catalogue.database.Resource.title.ilike(f"%{q}%")
-                )
-            if kw:
-                search = search.filter(
-                    cads_catalogue.database.Resource.keywords.contains(kw)
-                )
 
-            sorting_clause = get_sorting_clause(
-                cads_catalogue.database.Resource, sorting
+            search = apply_filters(search, q, kw)
+            search, sort_by = apply_sorting(
+                search=search, sorting=sorting, cursor=cursor, limit=limit, inverse=back
             )
-            if sorting and sorting_clause:
-                sort_by, sort_order_fn = sorting_clause
-                search = search.order_by(sort_order_fn(sort_by))
 
             collections = search.all()
+
+            # Filter function always returns an item more than the limit to know if there is a next/prev page
+            # But response is build or effective page size
+            if len(collections) <= limit:
+                results = collections
+            else:
+                results = collections[:-1]
+
+            if len(results) == 0:
+                raise stac_fastapi.types.errors.NotFoundError(
+                    "Search does not match any dataset"
+                )
+
             serialized_collections = [
                 collection_serializer(collection, request=request, preview=True)
-                for collection in collections
+                for collection in (results if not back else reversed(results))
             ]
+
             links = [
                 {
                     "rel": stac_pydantic.links.Relations.root.value,
@@ -373,6 +446,54 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                     "href": urllib.parse.urljoin(base_url, "collections"),
                 },
             ]
+
+            # Next/prev links
+            # See https://github.com/radiantearth/stac-api-spec/tree/main/item-search#pagination
+            print(len(collections), limit)
+            # Next
+            if len(collections) > limit or back:
+                # We need a next link, as we have more records to explore
+                next_cursor = cursor if back else getattr(collections[-1], sort_by.key)
+                print(next_cursor, type(next_cursor))
+                qs = urllib.parse.urlencode(
+                    {
+                        **{
+                            k: v
+                            for (k, v) in request.query_params.items()
+                            if k != "back"
+                        },
+                        "cursor": next_cursor,
+                    }
+                )
+                links.append(
+                    {
+                        "rel": "next",
+                        "href": f"{request.url_for(name='Datasets Search')}?{qs}",
+                        "type": stac_pydantic.shared.MimeTypes.json,
+                    }
+                )
+            # Prev
+            if cursor:
+                # We have a cursor, so we provide a back link
+                # FIXME: this is not perfect
+                # The back link is always present because we don't know anything about the previous page
+                qs = urllib.parse.urlencode(
+                    {
+                        **{k: v for (k, v) in request.query_params.items()},
+                        "cursor": getattr(
+                            (results[0] if not back else results[-1]), sort_by.key
+                        ),
+                        "back": "true",
+                    }
+                )
+                links.append(
+                    {
+                        "rel": "prev",
+                        "href": f"{request.url_for(name='Datasets Search')}?{qs}",
+                        "type": stac_pydantic.shared.MimeTypes.json,
+                    }
+                )
+
             collection_list = stac_fastapi.types.stac.Collections(
                 collections=serialized_collections or [], links=links
             )

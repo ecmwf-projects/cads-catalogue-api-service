@@ -21,6 +21,8 @@ import cads_catalogue.config
 import pydantic
 import stac_fastapi.types.config
 
+MAX_LIMIT = 50
+
 
 class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
     """Postgres-specific API settings."""
