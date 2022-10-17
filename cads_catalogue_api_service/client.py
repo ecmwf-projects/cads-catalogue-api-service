@@ -48,22 +48,19 @@ def get_sorting_clause(
     return supported_sorts.get(sort) or supported_sorts["update"]
 
 
-def get_cursor_compare_criteria(sorting: str, back: bool) -> str:
-    """Get the sorting criteria for cursor based on sorting."""
-    defined_criteria = (
-        {
-            "update": "__le__",
-            "title": "__ge__",
-            "id": "__ge__",
-        }
-        if not back
-        else {
-            "update": "__gt__",
-            "title": "__lt__",
-            "id": "__lt__",
-        }
-    )
-    return defined_criteria.get(sorting, "__ge__" if not back else "__lt__")
+DEFINED_SORT_CRITERIA = {
+    "update": ("__le__", "__gt__"),
+    "title": ("__le__", "__gt__"),
+    "id": ("__ge__", "__lt__"),
+}
+
+
+def get_cursor_compare_criteria(sorting: str, back: bool = False) -> str:
+    """Generate the proper cursor based on sorting criteria."""
+    compare_criteria = DEFINED_SORT_CRITERIA.get(sorting)
+    if not compare_criteria:
+        return "__ge__" if not back else "__lt__"
+    return compare_criteria[0 if not back else 1]
 
 
 def apply_sorting(
@@ -71,8 +68,13 @@ def apply_sorting(
     sorting: str,
     cursor: str,
     limit: int,
-    inverse: bool,
+    inverse: bool = False,
 ):
+    """Apply sorting to the running query.
+
+    The sorting algorithm influences how pagination is build.
+    Pagination is based on cursor: see https://use-the-index-luke.com/no-offset
+    """
     sorting_clause = get_sorting_clause(
         cads_catalogue.database.Resource, sorting, inverse
     )
@@ -80,7 +82,6 @@ def apply_sorting(
     search = search.order_by(sort_order_fn(sort_by))
 
     get_cursor_direction = get_cursor_compare_criteria(sorting, inverse)
-    print(get_cursor_direction, limit)
 
     # cursor meaning is based on the sorting criteria
     if cursor:
@@ -107,6 +108,42 @@ def apply_filters(search: sqlalchemy.orm.Query, q: str, kw: list):
     if kw:
         search = search.filter(cads_catalogue.database.Resource.keywords.contains(kw))
     return search
+
+
+def get_next_prev_links(
+    collections: list,
+    sort_by,
+    cursor: str,
+    limit: int,
+    back: bool = False,
+) -> dict[str, Any]:
+    """Generate a prev/next links array.
+
+    # See https://github.com/radiantearth/stac-api-spec/tree/main/item-search#pagination
+    """
+    links = {}
+
+    if len(collections) <= limit:
+        results = collections
+    else:
+        results = collections[:-1]
+
+    # Next
+    if len(collections) > limit or back:
+        # We need a next link, as we have more records to explore
+        next_cursor = cursor if back else getattr(collections[-1], sort_by.key)
+        links["next"] = {"cursor": next_cursor}
+    # Prev
+    if cursor:
+        # We have a cursor, so we provide a back link
+        # NOTE: this is not perfect
+        # The back link is always present because we don't know anything about the previous page
+        back_cursor = getattr((results[0] if not back else results[-1]), sort_by.key)
+        links["prev"] = {
+            "cursor": back_cursor,
+            "back": "true",
+        }
+    return links
 
 
 def get_extent(
@@ -399,6 +436,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         cursor: str = None,
         limit: int = 20,
         back: bool = False,
+        route_name="Get Collections",
     ) -> stac_fastapi.types.stac.Collections:
         """Read datasets from the catalogue."""
         base_url = str(request.base_url)
@@ -443,18 +481,18 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 {
                     "rel": stac_pydantic.links.Relations.self.value,
                     "type": stac_pydantic.shared.MimeTypes.json,
-                    "href": urllib.parse.urljoin(base_url, "collections"),
+                    "href": request.url_for(name=route_name),
                 },
             ]
 
-            # Next/prev links
-            # See https://github.com/radiantearth/stac-api-spec/tree/main/item-search#pagination
-            print(len(collections), limit)
-            # Next
-            if len(collections) > limit or back:
-                # We need a next link, as we have more records to explore
-                next_cursor = cursor if back else getattr(collections[-1], sort_by.key)
-                print(next_cursor, type(next_cursor))
+            next_prev_links = get_next_prev_links(
+                collections=collections,
+                sort_by=sort_by,
+                cursor=cursor,
+                limit=limit,
+                back=back,
+            )
+            if next_prev_links.get("next"):
                 qs = urllib.parse.urlencode(
                     {
                         **{
@@ -462,34 +500,28 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                             for (k, v) in request.query_params.items()
                             if k != "back"
                         },
-                        "cursor": next_cursor,
+                        "cursor": next_prev_links["next"]["cursor"],
                     }
                 )
                 links.append(
                     {
                         "rel": "next",
-                        "href": f"{request.url_for(name='Datasets Search')}?{qs}",
+                        "href": f"{request.url_for(name=route_name)}?{qs}",
                         "type": stac_pydantic.shared.MimeTypes.json,
                     }
                 )
-            # Prev
-            if cursor:
-                # We have a cursor, so we provide a back link
-                # FIXME: this is not perfect
-                # The back link is always present because we don't know anything about the previous page
+            if next_prev_links.get("prev"):
                 qs = urllib.parse.urlencode(
                     {
                         **{k: v for (k, v) in request.query_params.items()},
-                        "cursor": getattr(
-                            (results[0] if not back else results[-1]), sort_by.key
-                        ),
+                        "cursor": next_prev_links["prev"]["cursor"],
                         "back": "true",
                     }
                 )
                 links.append(
                     {
                         "rel": "prev",
-                        "href": f"{request.url_for(name='Datasets Search')}?{qs}",
+                        "href": f"{request.url_for(name=route_name)}?{qs}",
                         "type": stac_pydantic.shared.MimeTypes.json,
                     }
                 )
@@ -503,7 +535,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         self, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the catalogue."""
-        return self.all_datasets(request)
+        return self.all_datasets(request=request)
 
     def get_collection(
         self, collection_id: str, request: fastapi.Request

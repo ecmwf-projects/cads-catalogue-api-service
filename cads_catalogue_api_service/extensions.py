@@ -44,6 +44,7 @@ async def datasets_search(
         cursor=cursor,
         limit=limit,
         back=back,
+        route_name="Datasets Search",
     )
 
 
