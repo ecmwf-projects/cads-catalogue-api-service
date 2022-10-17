@@ -28,6 +28,9 @@ import stac_fastapi.extensions.core
 import stac_fastapi.types
 import stac_fastapi.types.conformance
 import stac_fastapi.types.links
+import stac_pydantic
+from brotli_asgi import BrotliMiddleware
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from . import client, config, exceptions, extensions
 
@@ -43,9 +46,11 @@ api = stac_fastapi.api.app.StacApi(
     settings=config.dbsettings,
     extensions=extensions,
     client=client.cads_client,
+    middlewares=[BrotliMiddleware, PrometheusMiddleware],
 )
 
 app = api.app
+app.add_route("/metrics", handle_metrics)
 
 
 def catalogue_openapi() -> dict[str, Any]:
