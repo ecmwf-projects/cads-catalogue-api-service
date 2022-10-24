@@ -31,5 +31,10 @@ docs-build:
 
 # DO NOT EDIT ABOVE THIS LINE, ADD COMMANDS BELOW
 
+API_ROOT_PATH := http://localhost:8080/api/catalogue/v1/
+
 start:
 	uvicorn --reload cads_catalogue_api_service.main:app
+
+integration-tests:
+	API_ROOT_PATH=$(API_ROOT_PATH) pytest -vv tests/integration_*.py

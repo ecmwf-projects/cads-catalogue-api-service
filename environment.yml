@@ -14,7 +14,7 @@ dependencies:
 - pytest-cov
 - sphinx
 - sphinxcontrib-apidoc
-  # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
+    # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
 - fastapi
 - pystac
 - requests
@@ -25,8 +25,8 @@ dependencies:
 - jsonschema
 - pip:
   - fastapi-utils
-  - stac_fastapi.api==2.3.0
-  - stac_fastapi.extensions==2.3.0
-  - stac_fastapi.types==2.3.0
+  - stac_fastapi.api==2.4.1
+  - stac_fastapi.extensions==2.4.1
+  - stac_fastapi.types==2.4.1
   - starlette_exporter
   - brotli-asgi

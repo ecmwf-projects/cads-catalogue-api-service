@@ -18,6 +18,7 @@ import datetime
 from typing import Any, Type, TypedDict
 
 import stac_fastapi.types
+import stac_fastapi.types.stac
 
 DatasetBase = TypedDict(
     "DatasetBase",

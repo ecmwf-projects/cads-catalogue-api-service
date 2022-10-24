@@ -8,7 +8,7 @@ import pytest
 def temp_environ() -> Any:
     """Create a modifiable environment that affect only the test scope"""
     old_environ = dict(os.environ)
-    os.environ["POSTGRES_PASSWORD"] = "password"
+    os.environ["CATALOGUE_DB_PASSWORD"] = "password"
 
     yield
 
