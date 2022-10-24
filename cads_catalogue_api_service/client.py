@@ -39,7 +39,7 @@ def get_sorting_clause(
     """Get the sorting clause."""
     supported_sorts = {
         "update": (
-            model.resource_update,
+            model.record_update,
             sqlalchemy.desc if not inverse else sqlalchemy.asc,
         ),
         "title": (model.title, sqlalchemy.asc if not inverse else sqlalchemy.desc),
