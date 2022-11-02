@@ -7,7 +7,7 @@ def parse_valid_combinations(
     valid_combinations: List[Dict[str, List[Any]]]
 ) -> List[Dict[str, Set[Any]]]:
     """
-    Parse valid combinations for a given dataset.
+    Parse valid combinations for a given dataset. Convert Dict[str, List[Any]] into Dict[str, Set[Any]].
 
     :param valid_combinations: valid combinations in JSON format
     :type: List[Dict[str, List[Any]]]
@@ -30,7 +30,7 @@ def parse_possible_selections(
     possible_selections: Dict[str, List[Any]]
 ) -> Dict[str, Set[Any]]:
     """
-    Parse possible form selections for a given dataset.
+    Parse possible selections for a given dataset. Convert Dict[str, List[Any]] into Dict[str, Set[Any]].
 
     :param possible_selections: a dictionary containing
     all possible selections in JSON format
@@ -50,7 +50,7 @@ def parse_current_selection(
     current_selection: Dict[str, List[Any]]
 ) -> Dict[str, Set[Any]]:
     """
-    Parse current selection.
+    Parse current selection and convert Dict[str, List[Any]] into Dict[str, Set[Any]].
 
     :param current_selection: a dictionary containing the current selection
     :type: Dict[str, List[Any]]
@@ -103,12 +103,12 @@ def get_possible_values(
 
     :param possible_selections: a dict of all selectable fields and values
     e.g. possible_selections = {
-        "level": ["500", "850", "1000"],
-        "param": ["Z", "T"],
-        "step": ["24", "36", "48"],
-        "number": ["1", "2", "3"]
+        "level": {"500", "850", "1000"},
+        "param": {"Z", "T"},
+        "step": {"24", "36", "48"},
+        "number": {"1", "2", "3"}
     }
-    :type: dict[str, set[Any]]:
+    :type: dict[str, Set[Any]]:
 
     :param valid_combinations: a list of dictionaries representing
     all valid combinations for a specific dataset
@@ -117,20 +117,18 @@ def get_possible_values(
         {"level": {"1000"}, "param": {"Z"}, "step": {"24", "48"}},
         {"level": {"850"}, "param": {"T"}, "step": {"36", "48"}},
     ]
-    :type: list[dict[str, set[Any]]]:
+    :type: list[dict[str, Set[Any]]]:
 
     :param current_selection: a dictionary containing the current selection
     e.g. current_selection = {
-        "param": ["T"],
-        "level": ["850", "500"],
-        "step": ["36"]
+        "param": {"T"},
+        "level": {"850", "500"},
+        "step": {"36"}
     }
-    :type: dict[str, set[Any]]:
+    :type: dict[str, Set[Any]]:
 
     :rtype: Dict[str, Set[Any]]
-    :return: a dictionary containing all possible values,
-    i.e. those that can still be selected without running into
-    an invalid request
+    :return: a dictionary containing all possible values given the current selection
     e.g.
     {'level': {'500', '850'}, 'param': {'T', 'Z'}, 'step': {'24', '36', '48'}}
 
@@ -157,7 +155,10 @@ def format_to_json(result: Dict[str, Set[Any]]) -> Dict[str, List[Any]]:
     Convert Dict[str, Set[Any]] into Dict[str, List[Any]].
 
     :param result: Dict[str, Set[Any]] containing a possible form state
-    :return: the equivalent set of
+    :type: dict[str, Set[Any]]:
+
+    :rtype: Dict[str, List[Any]]
+    :return: the same values in Dict[str, List[Any]] format
 
     """
     return {k: list(v) for (k, v) in result.items()}
@@ -169,12 +170,48 @@ def get_form_state(
     valid_combinations: List[Dict[str, Set[Any]]],
 ) -> Dict[str, Set[Any]]:
     """
-    Compute the form state given the current selection.
+    Get possible values given the current selection.
 
-    :param possible_selections:
-    :param current_selection:
-    :param valid_combinations:
-    :return:
+    Works only for enumerated fields, i.e. fields with values
+    that must be selected one by one (no ranges).
+    Checks the current selection against all valid combinations.
+    A combination is valid if every field contains
+    at least one value from the current selection.
+    If a combination is valid, its values are added to the pool
+    of valid values (i.e. those that can still be selected without
+    running into an invalid request).
+
+    :param possible_selections: a dict of all selectable fields and values
+    e.g. possible_selections = {
+        "level": {"500", "850", "1000"},
+        "param": {"Z", "T"},
+        "step": {"24", "36", "48"},
+        "number": {"1", "2", "3"}
+    }
+    :type: dict[str, Set[Any]]:
+
+    :param valid_combinations: a list of dictionaries representing
+    all valid combinations for a specific dataset
+    e.g. valid_combinations = [
+        {"level": {"500"}, "param": {"Z", "T"}, "step": {"24", "36", "48"}},
+        {"level": {"1000"}, "param": {"Z"}, "step": {"24", "48"}},
+        {"level": {"850"}, "param": {"T"}, "step": {"36", "48"}},
+    ]
+    :type: list[dict[str, Set[Any]]]:
+
+    :param current_selection: a dictionary containing the current selection
+    e.g. current_selection = {
+        "param": {"T"},
+        "level": {"850", "500"},
+        "step": {"36"}
+    }
+    :type: dict[str, Set[Any]]:
+
+    :rtype: Dict[str, Set[Any]]
+    :return: a dictionary containing all form values to be left active given the current selection
+
+    e.g.
+    {'level': {'500', '850'}, 'param': {'T', 'Z'}, 'step': {'24', '36', '48'}}
 
     """
     result: Dict[str, Set[Any]] = {}
@@ -195,11 +232,28 @@ def get_always_valid_params(
     valid_combinations: List[Dict[str, Set[Any]]],
 ) -> Dict[str, Set[Any]]:
     """
-    After computing possible values, include unconstrained params.
+    Get always valid field and values.
 
-    :param possible_selections:
-    :param valid_combinations:
-    :return:
+    :param possible_selections: a dict of all selectable fields and values
+    e.g. possible_selections = {
+        "level": {"500", "850", "1000"},
+        "param": {"Z", "T"},
+        "step": {"24", "36", "48"},
+        "number": {"1", "2", "3"}
+    }
+    :type: dict[str, Set[Any]]:
+
+    :param valid_combinations: a list of dictionaries representing
+    all valid combinations for a specific dataset
+    e.g. valid_combinations = [
+        {"level": {"500"}, "param": {"Z", "T"}, "step": {"24", "36", "48"}},
+        {"level": {"1000"}, "param": {"Z"}, "step": {"24", "48"}},
+        {"level": {"850"}, "param": {"T"}, "step": {"36", "48"}},
+    ]
+    :type: list[dict[str, Set[Any]]]:
+
+    :rtype: Dict[str, Set[Any]]
+    :return: A dictionary containing fields and values that are not constrained (i.e. they are always valid)
 
     """
     result: Dict[str, Set[Any]] = {}
