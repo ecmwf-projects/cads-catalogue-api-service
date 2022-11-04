@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Set
 
-from request_constraints import constrictor
+from cads_catalogue_api_service import constrictor
 
 possible_selections: Dict[str, List[Any]] = {
     "level": ["500", "850", "1000"],
