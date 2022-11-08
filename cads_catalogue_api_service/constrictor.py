@@ -1,6 +1,10 @@
 """Main module of the request-constraints API."""
-
+import os
 from typing import Any, Dict, List, Set
+import requests
+import urllib
+
+from cads_catalogue import database
 
 
 def parse_valid_combinations(
@@ -21,72 +25,56 @@ def parse_valid_combinations(
     for combination in valid_combinations:
         parsed_valid_combination = {}
         for field_name, field_values in combination.items():
+            if not isinstance(field_values, list | tuple):
+                field_values = [field_values]
             parsed_valid_combination[field_name] = set(field_values)
         result.append(parsed_valid_combination)
     return result
 
 
-def parse_possible_selections(
-    possible_selections: Dict[str, List[Any]]
-) -> Dict[str, Set[Any]]:
-    """
-    Parse possible selections for a given dataset. Convert Dict[str, List[Any]] into Dict[str, Set[Any]].
-
-    :param possible_selections: a dictionary containing
-    all possible selections in JSON format
-    :type: Dict[str, List[Any]]
-
-    :rtype: Dict[str, Set[Any]]:
-    :return: a Dict[str, Set[Any]] containing all possible selections.
-
-    """
-    result = {}
-    for field_name, field_values in possible_selections.items():
-        result[field_name] = set(field_values)
-    return result
-
-
-def parse_current_selection(
-    current_selection: Dict[str, List[Any]]
+def parse_selection(
+    selection: Dict[str, List[Any]]
 ) -> Dict[str, Set[Any]]:
     """
     Parse current selection and convert Dict[str, List[Any]] into Dict[str, Set[Any]].
 
-    :param current_selection: a dictionary containing the current selection
+    :param selection: a dictionary containing the current selection
     :type: Dict[str, List[Any]]
 
     :rtype: Dict[str, Set[Any]]:
     :return: a Dict[str, Set[Any]] containing the current selection.
     """
     result = {}
-    for field_name, field_values in current_selection.items():
+    for field_name, field_values in selection.items():
+        if not isinstance(field_values, list | tuple):
+            field_values = [field_values]
         result[field_name] = set(field_values)
     return result
 
 
 def apply_constraints(
-    possible_selections: Dict[str, Set[Any]],
+    form: Dict[str, Set[Any]],
     valid_combinations: List[Dict[str, Set[Any]]],
-    current_selection: Dict[str, Set[Any]],
+    selection: Dict[str, Set[Any]],
 ) -> Dict[str, List[Any]]:
     """
     Apply dataset constraints to the current selection.
 
-    :param possible_selections: a dictionary of all selectable values
+    :param form: a dictionary of all selectable values
     grouped by field name
     :param valid_combinations: a list of all valid combinations
-    :param current_selection: a dictionary containing the current selection
+    :param selection: a dictionary containing the current selection
     :return: a dictionary containing all values that should be left
     active for selection, in JSON format
     """
     return format_to_json(
-        get_form_state(possible_selections, current_selection, valid_combinations)
+        get_form_state(form, selection, valid_combinations)
     )
 
 
 def get_possible_values(
-    possible_selections: Dict[str, Set[Any]],
-    current_selection: Dict[str, Set[Any]],
+    form: Dict[str, Set[Any]],
+    selection: Dict[str, Set[Any]],
     valid_combinations: List[Dict[str, Set[Any]]],
 ) -> Dict[str, Set[Any]]:
     """
@@ -101,8 +89,8 @@ def get_possible_values(
     of valid values (i.e. those that can still be selected without
     running into an invalid request).
 
-    :param possible_selections: a dict of all selectable fields and values
-    e.g. possible_selections = {
+    :param form: a dict of all selectable fields and values
+    e.g. form = {
         "level": {"500", "850", "1000"},
         "param": {"Z", "T"},
         "step": {"24", "36", "48"},
@@ -119,8 +107,8 @@ def get_possible_values(
     ]
     :type: list[dict[str, Set[Any]]]:
 
-    :param current_selection: a dictionary containing the current selection
-    e.g. current_selection = {
+    :param selection: a dictionary containing the current selection
+    e.g. selection = {
         "param": {"T"},
         "level": {"850", "500"},
         "step": {"36"}
@@ -136,7 +124,7 @@ def get_possible_values(
     result: Dict[str, Set[Any]] = {}
     for valid_combination in valid_combinations:
         ok = True
-        for field_name, selected_values in current_selection.items():
+        for field_name, selected_values in selection.items():
             if field_name in valid_combination.keys():
                 if len(selected_values & valid_combination[field_name]) == 0:
                     ok = False
@@ -146,7 +134,7 @@ def get_possible_values(
                 current = result.setdefault(field_name, set())
                 current |= set(valid_values)
     if result:
-        result.update(get_always_valid_params(possible_selections, valid_combinations))
+        result.update(get_always_valid_params(form, valid_combinations))
     return result
 
 
@@ -165,8 +153,8 @@ def format_to_json(result: Dict[str, Set[Any]]) -> Dict[str, List[Any]]:
 
 
 def get_form_state(
-    possible_selections: Dict[str, Set[Any]],
-    current_selection: Dict[str, Set[Any]],
+    form: Dict[str, Set[Any]],
+    selection: Dict[str, Set[Any]],
     valid_combinations: List[Dict[str, Set[Any]]],
 ) -> Dict[str, Set[Any]]:
     """
@@ -181,8 +169,8 @@ def get_form_state(
     of valid values (i.e. those that can still be selected without
     running into an invalid request).
 
-    :param possible_selections: a dict of all selectable fields and values
-    e.g. possible_selections = {
+    :param form: a dict of all selectable fields and values
+    e.g. form = {
         "level": {"500", "850", "1000"},
         "param": {"Z", "T"},
         "step": {"24", "36", "48"},
@@ -199,8 +187,8 @@ def get_form_state(
     ]
     :type: list[dict[str, Set[Any]]]:
 
-    :param current_selection: a dictionary containing the current selection
-    e.g. current_selection = {
+    :param selection: a dictionary containing the current selection
+    e.g. selection = {
         "param": {"T"},
         "level": {"850", "500"},
         "step": {"36"}
@@ -215,12 +203,12 @@ def get_form_state(
 
     """
     result: Dict[str, Set[Any]] = {}
-    for name in possible_selections:
-        sub_selection = current_selection.copy()
+    for name in form:
+        sub_selection = selection.copy()
         if name in sub_selection:
             sub_selection.pop(name)
         sub_results = get_possible_values(
-            possible_selections, sub_selection, valid_combinations
+            form, sub_selection, valid_combinations
         )
         if sub_results:
             result[name] = sub_results[name]
@@ -228,14 +216,14 @@ def get_form_state(
 
 
 def get_always_valid_params(
-    possible_selections: Dict[str, Set[Any]],
+    form: Dict[str, Set[Any]],
     valid_combinations: List[Dict[str, Set[Any]]],
 ) -> Dict[str, Set[Any]]:
     """
     Get always valid field and values.
 
-    :param possible_selections: a dict of all selectable fields and values
-    e.g. possible_selections = {
+    :param form: a dict of all selectable fields and values
+    e.g. form = {
         "level": {"500", "850", "1000"},
         "param": {"Z", "T"},
         "step": {"24", "36", "48"},
@@ -257,7 +245,93 @@ def get_always_valid_params(
 
     """
     result: Dict[str, Set[Any]] = {}
-    for field_name, field_values in possible_selections.items():
+    for field_name, field_values in form.items():
         if field_name not in valid_combinations[0].keys():
             result.setdefault(field_name, field_values)
     return result
+
+
+def read_from_db(collection_id, params=["form", "constraints"]):
+    session_obj = database.ensure_session_obj(None)
+    with session_obj() as session:
+        query = session.query(database.Resource)
+        collection = query.filter_by(resource_uid=collection_id).one()
+    out = [getattr(collection, par) for par in params]
+    return out
+
+
+def parse_form(form: List[Dict[str, Any]]) -> Dict[str, set]:
+    """
+       Parse the from for a given dataset extracting the information on the possible selections.
+
+       :param form: a dictionary containing
+       all possible selections in JSON format
+       :type: Dict[str, List[Any]]
+
+       :rtype: Dict[str, Set[Any]]:
+       :return: a Dict[str, Set[Any]] containing all possible selections.
+    """
+    selections = {}
+    for parameter in form:
+        if parameter["type"] == "StringListWidget":
+            selections[parameter["name"]] = set(parameter["details"]["values"])
+        elif parameter["type"] == "StringListArrayWidget":
+            selections[parameter["name"]] = {}
+            selections_p = set([])
+            for sub_parameter in parameter["details"]["groups"]:
+                selections_p = selections_p | set(sub_parameter["values"])
+            selections[parameter["name"]] = selections_p
+        else:
+            pass
+    return selections
+
+
+def retrieve_form(form_path, storage_url):
+    """
+   Retrieve the form from the database and extract the possible selections.
+
+   :param form_path: form relative path in the  storage
+   :type: str
+
+   :param storage_url: storge url
+   :type: str
+
+   :rtype: Dict[str, Set[Any]]:
+   :return: a Dict[str, Set[Any]] containing all possible selections.
+    """
+    form_url = urllib.parse.urljoin(storage_url, form_path)
+
+    form = requests.get(form_url).json()
+
+    return parse_form(form)
+
+
+def retrieve_valid_combinations(valid_combinations_path, storage_url):
+    """
+    Download ad pre-process the valid combinations for a given dataset.
+
+       :param valid_combinations_path: valid_combinations relative path in the  storage
+   :type: str
+
+   :param storage_url: storge url
+   :type: str
+
+    :rtype: list[Dict[str, Set[Any]]]:
+    :return: list of Dict[str, Set[Any]] containing all valid combinations
+    for a given dataset.
+
+    """
+    storage_url = os.environ["OBJECT_STORAGE_URL"]
+    valid_combinations_url = urllib.parse.urljoin(storage_url, valid_combinations_path)
+    valid_combinations = requests.get(valid_combinations_url).json()
+    return parse_valid_combinations(valid_combinations)
+
+
+def compute_form_status(collection_id, selection):
+    form_path, valid_combinations_path = read_from_db(collection_id, params=["form", "constraints"])
+    storage_url = os.environ["OBJECT_STORAGE_URL"]
+    form = retrieve_form(form_path, storage_url)
+    valid_combinations = retrieve_valid_combinations(valid_combinations_path, storage_url)
+    selection = parse_selection(selection)
+
+    return apply_constraints(form, valid_combinations, selection)

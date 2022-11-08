@@ -18,8 +18,8 @@ This largely depends on stac_fastapi to generate the RESTful API.
 # limitations under the License.
 
 import logging
-from typing import Any
-
+from typing import Any, Dict
+import urllib
 import fastapi
 import fastapi.openapi
 import fastapi.responses
@@ -33,6 +33,10 @@ from brotli_asgi import BrotliMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from . import client, config, exceptions, extensions
+from pydantic import BaseModel, Field, validator
+
+from . import constrictor
+from .config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +55,21 @@ api = stac_fastapi.api.app.StacApi(
 
 app = api.app
 app.add_route("/metrics", handle_metrics)
+
+
+@app.post("/form_status")
+async def from_status(
+    request: fastapi.Request,
+    body: Dict[str, Any] = fastapi.Body(...)
+):
+    # base_url = str(request.base_url)
+    # storage_url = urllib.parse.urljoin(base_url, settings.document_storage_url)
+    form_status = constrictor.compute_form_status(
+        body["collection_id"],
+        body["selection"],
+    )
+
+    return form_status
 
 
 def catalogue_openapi() -> dict[str, Any]:
