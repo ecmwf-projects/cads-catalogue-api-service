@@ -57,16 +57,16 @@ app = api.app
 app.add_route("/metrics", handle_metrics)
 
 
-@app.post("/form_status")
-async def from_status(
+@app.post("/collections/{collection_id}/validate_constrains")
+async def validate_constrains(
+    collection_id,
     request: fastapi.Request,
     body: Dict[str, Any] = fastapi.Body(...)
 ):
-    # base_url = str(request.base_url)
-    # storage_url = urllib.parse.urljoin(base_url, settings.document_storage_url)
+
     form_status = constrictor.compute_form_status(
-        body["collection_id"],
-        body["selection"],
+        collection_id,
+        body["inputs"],
     )
 
     return form_status
