@@ -49,5 +49,27 @@ class Settings(pydantic.BaseSettings):
     processes_base_url: str = "/api/processing/"
 
 
+def ensure_settings(
+    settings: Settings | None = None,
+) -> Settings:
+    """If `settings` is None, create a new Settings object.
+
+    Parameters
+    ----------
+    settings: an optional Settings object to be set as general settings.
+
+    Returns
+    -------
+    Settings:
+        General settings.
+    """
+    global general_settings
+    if settings and isinstance(settings, pydantic.BaseSettings):
+        general_settings = settings
+    else:
+        general_settings = Settings()
+    return general_settings
+
+
 dbsettings = SqlalchemySettings()
 settings = Settings()

@@ -3,8 +3,10 @@ import os
 import urllib
 from typing import Any, Dict, List, Set
 
+import cads_catalogue
 import requests
-import  cads_catalogue
+
+from . import client, config
 
 
 def parse_valid_combinations(
@@ -245,18 +247,6 @@ def get_always_valid_params(
     return result
 
 
-def read_from_db(
-    collection_id: str,
-    params: List[str] = ["form", "constraints"]
-) -> List[str]:
-    session_obj = cads_catalogue.database.ensure_session_obj(None)
-    with session_obj() as session:
-        query = session.query(cads_catalogue.database.Resource)
-        collection = query.filter_by(resource_uid=collection_id).one()
-    out = [getattr(collection, par) for par in params]
-    return out
-
-
 def parse_form(form: List[Dict[str, Any]]) -> Dict[str, set]:
     """
     Parse the from for a given dataset extracting the information on the possible selections.
@@ -281,25 +271,3 @@ def parse_form(form: List[Dict[str, Any]]) -> Dict[str, set]:
         else:
             pass
     return selections
-
-
-def compute_form_status(
-    collection_id: str, selection: Dict[str, List[str]]
-) -> Dict[str, List[str]]:
-    storage_url = os.environ["OBJECT_STORAGE_URL"]
-
-    form_path, valid_combinations_path = read_from_db(
-        collection_id, params=["form", "constraints"]
-    )
-
-    form_url = urllib.parse.urljoin(storage_url, form_path)
-    raw_form = requests.get(form_url).json()
-    form = parse_form(raw_form)
-
-    valid_combinations_url = urllib.parse.urljoin(storage_url, valid_combinations_path)
-    raw_valid_combinations = requests.get(valid_combinations_url).json()
-    valid_combinations = parse_valid_combinations(raw_valid_combinations)
-
-    selection = parse_selection(selection)
-
-    return apply_constraints(form, valid_combinations, selection)

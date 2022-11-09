@@ -33,7 +33,7 @@ from brotli_asgi import BrotliMiddleware
 from pydantic import BaseModel, Field, validator
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-from . import client, config, constrictor, exceptions, extensions
+from . import client, config, exceptions, extensions
 from .config import settings
 
 logger = logging.getLogger(__name__)
@@ -61,11 +61,10 @@ async def validate_constrains(
     request: fastapi.Request,
     body: Dict[str, Dict[str, List[str]]] = fastapi.Body(...),
 ) -> Dict[str, List[Any]]:
-    form_status = constrictor.compute_form_status(
+    form_status = client.validate_constrains(
         collection_id,
         body["inputs"],
     )
-
     return form_status
 
 
