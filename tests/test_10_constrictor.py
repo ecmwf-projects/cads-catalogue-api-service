@@ -1,15 +1,33 @@
 from typing import Any, Dict, List, Set
 
-from request_constraints import constrictor
+from cads_catalogue_api_service import constrictor
 
-possible_selections: Dict[str, List[Any]] = {
-    "level": ["500", "850", "1000"],
-    "param": ["Z", "T"],
-    "step": ["24", "36", "48"],
-    "number": ["1", "2", "3"],
-}
+forms: List[Dict[str, List[Any] | str]] = [
+    {
+        "details": {
+            "groups": [{"values": ["Z"]}, {"values": ["T"]}],
+        },
+        "name": "param",
+        "type": "StringListArrayWidget",
+    },
+    {
+        "details": {"values": ["500", "850", "1000"]},
+        "name": "level",
+        "type": "StringListWidget",
+    },
+    {
+        "details": {"values": ["24", "36", "48"]},
+        "name": "step",
+        "type": "StringListWidget",
+    },
+    {
+        "details": {"values": ["1", "2", "3"]},
+        "name": "number",
+        "type": "StringListWidget",
+    },
+]
 
-parsed_possible_selections: Dict[str, Set[Any]] = {
+parsed_forms: Dict[str, Set[Any]] = {
     "level": {"500", "850", "1000"},
     "param": {"Z", "T"},
     "step": {"24", "36", "48"},
@@ -28,7 +46,7 @@ parsed_valid_combinations: List[Dict[str, Set[Any]]] = [
     {"level": {"850"}, "param": {"T"}, "step": {"36", "48"}},
 ]
 
-current_selections: List[Dict[str, List[Any]]] = [
+selections: List[Dict[str, List[Any]]] = [
     {},  # 0
     {"number": ["1", "2"]},  # 1
     {"level": ["850"], "param": ["Z"]},  # 2
@@ -52,7 +70,7 @@ current_selections: List[Dict[str, List[Any]]] = [
     },  # 10
 ]
 
-parsed_current_selections: List[Dict[str, Set[Any]]] = [
+parsed_selections: List[Dict[str, Set[Any]]] = [
     {},  # 0
     {"number": {"1", "2"}},  # 1
     {"level": {"850"}, "param": {"Z"}},  # 2
@@ -196,10 +214,10 @@ expected_form_states: List[Dict[str, Set[Any]]] = [
 
 
 def test_get_possible_values() -> None:
-    for i in range(len(parsed_current_selections)):
+    for i in range(len(parsed_selections)):
         result = constrictor.get_possible_values(
-            parsed_possible_selections,
-            parsed_current_selections[i],
+            parsed_forms,
+            parsed_selections[i],
             parsed_valid_combinations,
         )
 
@@ -214,10 +232,10 @@ def test_get_possible_values() -> None:
 
 
 def test_get_form_state() -> None:
-    for i in range(len(parsed_current_selections)):
+    for i in range(len(parsed_selections)):
         result = constrictor.get_form_state(
-            parsed_possible_selections,
-            parsed_current_selections[i],
+            parsed_forms,
+            parsed_selections[i],
             parsed_valid_combinations,
         )
 
@@ -234,9 +252,9 @@ def test_get_form_state() -> None:
 def test_apply_constraints() -> None:
     for i in range(len(expected_form_states)):
         result = constrictor.apply_constraints(
-            parsed_possible_selections,
+            parsed_forms,
             parsed_valid_combinations,
-            parsed_current_selections[i],
+            parsed_selections[i],
         )
 
         try:
@@ -257,22 +275,17 @@ def test_parse_valid_combinations() -> None:
     assert [{}] == constrictor.parse_valid_combinations([{}])
 
 
-def test_parse_possible_selections() -> None:
-    assert parsed_possible_selections == constrictor.parse_possible_selections(
-        possible_selections
-    )
-    assert {} == constrictor.parse_possible_selections({})
+def test_parse_form() -> None:
+    assert parsed_forms == constrictor.parse_form(forms)
+    assert {} == constrictor.parse_form([])
 
 
-def test_parse_current_selection() -> None:
-    for i in range(len(current_selections)):
+def test_parse_selection() -> None:
+    for i in range(len(selections)):
         try:
-            assert parsed_current_selections[i] == constrictor.parse_current_selection(
-                current_selections[i]
-            )
+            assert parsed_selections[i] == constrictor.parse_selection(selections[i])
         except AssertionError:
             print(
-                f"Iteration number {i} of "
-                f"{test_parse_current_selection.__name__}() failed!"
+                f"Iteration number {i} of " f"{test_parse_selection.__name__}() failed!"
             )
             raise AssertionError

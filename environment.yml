@@ -20,6 +20,7 @@ dependencies:
 - requests
 - sqlalchemy
 - sqlalchemy-stubs
+- sqlalchemy-utils
 - tabulate   # for test notebooks
 - uvicorn
 - jsonschema

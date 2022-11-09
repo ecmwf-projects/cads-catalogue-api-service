@@ -1,10 +1,10 @@
 """Main module of the request-constraints API."""
 import os
-from typing import Any, Dict, List, Set
-import requests
 import urllib
+from typing import Any, Dict, List, Set
 
-from cads_catalogue import database
+import requests
+import  cads_catalogue
 
 
 def parse_valid_combinations(
@@ -32,9 +32,7 @@ def parse_valid_combinations(
     return result
 
 
-def parse_selection(
-    selection: Dict[str, List[Any]]
-) -> Dict[str, Set[Any]]:
+def parse_selection(selection: Dict[str, List[Any]]) -> Dict[str, Set[Any]]:
     """
     Parse current selection and convert Dict[str, List[Any]] into Dict[str, Set[Any]].
 
@@ -67,9 +65,7 @@ def apply_constraints(
     :return: a dictionary containing all values that should be left
     active for selection, in JSON format
     """
-    return format_to_json(
-        get_form_state(form, selection, valid_combinations)
-    )
+    return format_to_json(get_form_state(form, selection, valid_combinations))
 
 
 def get_possible_values(
@@ -207,9 +203,7 @@ def get_form_state(
         sub_selection = selection.copy()
         if name in sub_selection:
             sub_selection.pop(name)
-        sub_results = get_possible_values(
-            form, sub_selection, valid_combinations
-        )
+        sub_results = get_possible_values(form, sub_selection, valid_combinations)
         if sub_results:
             result[name] = sub_results[name]
     return result
@@ -251,10 +245,13 @@ def get_always_valid_params(
     return result
 
 
-def read_from_db(collection_id, params=["form", "constraints"]):
-    session_obj = database.ensure_session_obj(None)
+def read_from_db(
+    collection_id: str,
+    params: List[str] = ["form", "constraints"]
+) -> List[str]:
+    session_obj = cads_catalogue.database.ensure_session_obj(None)
     with session_obj() as session:
-        query = session.query(database.Resource)
+        query = session.query(cads_catalogue.database.Resource)
         collection = query.filter_by(resource_uid=collection_id).one()
     out = [getattr(collection, par) for par in params]
     return out
@@ -262,14 +259,14 @@ def read_from_db(collection_id, params=["form", "constraints"]):
 
 def parse_form(form: List[Dict[str, Any]]) -> Dict[str, set]:
     """
-       Parse the from for a given dataset extracting the information on the possible selections.
+    Parse the from for a given dataset extracting the information on the possible selections.
 
-       :param form: a dictionary containing
-       all possible selections in JSON format
-       :type: Dict[str, List[Any]]
+    :param form: a dictionary containing
+    all possible selections in JSON format
+    :type: Dict[str, List[Any]]
 
-       :rtype: Dict[str, Set[Any]]:
-       :return: a Dict[str, Set[Any]] containing all possible selections.
+    :rtype: Dict[str, Set[Any]]:
+    :return: a Dict[str, Set[Any]] containing all possible selections.
     """
     selections = {}
     for parameter in form:
@@ -277,7 +274,7 @@ def parse_form(form: List[Dict[str, Any]]) -> Dict[str, set]:
             selections[parameter["name"]] = set(parameter["details"]["values"])
         elif parameter["type"] == "StringListArrayWidget":
             selections[parameter["name"]] = {}
-            selections_p = set([])
+            selections_p: Set[str] = set([])
             for sub_parameter in parameter["details"]["groups"]:
                 selections_p = selections_p | set(sub_parameter["values"])
             selections[parameter["name"]] = selections_p
@@ -286,52 +283,23 @@ def parse_form(form: List[Dict[str, Any]]) -> Dict[str, set]:
     return selections
 
 
-def retrieve_form(form_path, storage_url):
-    """
-   Retrieve the form from the database and extract the possible selections.
+def compute_form_status(
+    collection_id: str, selection: Dict[str, List[str]]
+) -> Dict[str, List[str]]:
+    storage_url = os.environ["OBJECT_STORAGE_URL"]
 
-   :param form_path: form relative path in the  storage
-   :type: str
+    form_path, valid_combinations_path = read_from_db(
+        collection_id, params=["form", "constraints"]
+    )
 
-   :param storage_url: storge url
-   :type: str
-
-   :rtype: Dict[str, Set[Any]]:
-   :return: a Dict[str, Set[Any]] containing all possible selections.
-    """
     form_url = urllib.parse.urljoin(storage_url, form_path)
+    raw_form = requests.get(form_url).json()
+    form = parse_form(raw_form)
 
-    form = requests.get(form_url).json()
-
-    return parse_form(form)
-
-
-def retrieve_valid_combinations(valid_combinations_path, storage_url):
-    """
-    Download ad pre-process the valid combinations for a given dataset.
-
-       :param valid_combinations_path: valid_combinations relative path in the  storage
-   :type: str
-
-   :param storage_url: storge url
-   :type: str
-
-    :rtype: list[Dict[str, Set[Any]]]:
-    :return: list of Dict[str, Set[Any]] containing all valid combinations
-    for a given dataset.
-
-    """
-    storage_url = os.environ["OBJECT_STORAGE_URL"]
     valid_combinations_url = urllib.parse.urljoin(storage_url, valid_combinations_path)
-    valid_combinations = requests.get(valid_combinations_url).json()
-    return parse_valid_combinations(valid_combinations)
+    raw_valid_combinations = requests.get(valid_combinations_url).json()
+    valid_combinations = parse_valid_combinations(raw_valid_combinations)
 
-
-def compute_form_status(collection_id, selection):
-    form_path, valid_combinations_path = read_from_db(collection_id, params=["form", "constraints"])
-    storage_url = os.environ["OBJECT_STORAGE_URL"]
-    form = retrieve_form(form_path, storage_url)
-    valid_combinations = retrieve_valid_combinations(valid_combinations_path, storage_url)
     selection = parse_selection(selection)
 
     return apply_constraints(form, valid_combinations, selection)

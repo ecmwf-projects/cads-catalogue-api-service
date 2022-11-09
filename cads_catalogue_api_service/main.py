@@ -18,8 +18,8 @@ This largely depends on stac_fastapi to generate the RESTful API.
 # limitations under the License.
 
 import logging
-from typing import Any, Dict
-import urllib
+from typing import Any, Dict, List
+
 import fastapi
 import fastapi.openapi
 import fastapi.responses
@@ -30,12 +30,10 @@ import stac_fastapi.types.conformance
 import stac_fastapi.types.links
 import stac_pydantic
 from brotli_asgi import BrotliMiddleware
+from pydantic import BaseModel, Field, validator
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-from . import client, config, exceptions, extensions
-from pydantic import BaseModel, Field, validator
-
-from . import constrictor
+from . import client, config, constrictor, exceptions, extensions
 from .config import settings
 
 logger = logging.getLogger(__name__)
@@ -59,11 +57,10 @@ app.add_route("/metrics", handle_metrics)
 
 @app.post("/collections/{collection_id}/validate_constrains")
 async def validate_constrains(
-    collection_id,
+    collection_id: str,
     request: fastapi.Request,
-    body: Dict[str, Any] = fastapi.Body(...)
-):
-
+    body: Dict[str, Dict[str, List[str]]] = fastapi.Body(...),
+) -> Dict[str, List[Any]]:
     form_status = constrictor.compute_form_status(
         collection_id,
         body["inputs"],
