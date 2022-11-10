@@ -7,10 +7,11 @@ import requests
 API_ROOT_PATH = os.environ.get("API_ROOT_PATH", "")
 API_ROOT_PATH = API_ROOT_PATH if API_ROOT_PATH.endswith("/") else f"{API_ROOT_PATH}/"
 
+format_checking = jsonschema.FormatChecker(formats=["date", "date-time"])
+
 ref_mapping = {}
 
 for schema_def in (
-    "base_variables",
     "dataset_preview",
     "dataset",
     "datasets",
@@ -37,6 +38,7 @@ CollectionValidator = jsonschema.validators.validator_for(
 collection_set_validator = CollectionSetValidator(
     schema=ref_mapping["/schemas/datasets"],
     resolver=jsonschema.RefResolver("", {}, store=ref_mapping),
+    format_checker=format_checking,
 )
 collection_validator = CollectionValidator(
     schema=ref_mapping["/schemas/dataset_preview"],

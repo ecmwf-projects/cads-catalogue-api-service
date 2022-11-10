@@ -7,9 +7,10 @@ dependencies:
 - pip
 - pytest
 - pytest-cov
-  # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
+    # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
 - fastapi
 - requests
+- rfc3339-validator
 - sqlalchemy
 - sqlalchemy-stubs
 - jsonschema

@@ -6,19 +6,16 @@
   "type": "object",
   "allOf": [
     {
-      "$ref": "https://raw.githubusercontent.com/radiantearth/stac-spec/master/collection-spec/json-schema/collection.json"
+      "$ref": "https://raw.githubusercontent.com/radiantearth/stac-spec/v1.0.0/collection-spec/json-schema/collection.json"
+    },
+    {
+      "$ref": "https://stac-extensions.github.io/timestamps/v1.0.0/schema.json#/definitions/fields"
     }
   ],
   "properties": {
     "license": {
       "enum": ["various", "proprietary"]
-    },
-    "tmp:publication_date": {
-      "type": "string",
-      "format": "date",
-      "title": "Publication date",
-      "description": "Date of publication of the dataset"
     }
   },
-  "required": ["tmp:publication_date"]
+  "required": ["published"]
 }

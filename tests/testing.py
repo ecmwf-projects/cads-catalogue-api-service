@@ -189,19 +189,11 @@ def generate_expected(
                 },
             ]
         ),
-        "tmp:publication_date": "2020-01-01",
+        "published": "2020-01-01T00:00:00Z",
         "tmp:doi": "11.2222/cads.12345",
     }
     if not preview:
         expected = {
             **expected,
-            **{
-                "tmp:description": {
-                    "file-format": "GRIB",
-                    "data-type": "Gridded",
-                    "projection": "Regular latitude-longitude grid.",
-                },
-                "tmp:variables": ["var1", "var2"],
-            },
         }
     return expected
