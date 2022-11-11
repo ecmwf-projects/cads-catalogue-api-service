@@ -10,6 +10,15 @@
     },
     {
       "$ref": "https://stac-extensions.github.io/timestamps/v1.0.0/schema.json#/definitions/fields"
+    },
+    {
+      "$ref": "https://stac-extensions.github.io/scientific/v1.0.0/schema.json#/definitions/require_any_field"
+    },
+    {
+      "$ref": "https://stac-extensions.github.io/scientific/v1.0.0/schema.json#/definitions/require_any_field"
+    },
+    {
+      "$ref": "https://stac-extensions.github.io/scientific/v1.0.0/schema.json#/definitions/fields"
     }
   ],
   "properties": {
@@ -17,5 +26,5 @@
       "enum": ["various", "proprietary"]
     }
   },
-  "required": ["published"]
+  "required": ["published", "sci:doi"]
 }

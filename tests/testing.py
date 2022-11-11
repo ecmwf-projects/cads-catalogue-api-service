@@ -190,7 +190,7 @@ def generate_expected(
             ]
         ),
         "published": "2020-01-01T00:00:00Z",
-        "tmp:doi": "11.2222/cads.12345",
+        "sci:doi": "11.2222/cads.12345",
     }
     if not preview:
         expected = {

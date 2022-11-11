@@ -349,7 +349,7 @@ def collection_serializer(
             if db_model.publication_date
             else {}
         ),
-        "tmp:doi": db_model.doi,
+        "sci:doi": db_model.doi,
     }
 
     # properties not shown in preview mode
@@ -416,10 +416,8 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         STACConformanceClasses = stac_fastapi.types.conformance.STACConformanceClasses
         base_conformance_classes = [
             STACConformanceClasses.CORE,
-            # TODO: implemented but not released yet
-            # STACConformanceClasses.COLLECTIONS,
-            "https://api.stacspec.org/v1.0.0-rc.1/collections",
-            "https://stac-extensions.github.io/timestamps/v1.0.0/schema.json",
+            STACConformanceClasses.COLLECTIONS,
+            "https://github.com/stac-extensions/scientific",
         ]
 
         for extension in self.extensions:
