@@ -349,7 +349,9 @@ def collection_serializer(
             if db_model.publication_date
             else {}
         ),
-        "sci:doi": db_model.doi,
+        # FIXME: this is not a 100% correct implementation of the STAC scientific extension.
+        # One of the sci:xxx should be there, but CAMS dataset are not doing this
+        **({"sci:doi": db_model.doi} if db_model.doi else {}),
     }
 
     # properties not shown in preview mode
