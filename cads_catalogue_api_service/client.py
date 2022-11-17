@@ -71,7 +71,6 @@ def validate_constrains(
     collection_id: str, selection: Dict[str, List[str]]
 ) -> Dict[str, List[str]]:
 
-    cads_catalogue.config.ensure_settings()
     settings = config.ensure_settings()
     storage_url = settings.document_storage_url
     dataset = lookup_dataset_by_id(collection_id)

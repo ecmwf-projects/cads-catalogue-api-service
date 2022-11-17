@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
+from unittest import mock
+from typing import List, Dict, Any, Union
+
 import cads_catalogue.database
 import fastapi.testclient
 import pytest
@@ -20,7 +24,47 @@ import stac_fastapi.types
 import cads_catalogue_api_service.client
 import cads_catalogue_api_service.main
 
+
 client = fastapi.testclient.TestClient(cads_catalogue_api_service.main.app)
+
+
+forms: List[Dict[str, Union[List[Any], str]]] = [
+    {
+        "details": {
+            "groups": [{"values": ["1"]}, {"values": ["2", "3"]}],
+        },
+        "name": "param1",
+        "type": "StringListArrayWidget",
+    },
+    {
+        "details": {"values": ["1", "2", "3"]},
+        "name": "param2",
+        "type": "StringListWidget",
+    },
+    {
+        "details": {"values": ["1", "2", "3"]},
+        "name": "param3",
+        "type": "StringChoiceWidget",
+    },
+]
+
+
+constraints: List[Dict[str, List[Any]]] = [
+    {"param1": ["1"], "param2": ["1"], "param3": ["1"]},
+    {"param1": ["1"], "param2": ["3"], "param3": ["3"]},
+    {"param1": ["2", "3"], "param2": ["2", "3"], "param3": ["2", "3"]},
+]
+
+
+Dataset = collections.namedtuple("Dataset", ["form", "constraints"])
+
+
+class Response:
+    def __init__(self, json) -> None:
+        self._json = json
+
+    def json(self):
+        return self._json
 
 
 class Extension:
@@ -99,3 +143,27 @@ def test_get_reference() -> None:
 
     # Unknown structure are skipped and not added to reference list
     assert references is None
+
+
+@mock.patch(
+    "requests.get", side_effect=[Response(json=forms), Response(json=constraints)],
+)
+@mock.patch(
+    "cads_catalogue_api_service.client.lookup_dataset_by_id",
+    return_value=Dataset(form="form_url", constraints="constraints_url")
+)
+def test_validate_constrains(get, lookup_dataset_by_id) -> None:
+    selection = {"param1": ["1"], "param2": ["3"]}
+    expected_output = {
+        "param1": ["1", "2", "3"],
+        "param2": ["1", "3"],
+        "param3": ["3"]
+    }
+
+    output = client.post(
+        "/collections/reanalysis-era5-land-monthly-means/validate_constrains",
+        json={"inputs": selection}
+    ).json()
+
+    for par in expected_output:
+        assert set(expected_output[par]) == set(output[par])
