@@ -1,12 +1,5 @@
 """Main module of the request-constraints API."""
-import os
-import urllib
 from typing import Any, Dict, List, Set
-
-import cads_catalogue
-import requests
-
-from . import client, config
 
 
 def parse_valid_combinations(
@@ -260,7 +253,7 @@ def parse_form(form: List[Dict[str, Any]]) -> Dict[str, set]:
     """
     selections = {}
     for parameter in form:
-        if parameter["type"] == "StringListWidget":
+        if parameter["type"] in ("StringListWidget", "StringChoiceWidget"):
             selections[parameter["name"]] = set(parameter["details"]["values"])
         elif parameter["type"] == "StringListArrayWidget":
             selections[parameter["name"]] = {}

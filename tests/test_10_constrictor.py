@@ -23,7 +23,7 @@ forms: List[Dict[str, List[Any] | str]] = [
     {
         "details": {"values": ["1", "2", "3"]},
         "name": "number",
-        "type": "StringListWidget",
+        "type": "StringChoiceWidget",
     },
 ]
 
@@ -277,6 +277,8 @@ def test_parse_valid_combinations() -> None:
 
 def test_parse_form() -> None:
     assert parsed_forms == constrictor.parse_form(forms)
+    assert parsed_forms == constrictor.parse_form(forms)
+
     assert {} == constrictor.parse_form([])
 
 
