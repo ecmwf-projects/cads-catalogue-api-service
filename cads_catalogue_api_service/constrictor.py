@@ -1,6 +1,7 @@
 """Main module of the request-constraints API."""
 from typing import Any, Dict, List, Set
 
+
 def ensure_list(v):
     if not isinstance(v, list | tuple):
         v = [v]

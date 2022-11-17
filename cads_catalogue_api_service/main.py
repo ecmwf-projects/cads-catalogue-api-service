@@ -59,7 +59,7 @@ app.add_route("/metrics", handle_metrics)
 async def validate_constrains(
     collection_id: str,
     request: fastapi.Request,
-    body: Dict[str, Dict[str, Union[str,  List[str]]]] = fastapi.Body(...),
+    body: Dict[str, Dict[str, Union[str, List[str]]]] = fastapi.Body(...),
 ) -> Dict[str, List[Any]]:
     form_status = client.validate_constrains(
         collection_id,
