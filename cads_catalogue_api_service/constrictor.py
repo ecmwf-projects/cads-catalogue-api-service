@@ -1,6 +1,11 @@
 """Main module of the request-constraints API."""
 from typing import Any, Dict, List, Set
 
+def ensure_list(v):
+    if not isinstance(v, list | tuple):
+        v = [v]
+    return v
+
 
 def parse_valid_combinations(
     valid_combinations: List[Dict[str, List[Any]]]
@@ -20,8 +25,7 @@ def parse_valid_combinations(
     for combination in valid_combinations:
         parsed_valid_combination = {}
         for field_name, field_values in combination.items():
-            if not isinstance(field_values, list | tuple):
-                field_values = [field_values]
+            field_values = ensure_list(field_values)
             parsed_valid_combination[field_name] = set(field_values)
         result.append(parsed_valid_combination)
     return result
@@ -39,8 +43,7 @@ def parse_selection(selection: Dict[str, List[Any]]) -> Dict[str, Set[Any]]:
     """
     result = {}
     for field_name, field_values in selection.items():
-        if not isinstance(field_values, list | tuple):
-            field_values = [field_values]
+        field_values = ensure_list(field_values)
         result[field_name] = set(field_values)
     return result
 
@@ -254,12 +257,15 @@ def parse_form(form: List[Dict[str, Any]]) -> Dict[str, set]:
     selections = {}
     for parameter in form:
         if parameter["type"] in ("StringListWidget", "StringChoiceWidget"):
-            selections[parameter["name"]] = set(parameter["details"]["values"])
+            values = parameter["details"]["values"]
+            values = ensure_list(values)
+            selections[parameter["name"]] = set(values)
         elif parameter["type"] == "StringListArrayWidget":
             selections[parameter["name"]] = {}
             selections_p: Set[str] = set([])
             for sub_parameter in parameter["details"]["groups"]:
-                selections_p = selections_p | set(sub_parameter["values"])
+                values = ensure_list(sub_parameter["values"])
+                selections_p = selections_p | set(values)
             selections[parameter["name"]] = selections_p
         else:
             pass

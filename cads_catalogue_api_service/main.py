@@ -18,7 +18,7 @@ This largely depends on stac_fastapi to generate the RESTful API.
 # limitations under the License.
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import fastapi
 import fastapi.openapi
@@ -59,7 +59,7 @@ app.add_route("/metrics", handle_metrics)
 async def validate_constrains(
     collection_id: str,
     request: fastapi.Request,
-    body: Dict[str, Dict[str, List[str]]] = fastapi.Body(...),
+    body: Dict[str, Dict[str, Union[str,  List[str]]]] = fastapi.Body(...),
 ) -> Dict[str, List[Any]]:
     form_status = client.validate_constrains(
         collection_id,

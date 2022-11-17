@@ -52,10 +52,10 @@ selections: List[Dict[str, List[Any]]] = [
     {"level": ["850"], "param": ["Z"]},  # 2
     {"level": ["850"], "param": ["Z"], "number": ["1", "2"]},  # 3
     {"level": ["850"]},  # 4
-    {"level": ["850"], "number": ["1"]},  # 5
+    {"level": ["850"], "number": "1"},  # 5
     {"level": ["1000"], "step": ["24"]},  # 6
     {"level": ["850", "1000"], "param": ["T", "Z"]},  # 7
-    {"level": ["850"], "param": ["T"], "step": ["48", "36"], "number": ["1"]},  # 8
+    {"level": ["850"], "param": ["T"], "step": ["48", "36"], "number": "1"},  # 8
     {
         "level": ["850"],
         "param": ["T"],
