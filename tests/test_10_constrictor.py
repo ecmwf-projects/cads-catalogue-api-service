@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Set
 
 from cads_catalogue_api_service import constrictor
 
-forms: List[Dict[str, List[Any] | str]] = [
+form: List[Dict[str, List[Any] | str]] = [
     {
         "details": {
             "groups": [{"values": ["Z"]}, {"values": ["T"]}],
@@ -27,7 +27,7 @@ forms: List[Dict[str, List[Any] | str]] = [
     },
 ]
 
-parsed_forms: Dict[str, Set[Any]] = {
+parsed_form: Dict[str, Set[Any]] = {
     "level": {"500", "850", "1000"},
     "param": {"Z", "T"},
     "step": {"24", "36", "48"},
@@ -216,7 +216,7 @@ expected_form_states: List[Dict[str, Set[Any]]] = [
 def test_get_possible_values() -> None:
     for i in range(len(parsed_selections)):
         result = constrictor.get_possible_values(
-            parsed_forms,
+            parsed_form,
             parsed_selections[i],
             parsed_valid_combinations,
         )
@@ -234,7 +234,7 @@ def test_get_possible_values() -> None:
 def test_get_form_state() -> None:
     for i in range(len(parsed_selections)):
         result = constrictor.get_form_state(
-            parsed_forms,
+            parsed_form,
             parsed_selections[i],
             parsed_valid_combinations,
         )
@@ -252,7 +252,7 @@ def test_get_form_state() -> None:
 def test_apply_constraints() -> None:
     for i in range(len(expected_form_states)):
         result = constrictor.apply_constraints(
-            parsed_forms,
+            parsed_form,
             parsed_valid_combinations,
             parsed_selections[i],
         )
@@ -276,9 +276,7 @@ def test_parse_valid_combinations() -> None:
 
 
 def test_parse_form() -> None:
-    assert parsed_forms == constrictor.parse_form(forms)
-    assert parsed_forms == constrictor.parse_form(forms)
-
+    assert parsed_form == constrictor.parse_form(form)
     assert {} == constrictor.parse_form([])
 
 
