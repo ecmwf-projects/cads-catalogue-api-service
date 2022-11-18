@@ -71,7 +71,7 @@ def validate_constrains(
     collection_id: str, selection: Dict[str, List[str]]
 ) -> Dict[str, List[str]]:
 
-    settings = config.ensure_settings()
+    settings = config.Settings()
     storage_url = settings.document_storage_url
     dataset = lookup_dataset_by_id(collection_id)
 

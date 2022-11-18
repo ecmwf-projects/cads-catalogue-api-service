@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import collections
+from typing import Any, Dict, List, Union
 from unittest import mock
-from typing import List, Dict, Any, Union
 
 import cads_catalogue.database
 import fastapi.testclient
@@ -23,7 +23,6 @@ import stac_fastapi.types
 
 import cads_catalogue_api_service.client
 import cads_catalogue_api_service.main
-
 
 client = fastapi.testclient.TestClient(cads_catalogue_api_service.main.app)
 
@@ -146,23 +145,20 @@ def test_get_reference() -> None:
 
 
 @mock.patch(
-    "requests.get", side_effect=[Response(json=forms), Response(json=constraints)],
+    "requests.get",
+    side_effect=[Response(json=forms), Response(json=constraints)],
 )
 @mock.patch(
     "cads_catalogue_api_service.client.lookup_dataset_by_id",
-    return_value=Dataset(form="form_url", constraints="constraints_url")
+    return_value=Dataset(form="form_url", constraints="constraints_url"),
 )
 def test_validate_constrains(get, lookup_dataset_by_id) -> None:
     selection = {"param1": ["1"], "param2": ["3"]}
-    expected_output = {
-        "param1": ["1", "2", "3"],
-        "param2": ["1", "3"],
-        "param3": ["3"]
-    }
+    expected_output = {"param1": ["1", "2", "3"], "param2": ["1", "3"], "param3": ["3"]}
 
     output = client.post(
         "/collections/reanalysis-era5-land-monthly-means/validate_constrains",
-        json={"inputs": selection}
+        json={"inputs": selection},
     ).json()
 
     for par in expected_output:
