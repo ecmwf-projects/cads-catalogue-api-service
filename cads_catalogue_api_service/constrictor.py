@@ -291,11 +291,13 @@ def lookup_dataset_by_id(
 
 
 def validate_constraints(
-    collection_id: str, selection: Dict[str, List[str]], timeout: int = 10
+    collection_id: str, selection: Dict[str, List[str]]
 ) -> Dict[str, List[str]]:
 
     settings = config.Settings()
     storage_url = settings.document_storage_url
+    timeout = settings.document_storage_access_timeout
+
     dataset = lookup_dataset_by_id(collection_id)
 
     form_url = urllib.parse.urljoin(storage_url, dataset.form)
