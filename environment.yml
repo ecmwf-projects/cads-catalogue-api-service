@@ -18,6 +18,7 @@ dependencies:
 - fastapi
 - pystac
 - requests
+- rfc3339-validator
 - sqlalchemy
 - sqlalchemy-stubs
 - tabulate   # for test notebooks
