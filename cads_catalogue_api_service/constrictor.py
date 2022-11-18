@@ -1,5 +1,11 @@
 """Main module of the request-constraints API."""
+import urllib
 from typing import Any, Dict, List, Set
+
+import cads_catalogue.database
+import requests
+
+from . import config, constrictor
 
 
 def ensure_list(v):
@@ -271,3 +277,37 @@ def parse_form(form: List[Dict[str, Any]]) -> Dict[str, set]:
         else:
             pass
     return selections
+
+
+def lookup_dataset_by_id(
+    id: str,
+) -> List[str]:
+    session_obj = cads_catalogue.database.ensure_session_obj(None)
+    resource = cads_catalogue.database.Resource
+    with session_obj() as session:
+        query = session.query(resource)
+        out = query.filter(resource.resource_uid == id).one()
+    return out
+
+
+def validate_constraints(
+    collection_id: str, selection: Dict[str, List[str]], timeout: int = 10
+) -> Dict[str, List[str]]:
+
+    settings = config.Settings()
+    storage_url = settings.document_storage_url
+    dataset = lookup_dataset_by_id(collection_id)
+
+    form_url = urllib.parse.urljoin(storage_url, dataset.form)
+    raw_form = requests.get(form_url, timeout=timeout).json()
+    form = constrictor.parse_form(raw_form)
+
+    valid_combinations_url = urllib.parse.urljoin(storage_url, dataset.constraints)
+    raw_valid_combinations = requests.get(
+        valid_combinations_url, timeout=timeout
+    ).json()
+    valid_combinations = constrictor.parse_valid_combinations(raw_valid_combinations)
+
+    selection = constrictor.parse_selection(selection)
+
+    return constrictor.apply_constraints(form, valid_combinations, selection)

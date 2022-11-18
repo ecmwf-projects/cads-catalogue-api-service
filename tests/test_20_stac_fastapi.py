@@ -149,15 +149,15 @@ def test_get_reference() -> None:
     side_effect=[Response(json=forms), Response(json=constraints)],
 )
 @mock.patch(
-    "cads_catalogue_api_service.client.lookup_dataset_by_id",
+    "cads_catalogue_api_service.constrictor.lookup_dataset_by_id",
     return_value=Dataset(form="form_url", constraints="constraints_url"),
 )
-def test_validate_constrains(get, lookup_dataset_by_id) -> None:
+def test_validate_constraints(get, lookup_dataset_by_id) -> None:
     selection = {"param1": ["1"], "param2": ["3"]}
     expected_output = {"param1": ["1", "2", "3"], "param2": ["1", "3"], "param3": ["3"]}
 
     output = client.post(
-        "/collections/reanalysis-era5-land-monthly-means/validate_constrains",
+        "/collections/reanalysis-era5-land-monthly-means/validate_constraints",
         json={"inputs": selection},
     ).json()
 

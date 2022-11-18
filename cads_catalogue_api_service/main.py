@@ -23,6 +23,7 @@ from typing import Any, Dict, List, Union
 import fastapi
 import fastapi.openapi
 import fastapi.responses
+import requests
 import stac_fastapi.api.app
 import stac_fastapi.extensions.core
 import stac_fastapi.types
@@ -33,8 +34,7 @@ from brotli_asgi import BrotliMiddleware
 from pydantic import BaseModel, Field, validator
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-from . import client, config, exceptions, extensions
-from .config import settings
+from . import client, config, constrictor, exceptions, extensions
 
 logger = logging.getLogger(__name__)
 
@@ -55,13 +55,19 @@ app = api.app
 app.add_route("/metrics", handle_metrics)
 
 
-@app.post("/collections/{collection_id}/validate_constrains")
-async def validate_constrains(
+# @app.exception_handler(api.RequestError)
+# async def request_exception_handler(request, exc):
+#     logging.exception(f"user: {exc.user_id!r}: invalid request")
+#     return JSONResponse(content={"detail": str(exc)}, status_code=422,)
+
+
+@app.post("/collections/{collection_id}/validate_constraints")
+async def validate_constraints(
     collection_id: str,
     request: fastapi.Request,
     body: Dict[str, Dict[str, Union[str, List[str]]]] = fastapi.Body(...),
 ) -> Dict[str, List[Any]]:
-    form_status = client.validate_constrains(
+    form_status = constrictor.validate_constraints(
         collection_id,
         body["inputs"],
     )
@@ -95,3 +101,12 @@ async def unicorn_exception_handler(
         status_code=501,
         content={"message": exc.message},
     )
+
+
+@app.exception_handler(requests.exceptions.ReadTimeout)
+async def request_readtimeout_handler(
+    request: fastapi.Request, exc: requests.exceptions.ReadTimeout
+):
+    """Catch ReadTimeout exceptions to properly trigger an HTTP 504."""
+    out = fastapi.responses.JSONResponse(status_code=504, content={"message": str(exc)})
+    return out

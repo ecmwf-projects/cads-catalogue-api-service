@@ -16,20 +16,19 @@
 
 import logging
 import urllib
-from typing import Any, Dict, List, Type
+from typing import Any, Type
 
 import attrs
 import cads_catalogue.database
 import fastapi
 import fastapi_utils.session
-import requests
 import sqlalchemy.dialects
 import sqlalchemy.orm
 import stac_fastapi.types
 import stac_fastapi.types.core
 import stac_pydantic
 
-from . import config, constrictor, exceptions, models
+from . import config, exceptions, models
 
 logger = logging.getLogger(__name__)
 
@@ -54,38 +53,6 @@ DEFINED_SORT_CRITERIA = {
     "title": ("__le__", "__gt__"),
     "id": ("__ge__", "__lt__"),
 }
-
-
-def lookup_dataset_by_id(
-    id: str,
-) -> List[str]:
-    session_obj = cads_catalogue.database.ensure_session_obj(None)
-    resource = cads_catalogue.database.Resource
-    with session_obj() as session:
-        query = session.query(resource)
-        out = query.filter(resource.resource_uid == id).one()
-    return out
-
-
-def validate_constrains(
-    collection_id: str, selection: Dict[str, List[str]]
-) -> Dict[str, List[str]]:
-
-    settings = config.Settings()
-    storage_url = settings.document_storage_url
-    dataset = lookup_dataset_by_id(collection_id)
-
-    form_url = urllib.parse.urljoin(storage_url, dataset.form)
-    raw_form = requests.get(form_url).json()
-    form = constrictor.parse_form(raw_form)
-
-    valid_combinations_url = urllib.parse.urljoin(storage_url, dataset.constraints)
-    raw_valid_combinations = requests.get(valid_combinations_url).json()
-    valid_combinations = constrictor.parse_valid_combinations(raw_valid_combinations)
-
-    selection = constrictor.parse_selection(selection)
-
-    return constrictor.apply_constraints(form, valid_combinations, selection)
 
 
 def get_cursor_compare_criteria(sorting: str, back: bool = False) -> str:
