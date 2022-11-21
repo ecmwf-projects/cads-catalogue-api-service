@@ -291,6 +291,18 @@ def generate_collection_links(
             }
         )
 
+        # FIXME: Layout definitipon spike
+        if model.layout:
+            additional_links.append(
+                {
+                    "rel": "layout",
+                    "href": urllib.parse.urljoin(
+                        config.settings.document_storage_url, model.layout
+                    ),
+                    "type": "application/json",
+                }
+            )
+
         # Related datasets
         additional_links += [
             {
