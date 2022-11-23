@@ -130,6 +130,8 @@ def get_possible_values(
                 if len(selected_values & valid_combination[field_name]) == 0:
                     ok = False
                     break
+            else:
+                ok = False
         if ok:
             for field_name, valid_values in valid_combination.items():
                 current = result.setdefault(field_name, set())
@@ -209,8 +211,7 @@ def get_form_state(
         if name in sub_selection:
             sub_selection.pop(name)
         sub_results = get_possible_values(form, sub_selection, valid_combinations)
-        if sub_results:
-            result[name] = sub_results[name]
+        result[name] = sub_results.setdefault(name, set())
     return result
 
 
