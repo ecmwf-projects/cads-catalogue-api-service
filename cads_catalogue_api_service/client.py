@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import logging
 import urllib
 from typing import Any, Type
@@ -338,22 +339,23 @@ def collection_serializer(
     additional_properties = {
         **({"assets": assets} if assets else {}),
         **(
-            {"tmp:publication_date": db_model.publication_date.strftime("%Y-%m-%d")}
+            {
+                # FIXME: to be removed as soon as database switch to datetime column
+                "published": datetime.datetime.combine(
+                    db_model.publication_date, datetime.time.min
+                ).isoformat()
+                + "Z"
+            }
             if db_model.publication_date
             else {}
         ),
-        "tmp:doi": db_model.doi,
+        # FIXME: this is not a 100% correct implementation of the STAC scientific extension.
+        # One of the sci:xxx should be there, but CAMS dataset are not doing this
+        **({"sci:doi": db_model.doi} if db_model.doi else {}),
     }
 
     # properties not shown in preview mode
-    full_view_propeties = (
-        {}
-        if preview
-        else {
-            "tmp:variables": db_model.variables,
-            "tmp:description": db_model.description,
-        }
-    )
+    full_view_properties = {} if preview else {}
 
     return models.Dataset(
         type="Collection",
@@ -368,7 +370,7 @@ def collection_serializer(
         summaries=db_model.summaries or {},
         extent=get_extent(db_model),
         links=collection_links,
-        **full_view_propeties,
+        **full_view_properties,
         **additional_properties,
     )
 
@@ -416,9 +418,8 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         STACConformanceClasses = stac_fastapi.types.conformance.STACConformanceClasses
         base_conformance_classes = [
             STACConformanceClasses.CORE,
-            # TODO: implemented but not released yet
-            # STACConformanceClasses.COLLECTIONS,
-            "https://api.stacspec.org/v1.0.0-rc.1/collections",
+            STACConformanceClasses.COLLECTIONS,
+            "https://github.com/stac-extensions/scientific",
         ]
 
         for extension in self.extensions:

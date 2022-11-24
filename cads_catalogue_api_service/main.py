@@ -29,7 +29,6 @@ import stac_fastapi.extensions.core
 import stac_fastapi.types
 import stac_fastapi.types.conformance
 import stac_fastapi.types.links
-import stac_pydantic
 from brotli_asgi import BrotliMiddleware
 from pydantic import BaseModel, Field, validator
 from starlette_exporter import PrometheusMiddleware, handle_metrics
