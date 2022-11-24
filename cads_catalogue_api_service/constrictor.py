@@ -1,4 +1,5 @@
 """Main module of the request-constraints API."""
+import copy
 import urllib
 from typing import Any, Dict, List, Set
 
@@ -70,6 +71,7 @@ def apply_constraints(
     :return: a dictionary containing all values that should be left
     active for selection, in JSON format
     """
+
     return format_to_json(get_form_state(form, selection, valid_combinations))
 
 
@@ -123,6 +125,9 @@ def get_possible_values(
 
     """
     result: Dict[str, Set[Any]] = {}
+
+    restricted_params = get_keys(valid_combinations)
+
     for valid_combination in valid_combinations:
         ok = True
         for field_name, selected_values in selection.items():
@@ -130,7 +135,7 @@ def get_possible_values(
                 if len(selected_values & valid_combination[field_name]) == 0:
                     ok = False
                     break
-            else:
+            elif field_name in restricted_params:
                 ok = False
         if ok:
             for field_name, valid_values in valid_combination.items():
@@ -206,6 +211,7 @@ def get_form_state(
 
     """
     result: Dict[str, Set[Any]] = {}
+
     for name in form:
         sub_selection = selection.copy()
         if name in sub_selection:
@@ -314,3 +320,10 @@ def validate_constraints(
     selection = constrictor.parse_selection(selection)
 
     return constrictor.apply_constraints(form, valid_combinations, selection)
+
+
+def get_keys(constraints):
+    keys = set()
+    for constraint in constraints:
+        keys |= set(constraint.keys())
+    return keys
