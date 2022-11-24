@@ -15,27 +15,27 @@ def ensure_list(v):
     return v
 
 
-def parse_valid_combinations(
-    valid_combinations: List[Dict[str, List[Any]]]
+def parse_constraints(
+    constraints: List[Dict[str, List[Any]]]
 ) -> List[Dict[str, Set[Any]]]:
     """
-    Parse valid combinations for a given dataset. Convert Dict[str, List[Any]] into Dict[str, Set[Any]].
+    Parse constraints for a given dataset. Convert Dict[str, List[Any]] into Dict[str, Set[Any]].
 
-    :param valid_combinations: valid combinations in JSON format
+    :param constraints: constraints in JSON format
     :type: List[Dict[str, List[Any]]]
 
     :rtype: list[Dict[str, Set[Any]]]:
-    :return: list of Dict[str, Set[Any]] containing all valid combinations
+    :return: list of Dict[str, Set[Any]] containing all constraints
     for a given dataset.
 
     """
     result = []
-    for combination in valid_combinations:
-        parsed_valid_combination = {}
+    for combination in constraints:
+        parsed_combination = {}
         for field_name, field_values in combination.items():
             field_values = ensure_list(field_values)
-            parsed_valid_combination[field_name] = set(field_values)
-        result.append(parsed_valid_combination)
+            parsed_combination[field_name] = set(field_values)
+        result.append(parsed_combination)
     return result
 
 
@@ -58,7 +58,7 @@ def parse_selection(selection: Dict[str, List[Any]]) -> Dict[str, Set[Any]]:
 
 def apply_constraints(
     form: Dict[str, Set[Any]],
-    valid_combinations: List[Dict[str, Set[Any]]],
+    constraints: List[Dict[str, Set[Any]]],
     selection: Dict[str, Set[Any]],
 ) -> Dict[str, List[Any]]:
     """
@@ -66,22 +66,22 @@ def apply_constraints(
 
     :param form: a dictionary of all selectable values
     grouped by field name
-    :param valid_combinations: a list of all valid combinations
+    :param constraints: a list of all constraints
     :param selection: a dictionary containing the current selection
     :return: a dictionary containing all values that should be left
     active for selection, in JSON format
     """
 
-    always_valid = get_always_valid_params(form, valid_combinations)
+    always_valid = get_always_valid_params(form, constraints)
 
     form = copy.deepcopy(form)
     selection = copy.deepcopy(selection)
     for key, value in form.copy().items():
-        if key not in get_keys(valid_combinations):
+        if key not in get_keys(constraints):
             form.pop(key, None)
             selection.pop(key, None)
 
-    result = get_form_state(form, selection, valid_combinations)
+    result = get_form_state(form, selection, constraints)
     result.update(always_valid)
 
     return format_to_json(result)
@@ -90,14 +90,14 @@ def apply_constraints(
 def get_possible_values(
     form: Dict[str, Set[Any]],
     selection: Dict[str, Set[Any]],
-    valid_combinations: List[Dict[str, Set[Any]]],
+    constraints: List[Dict[str, Set[Any]]],
 ) -> Dict[str, Set[Any]]:
     """
     Get possible values given the current selection.
 
     Works only for enumerated fields, i.e. fields with values
     that must be selected one by one (no ranges).
-    Checks the current selection against all valid combinations.
+    Checks the current selection against all constraints.
     A combination is valid if every field contains
     at least one value from the current selection.
     If a combination is valid, its values are added to the pool
@@ -113,9 +113,9 @@ def get_possible_values(
     }
     :type: dict[str, Set[Any]]:
 
-    :param valid_combinations: a list of dictionaries representing
-    all valid combinations for a specific dataset
-    e.g. valid_combinations = [
+    :param constraints: a list of dictionaries representing
+    all constraints for a specific dataset
+    e.g. constraints = [
         {"level": {"500"}, "param": {"Z", "T"}, "step": {"24", "36", "48"}},
         {"level": {"1000"}, "param": {"Z"}, "step": {"24", "48"}},
         {"level": {"850"}, "param": {"T"}, "step": {"36", "48"}},
@@ -137,17 +137,17 @@ def get_possible_values(
 
     """
     result: Dict[str, Set[Any]] = {key: set() for key in form}
-    for valid_combination in valid_combinations:
+    for combination in constraints:
         ok = True
         for field_name, selected_values in selection.items():
-            if field_name in valid_combination.keys():
-                if len(selected_values & valid_combination[field_name]) == 0:
+            if field_name in combination.keys():
+                if len(selected_values & combination[field_name]) == 0:
                     ok = False
                     break
             else:
                 ok = False
         if ok:
-            for field_name, valid_values in valid_combination.items():
+            for field_name, valid_values in combination.items():
                 result[field_name] |= set(valid_values)
 
     return result
@@ -170,14 +170,14 @@ def format_to_json(result: Dict[str, Set[Any]]) -> Dict[str, List[Any]]:
 def get_form_state(
     form: Dict[str, Set[Any]],
     selection: Dict[str, Set[Any]],
-    valid_combinations: List[Dict[str, Set[Any]]],
+    constraints: List[Dict[str, Set[Any]]],
 ) -> Dict[str, Set[Any]]:
     """
     Get possible values given the current selection.
 
     Works only for enumerated fields, i.e. fields with values
     that must be selected one by one (no ranges).
-    Checks the current selection against all valid combinations.
+    Checks the current selection against all constraints.
     A combination is valid if every field contains
     at least one value from the current selection.
     If a combination is valid, its values are added to the pool
@@ -193,9 +193,9 @@ def get_form_state(
     }
     :type: dict[str, Set[Any]]:
 
-    :param valid_combinations: a list of dictionaries representing
-    all valid combinations for a specific dataset
-    e.g. valid_combinations = [
+    :param constraints: a list of dictionaries representing
+    all constraints for a specific dataset
+    e.g. constraints = [
         {"level": {"500"}, "param": {"Z", "T"}, "step": {"24", "36", "48"}},
         {"level": {"1000"}, "param": {"Z"}, "step": {"24", "48"}},
         {"level": {"850"}, "param": {"T"}, "step": {"36", "48"}},
@@ -223,14 +223,14 @@ def get_form_state(
         sub_selection = selection.copy()
         if key in sub_selection:
             sub_selection.pop(key)
-        sub_results = get_possible_values(form, sub_selection, valid_combinations)
+        sub_results = get_possible_values(form, sub_selection, constraints)
         result[key] = sub_results.setdefault(key, set())
     return result
 
 
 def get_always_valid_params(
     form: Dict[str, Set[Any]],
-    valid_combinations: List[Dict[str, Set[Any]]],
+    constraints: List[Dict[str, Set[Any]]],
 ) -> Dict[str, Set[Any]]:
     """
     Get always valid field and values.
@@ -244,9 +244,9 @@ def get_always_valid_params(
     }
     :type: dict[str, Set[Any]]:
 
-    :param valid_combinations: a list of dictionaries representing
-    all valid combinations for a specific dataset
-    e.g. valid_combinations = [
+    :param constraints: a list of dictionaries representing
+    all constraints for a specific dataset
+    e.g. constraints = [
         {"level": {"500"}, "param": {"Z", "T"}, "step": {"24", "36", "48"}},
         {"level": {"1000"}, "param": {"Z"}, "step": {"24", "48"}},
         {"level": {"850"}, "param": {"T"}, "step": {"36", "48"}},
@@ -259,7 +259,7 @@ def get_always_valid_params(
     """
     result: Dict[str, Set[Any]] = {}
     for field_name, field_values in form.items():
-        if field_name not in get_keys(valid_combinations):
+        if field_name not in get_keys(constraints):
             result.setdefault(field_name, field_values)
     return result
 
@@ -318,15 +318,13 @@ def validate_constraints(
     raw_form = requests.get(form_url, timeout=timeout).json()
     form = constrictor.parse_form(raw_form)
 
-    valid_combinations_url = urllib.parse.urljoin(storage_url, dataset.constraints)
-    raw_valid_combinations = requests.get(
-        valid_combinations_url, timeout=timeout
-    ).json()
-    valid_combinations = constrictor.parse_valid_combinations(raw_valid_combinations)
+    constraints_url = urllib.parse.urljoin(storage_url, dataset.constraints)
+    raw_constraints = requests.get(constraints_url, timeout=timeout).json()
+    constraints = constrictor.parse_constraints(raw_constraints)
 
     selection = constrictor.parse_selection(selection)
 
-    return constrictor.apply_constraints(form, valid_combinations, selection)
+    return constrictor.apply_constraints(form, constraints, selection)
 
 
 def get_keys(constraints):
