@@ -217,14 +217,14 @@ def get_form_state(
     {'level': {'500', '850'}, 'param': {'T', 'Z'}, 'step': {'24', '36', '48'}}
 
     """
-    result: Dict[str, Set[Any]] = {}
+    result: Dict[str, Set[Any]] = {key: set() for key in form}
 
-    for name in form:
+    for key in form:
         sub_selection = selection.copy()
-        if name in sub_selection:
-            sub_selection.pop(name)
+        if key in sub_selection:
+            sub_selection.pop(key)
         sub_results = get_possible_values(form, sub_selection, valid_combinations)
-        result[name] = sub_results.setdefault(name, set())
+        result[key] = sub_results.setdefault(key, set())
     return result
 
 
