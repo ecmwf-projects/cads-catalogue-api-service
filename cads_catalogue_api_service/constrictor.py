@@ -252,7 +252,7 @@ def get_always_valid_params(
     """
     result: Dict[str, Set[Any]] = {}
     for field_name, field_values in form.items():
-        if field_name not in valid_combinations[0].keys():
+        if field_name not in get_keys(valid_combinations):
             result.setdefault(field_name, field_values)
     return result
 
