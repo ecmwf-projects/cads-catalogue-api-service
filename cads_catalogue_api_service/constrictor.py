@@ -72,7 +72,19 @@ def apply_constraints(
     active for selection, in JSON format
     """
 
-    return format_to_json(get_form_state(form, selection, valid_combinations))
+    always_valid = get_always_valid_params(form, valid_combinations)
+
+    form = copy.deepcopy(form)
+    selection = copy.deepcopy(selection)
+    for key, value in form.copy().items():
+        if key not in get_keys(valid_combinations):
+            form.pop(key, None)
+            selection.pop(key, None)
+
+    result = get_form_state(form, selection, valid_combinations)
+    result.update(always_valid)
+
+    return format_to_json(result)
 
 
 def get_possible_values(
@@ -126,8 +138,6 @@ def get_possible_values(
     """
     result: Dict[str, Set[Any]] = {}
 
-    restricted_params = get_keys(valid_combinations)
-
     for valid_combination in valid_combinations:
         ok = True
         for field_name, selected_values in selection.items():
@@ -135,14 +145,13 @@ def get_possible_values(
                 if len(selected_values & valid_combination[field_name]) == 0:
                     ok = False
                     break
-            elif field_name in restricted_params:
+            else:
                 ok = False
         if ok:
             for field_name, valid_values in valid_combination.items():
                 current = result.setdefault(field_name, set())
                 current |= set(valid_values)
-    if result:
-        result.update(get_always_valid_params(form, valid_combinations))
+
     return result
 
 
