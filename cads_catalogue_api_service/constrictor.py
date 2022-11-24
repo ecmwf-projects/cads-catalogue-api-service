@@ -136,8 +136,7 @@ def get_possible_values(
     {'level': {'500', '850'}, 'param': {'T', 'Z'}, 'step': {'24', '36', '48'}}
 
     """
-    result: Dict[str, Set[Any]] = {}
-
+    result: Dict[str, Set[Any]] = {key: set() for key in form}
     for valid_combination in valid_combinations:
         ok = True
         for field_name, selected_values in selection.items():
@@ -149,8 +148,7 @@ def get_possible_values(
                 ok = False
         if ok:
             for field_name, valid_values in valid_combination.items():
-                current = result.setdefault(field_name, set())
-                current |= set(valid_values)
+                result[field_name] |= set(valid_values)
 
     return result
 
@@ -268,7 +266,7 @@ def get_always_valid_params(
 
 def parse_form(form: List[Dict[str, Any]]) -> Dict[str, set]:
     """
-    Parse the from for a given dataset extracting the information on the possible selections.
+    Parse the form for a given dataset extracting the information on the possible selections.
 
     :param form: a dictionary containing
     all possible selections in JSON format

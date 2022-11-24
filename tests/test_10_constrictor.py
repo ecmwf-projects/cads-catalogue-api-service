@@ -214,21 +214,48 @@ expected_form_states: List[Dict[str, Set[Any]]] = [
 
 
 def test_get_possible_values() -> None:
-    for i in range(len(parsed_selections)):
-        result = constrictor.get_possible_values(
-            parsed_form,
-            parsed_selections[i],
-            parsed_valid_combinations,
-        )
+    form = {
+        "level": {"500", "850"},
+        "time": {"12:00", "00:00"},
+        "param": {"Z", "T"},
+        "stat": {"mean"},
+    }
 
-        for key, value in expected_possible_values[i].items():
-            try:
-                assert set(value) == set(result[key])
-            except AssertionError:
-                print(
-                    f"Iteration number {i} of {test_get_possible_values.__name__}() failed!"
-                )
-                raise AssertionError
+    constraints = [
+        {"level": {"500"}, "param": {"Z", "T"}, "time": {"12:00", "00:00"}},
+        {"level": {"850"}, "param": {"T"}, "time": {"12:00", "00:00"}},
+        {"level": {"500"}, "param": {"Z", "T"}, "stat": {"mean"}},
+    ]
+
+    assert constrictor.get_possible_values(form, {"stat": {"mean"}}, constraints) == {
+        "level": {"500"},
+        "time": set(),
+        "param": {"Z", "T"},
+        "stat": {"mean"},
+    }
+    assert constrictor.get_possible_values(form, {"time": {"12:00"}}, constraints) == {
+        "level": {"850", "500"},
+        "time": {"12:00", "00:00"},
+        "param": {"Z", "T"},
+        "stat": set(),
+    }
+    assert constrictor.get_possible_values(
+        form, {"stat": {"mean"}, "time": {"12:00"}}, constraints
+    ) == {"level": set(), "time": set(), "param": set(), "stat": set()}
+    assert constrictor.get_possible_values(form, {"param": {"Z"}}, constraints) == {
+        "level": {"500"},
+        "time": {"12:00", "00:00"},
+        "param": {"Z", "T"},
+        "stat": {"mean"},
+    }
+    assert constrictor.get_possible_values(
+        form, {"level": {"500", "850"}}, constraints
+    ) == {
+        "level": {"500", "850"},
+        "time": {"12:00", "00:00"},
+        "param": {"Z", "T"},
+        "stat": {"mean"},
+    }
 
 
 def test_get_form_state() -> None:
