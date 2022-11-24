@@ -291,7 +291,6 @@ def generate_collection_links(
             }
         )
 
-        # FIXME: Layout definitipon spike
         if model.layout:
             additional_links.append(
                 {
