@@ -129,7 +129,7 @@ def test_apply_constraints() -> None:
         {"level": {"850"}, "param": {"T"}},
     ]
 
-    assert constrictor.apply_constraints(form, constraints, {"level": {"500"}})[
+    assert constrictor.apply_constraints(form, {"level": {"500"}}, constraints)[
         "number"
     ] == ["1"]
 

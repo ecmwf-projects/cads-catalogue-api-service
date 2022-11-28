@@ -58,8 +58,8 @@ def parse_selection(selection: Dict[str, List[Any]]) -> Dict[str, Set[Any]]:
 
 def apply_constraints(
     form: Dict[str, Set[Any]],
-    constraints: List[Dict[str, Set[Any]]],
     selection: Dict[str, Set[Any]],
+    constraints: List[Dict[str, Set[Any]]],
 ) -> Dict[str, List[Any]]:
     """
     Apply dataset constraints to the current selection.
@@ -324,7 +324,7 @@ def validate_constraints(
 
     selection = constrictor.parse_selection(selection)
 
-    return constrictor.apply_constraints(form, constraints, selection)
+    return constrictor.apply_constraints(form, selection, constraints)
 
 
 def get_keys(constraints):
