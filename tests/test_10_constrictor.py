@@ -153,3 +153,8 @@ def test_parse_selection() -> None:
                 f"Iteration number {i} of " f"{test_parse_selection.__name__}() failed!"
             )
             raise AssertionError
+
+def test_ensure_list() -> None:
+    assert constrictor.ensure_list([]) == []
+    assert constrictor.ensure_list(("1",)) == ("1",)
+    assert constrictor.ensure_list("1") == ["1"]
