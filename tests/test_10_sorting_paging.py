@@ -22,10 +22,6 @@ class FakeQuery:  # type: ignore
         self.order_by = order_by
         return self
 
-    def filter(self, filter):
-        self.filter = filter
-        return self
-
     def limit(self, limit: int):
         self.limit = limit
         return self
