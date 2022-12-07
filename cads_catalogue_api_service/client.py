@@ -187,33 +187,6 @@ def generate_assets(
     return assets
 
 
-def get_reference(reference: dict[str, Any], base_url: str) -> dict[str, Any]:
-    """Get the proper reference link data.
-
-    We have multiple type of reference:
-
-    - when "content" is provided (commonly for data for be show contextually)
-    - when "url" is provided (for external resources)
-
-    TODO: download_file not implemented yet.
-    """
-    response_reference = {
-        "title": reference.get("title"),
-    }
-    if reference.get("content"):
-        response_reference["rel"] = "reference"
-        response_reference["href"] = urllib.parse.urljoin(
-            base_url, reference["content"]
-        )
-    elif reference.get("url"):
-        response_reference["rel"] = "external"
-        response_reference["href"] = urllib.parse.urljoin(base_url, reference["url"])
-    else:
-        response_reference = None
-        logger.error(f"Cannot obtain reference data for {reference}")
-    return response_reference
-
-
 def generate_collection_links(
     model: cads_catalogue.database.Resource,
     request: fastapi.Request,
@@ -240,11 +213,6 @@ def generate_collection_links(
     ]
 
     if not preview:
-        additional_links += [
-            get_reference(reference, config.settings.document_storage_url)
-            for reference in model.references
-            if reference is not None
-        ]
 
         # Documentation
         additional_links += [
@@ -367,7 +335,6 @@ def collection_serializer(
 
     # properties not shown in preview mode
     full_view_properties = {} if preview else {}
-
     return models.Dataset(
         type="Collection",
         id=db_model.resource_uid,

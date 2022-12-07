@@ -33,8 +33,6 @@ Every dataset provides a `links` array.
 
 **Licenses** are provided using links with `rel="license"` (the first license is also found in the `license` field), as defined by the STAC Collection.
 
-**References** are provided using links with `rel=reference"` or `rel="external"`.
-
 **Documentation** are provided using links with `rel=describedby"`.  \
 Only title and URL are provided for now.
 

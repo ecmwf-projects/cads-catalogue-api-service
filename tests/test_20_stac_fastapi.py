@@ -90,12 +90,3 @@ def test_search_not_implemented() -> None:
     assert response.json()["message"] == "STAC search is not implemented"
 
     # TODO testing client.post("/search") which is not working due to stac_fastapi internal implementation details.  # noqa: E501
-
-
-def test_get_reference() -> None:
-    references = cads_catalogue_api_service.client.get_reference(
-        {"title": "Unknown", "ignored": True}, "http://foo.org/"
-    )
-
-    # Unknown structure are skipped and not added to reference list
-    assert references is None
