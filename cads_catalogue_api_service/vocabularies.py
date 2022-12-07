@@ -28,24 +28,25 @@ router = fastapi.APIRouter(
 
 
 def query_licences(
-    session: sqlalchemy.orm.Session,
+    session_maker: sqlalchemy.orm.Session,
 ) -> list[cads_catalogue.database.Licence]:  # pragma: no cover
     """Query licences."""
-    # NOTE: possible issue here if the title of a licence change from a revision to another
-    results = (
-        session.query(
-            cads_catalogue.database.Licence.licence_uid,
-            cads_catalogue.database.Licence.title,
-            sqlalchemy.func.max(cads_catalogue.database.Licence.revision).label(
-                "revision"
-            ),
+    with session_maker.context_session() as session:
+        # NOTE: possible issue here if the title of a licence change from a revision to another
+        results = (
+            session.query(
+                cads_catalogue.database.Licence.licence_uid,
+                cads_catalogue.database.Licence.title,
+                sqlalchemy.func.max(cads_catalogue.database.Licence.revision).label(
+                    "revision"
+                ),
+            )
+            .group_by(
+                cads_catalogue.database.Licence.licence_uid,
+                cads_catalogue.database.Licence.title,
+            )
+            .all()
         )
-        .group_by(
-            cads_catalogue.database.Licence.licence_uid,
-            cads_catalogue.database.Licence.title,
-        )
-        .all()
-    )
     return results
 
 
@@ -54,15 +55,14 @@ async def list_licences(
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.Licences:
     """Endpoint to verify a user's PAT."""
-    with session_maker.context_session() as session:
-        results = query_licences(session)
-        return models.Licences(
-            licences=[
-                models.Licence(
-                    id=licence.licence_uid,
-                    label=licence.title,
-                    revision=licence.revision,
-                )
-                for licence in results
-            ]
-        )
+    results = query_licences(session_maker)
+    return models.Licences(
+        licences=[
+            models.Licence(
+                id=licence.licence_uid,
+                label=licence.title,
+                revision=licence.revision,
+            )
+            for licence in results
+        ]
+    )

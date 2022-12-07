@@ -35,31 +35,9 @@ def static_licences_query(_foo: Any) -> list[cads_catalogue.database.Licence]:
     ]
 
 
-class FakeSession:
-    pass
-
-
-class FakeExecutor:
-    def __enter__(self):
-        return FakeSession()
-
-    def __exit__(self, *args):
-        pass
-
-
-class FakeSessionContextManager:
-    def __call__(self):
-        return FakeExecutor()
-
-
-class FakeManager:
-    def __init__(self):
-        self.context_session = FakeSessionContextManager()
-
-
-def get_session() -> FakeManager:
-    """Fastapi dependency that provides a sqlalchemy session."""
-    return FakeManager()
+def get_session() -> None:
+    """Mock session generation."""
+    return None
 
 
 app.dependency_overrides[
