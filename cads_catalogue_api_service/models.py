@@ -51,3 +51,16 @@ class Licences(TypedDict):
     """Licences vocabulary."""
 
     licences: list[Licence]
+
+
+class Keyword(TypedDict):
+    """Keyword definition."""
+
+    id: str
+    label: str
+
+
+class Keywords(TypedDict):
+    """Keywords vocabulary."""
+
+    keywords: list[Keyword]

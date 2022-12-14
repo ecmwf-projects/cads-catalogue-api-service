@@ -35,6 +35,18 @@ def static_licences_query(_foo: Any) -> list[cads_catalogue.database.Licence]:
     ]
 
 
+KEYWORDS = [
+    "Provider: Copernicus C3S",
+    "Product type: Reanalysis",
+    "Variable domain: Land (physics)",
+    "Product type: Derived reanalysis",
+]
+
+
+def static_keywords_licence(_foo: Any) -> list[str]:
+    return KEYWORDS
+
+
 def get_session() -> None:
     """Mock session generation."""
     return None
@@ -61,4 +73,20 @@ def test_vocabularies_license(monkeypatch) -> None:
             {"id": "cc-by-4.0", "label": "CC-BY-4.0", "revision": 1},
             {"id": "cc-by-sa-4.0", "label": "CC-BY-SA-4.0", "revision": 2},
         ],
+    }
+
+
+def test_vocabularies_keyworkds(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.vocabularies.query_keywords",
+        static_keywords_licence,
+    )
+    """Test list of licences."""
+    response = client.get(
+        "/vocabularies/keywords",
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "keywords": [{"id": kw, "label": kw} for kw in KEYWORDS],
     }

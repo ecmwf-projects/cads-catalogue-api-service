@@ -16,7 +16,7 @@
 
 import cads_catalogue
 import fastapi
-import sqlalchemy
+import sqlalchemy as sa
 
 from . import dependencies, models
 
@@ -28,7 +28,7 @@ router = fastapi.APIRouter(
 
 
 def query_licences(
-    session_maker: sqlalchemy.orm.Session,
+    session_maker: sa.orm.Session,
 ) -> list[cads_catalogue.database.Licence]:  # pragma: no cover
     """Query licences."""
     with session_maker.context_session() as session:
@@ -37,9 +37,7 @@ def query_licences(
             session.query(
                 cads_catalogue.database.Licence.licence_uid,
                 cads_catalogue.database.Licence.title,
-                sqlalchemy.func.max(cads_catalogue.database.Licence.revision).label(
-                    "revision"
-                ),
+                sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
             )
             .group_by(
                 cads_catalogue.database.Licence.licence_uid,
@@ -50,11 +48,24 @@ def query_licences(
     return results
 
 
+def query_keywords(
+    session_maker: sa.orm.Session,
+) -> list[str]:  # pragma: no cover
+    """Query keywords."""
+    with session_maker.context_session() as session:
+        results = (
+            session.query(sa.func.unnest(cads_catalogue.database.Resource.keywords))
+            .distinct()
+            .all()
+        )
+    return [col[0] for col in results]
+
+
 @router.get("/licences", response_model=models.Licences)
 async def list_licences(
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.Licences:
-    """Endpoint to verify a user's PAT."""
+    """Endpoint to get all registered licences."""
     results = query_licences(session_maker)
     return models.Licences(
         licences=[
@@ -64,5 +75,22 @@ async def list_licences(
                 revision=licence.revision,
             )
             for licence in results
+        ]
+    )
+
+
+@router.get("/keywords", response_model=models.Keywords)
+async def list_keywords(
+    session_maker=fastapi.Depends(dependencies.get_session),
+) -> models.Licences:
+    """Endpoint to get all available keywords."""
+    results = query_keywords(session_maker)
+    return models.Keywords(
+        keywords=[
+            models.Keyword(
+                id=keyword,
+                label=keyword,
+            )
+            for keyword in results
         ]
     )
