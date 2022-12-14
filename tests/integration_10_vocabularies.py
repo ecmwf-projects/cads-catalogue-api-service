@@ -7,7 +7,7 @@ API_ROOT_PATH = API_ROOT_PATH if API_ROOT_PATH.endswith("/") else f"{API_ROOT_PA
 
 
 def test_licences_vocabulary() -> None:
-    # TODO: replace with a JSON schema, and iterate on all entries
+    # TODO: replace with a JSON schema
     r = requests.get(f"{API_ROOT_PATH}vocabularies/licences")
 
     assert r.status_code == 200
@@ -16,7 +16,8 @@ def test_licences_vocabulary() -> None:
     licences = results.get("licences")
 
     assert type(licences) == list
-    assert type(licences[0]) == dict
-    assert type(licences[0].get("id")) == str
-    assert type(licences[0].get("label")) == str
-    assert type(licences[0].get("revision")) == int
+    for licence in licences:
+        assert type(licence) == dict
+        assert type(licence.get("id")) == str
+        assert type(licence.get("label")) == str
+        assert type(licence.get("revision")) == int
