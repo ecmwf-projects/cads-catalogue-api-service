@@ -21,3 +21,19 @@ def test_licences_vocabulary() -> None:
         assert type(licence.get("id")) == str
         assert type(licence.get("label")) == str
         assert type(licence.get("revision")) == int
+
+
+def test_keywords_vocabulary() -> None:
+    # TODO: replace with a JSON schema
+    r = requests.get(f"{API_ROOT_PATH}vocabularies/keywords")
+
+    assert r.status_code == 200
+
+    results = r.json()
+    licences = results.get("keywords")
+
+    assert type(licences) == list
+    for licence in licences:
+        assert type(licence) == dict
+        assert type(licence.get("id")) == str
+        assert type(licence.get("label")) == str
