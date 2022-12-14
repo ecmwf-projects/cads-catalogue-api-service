@@ -36,3 +36,31 @@ class Dataset(stac_fastapi.types.stac.Collection, DatasetBase):
 
     This class extends the OGC/STAC Collection with additional non-STAC fields.
     """
+
+
+class Licence(TypedDict):
+    """Licence definition."""
+
+    # id here is the licence slug
+    id: str
+    label: str
+    revision: int
+
+
+class Licences(TypedDict):
+    """Licences vocabulary."""
+
+    licences: list[Licence]
+
+
+class Keyword(TypedDict):
+    """Keyword definition."""
+
+    id: str
+    label: str
+
+
+class Keywords(TypedDict):
+    """Keywords vocabulary."""
+
+    keywords: list[Keyword]

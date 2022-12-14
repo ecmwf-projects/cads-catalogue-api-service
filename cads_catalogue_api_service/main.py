@@ -31,7 +31,7 @@ import stac_fastapi.types.links
 from brotli_asgi import BrotliMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-from . import client, config, exceptions, extensions
+from . import client, config, exceptions, extensions, vocabularies
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +50,7 @@ api = stac_fastapi.api.app.StacApi(
 
 app = api.app
 app.add_route("/metrics", handle_metrics)
+app.include_router(vocabularies.router)
 
 
 def catalogue_openapi() -> dict[str, Any]:
