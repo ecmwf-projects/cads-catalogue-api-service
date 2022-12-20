@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import enum
 from typing import Any
 
 import attr
@@ -26,14 +27,22 @@ from . import client, config
 CONFORMANCE_CLASS = "https://api.cads.copernicus.eu/v1.0.0-rc.1/datasets-search#filter"
 
 
+class CatalogueSortCriterion(str, enum.Enum):
+    update_desc: str = "update"
+    title_asc: str = "title"
+    id_asc: str = "id"
+
+
 async def datasets_search(
     request: fastapi.Request,
-    q: str = None,
+    q: str = fastapi.Query(default=None, description="Full-text search query"),
     kw: list[str] | None = fastapi.Query(default=[]),
-    sorting: str = "update",
-    cursor: str = None,
+    sorting: CatalogueSortCriterion = fastapi.Query(
+        default=CatalogueSortCriterion.update_desc
+    ),
+    cursor: str = fastapi.Query(default=None, include_in_schema=False),
     limit: int = fastapi.Query(default=20, ge=1, le=config.MAX_LIMIT),
-    back: bool = False,
+    back: bool = fastapi.Query(default=False, include_in_schema=False),
 ) -> dict[str, Any]:
     """Filter datasets based on search parameters."""
     return client.cads_client.all_datasets(
