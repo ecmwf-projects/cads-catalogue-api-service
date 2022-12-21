@@ -23,6 +23,7 @@ import attrs
 import cads_catalogue.database
 import fastapi
 import fastapi_utils.session
+import pydantic
 import sqlalchemy.dialects
 import sqlalchemy.orm
 import stac_fastapi.types
@@ -152,12 +153,8 @@ def get_extent(
 ) -> stac_pydantic.collection.Extent:
     """Get extent from model."""
     spatial = model.geo_extent or {}
-    begin_date = (
-        f"{model.begin_date.isoformat()}T00:00:00Z" if model.begin_date else None
-    )
-    end_date = f"{model.end_date.isoformat()}T00:00:00Z" if model.end_date else None
-    return stac_pydantic.collection.Extent(
-        spatial=stac_pydantic.collection.SpatialExtent(
+    try:
+        spatial_extent = stac_pydantic.collection.SpatialExtent(
             bbox=[
                 [
                     spatial.get("bboxW", -180),
@@ -166,7 +163,17 @@ def get_extent(
                     spatial.get("bboxE", 90),
                 ]
             ],
-        ),
+        )
+    except pydantic.ValidationError:
+        spatial_extent = stac_pydantic.collection.SpatialExtent(
+            bbox=[[-180, -90, 180, 90]]
+        )
+    begin_date = (
+        f"{model.begin_date.isoformat()}T00:00:00Z" if model.begin_date else None
+    )
+    end_date = f"{model.end_date.isoformat()}T00:00:00Z" if model.end_date else None
+    return stac_pydantic.collection.Extent(
+        spatial=spatial_extent,
         temporal=stac_pydantic.collection.TimeInterval(
             interval=[[begin_date, end_date]],
         ),
