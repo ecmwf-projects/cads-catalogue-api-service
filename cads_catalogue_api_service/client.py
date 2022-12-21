@@ -160,10 +160,10 @@ def get_extent(
         spatial=stac_pydantic.collection.SpatialExtent(
             bbox=[
                 [
-                    -180 if spatial.get("bboxW") is None else spatial.get("bboxW"),
-                    -90 if spatial.get("bboxS") is None else spatial.get("bboxS"),
-                    180 if spatial.get("bboxN") is None else spatial.get("bboxN"),
-                    90 if spatial.get("bboxE") is None else spatial.get("bboxE"),
+                    spatial.get("bboxW", -180),
+                    spatial.get("bboxS", -90),
+                    spatial.get("bboxN", 180),
+                    spatial.get("bboxE", 90),
                 ]
             ],
         ),
