@@ -23,6 +23,7 @@ import attrs
 import cads_catalogue.database
 import fastapi
 import fastapi_utils.session
+import pydantic
 import sqlalchemy.dialects
 import sqlalchemy.orm
 import stac_fastapi.types
@@ -152,12 +153,8 @@ def get_extent(
 ) -> stac_pydantic.collection.Extent:
     """Get extent from model."""
     spatial = model.geo_extent or {}
-    begin_date = (
-        f"{model.begin_date.isoformat()}T00:00:00Z" if model.begin_date else None
-    )
-    end_date = f"{model.end_date.isoformat()}T00:00:00Z" if model.end_date else None
-    return stac_pydantic.collection.Extent(
-        spatial=stac_pydantic.collection.SpatialExtent(
+    try:
+        spatial_extent = stac_pydantic.collection.SpatialExtent(
             bbox=[
                 [
                     spatial.get("bboxW", -180),
@@ -166,7 +163,17 @@ def get_extent(
                     spatial.get("bboxE", 90),
                 ]
             ],
-        ),
+        )
+    except pydantic.ValidationError:
+        spatial_extent = stac_pydantic.collection.SpatialExtent(
+            bbox=[[-180, -90, 180, 90]]
+        )
+    begin_date = (
+        f"{model.begin_date.isoformat()}T00:00:00Z" if model.begin_date else None
+    )
+    end_date = f"{model.end_date.isoformat()}T00:00:00Z" if model.end_date else None
+    return stac_pydantic.collection.Extent(
+        spatial=spatial_extent,
         temporal=stac_pydantic.collection.TimeInterval(
             interval=[[begin_date, end_date]],
         ),
@@ -185,33 +192,6 @@ def generate_assets(
             "roles": ["thumbnail"],
         }
     return assets
-
-
-def get_reference(reference: dict[str, Any], base_url: str) -> dict[str, Any]:
-    """Get the proper reference link data.
-
-    We have multiple type of reference:
-
-    - when "content" is provided (commonly for data for be show contextually)
-    - when "url" is provided (for external resources)
-
-    TODO: download_file not implemented yet.
-    """
-    response_reference = {
-        "title": reference.get("title"),
-    }
-    if reference.get("content"):
-        response_reference["rel"] = "reference"
-        response_reference["href"] = urllib.parse.urljoin(
-            base_url, reference["content"]
-        )
-    elif reference.get("url"):
-        response_reference["rel"] = "external"
-        response_reference["href"] = urllib.parse.urljoin(base_url, reference["url"])
-    else:
-        response_reference = None
-        logger.error(f"Cannot obtain reference data for {reference}")
-    return response_reference
 
 
 def generate_collection_links(
@@ -240,11 +220,6 @@ def generate_collection_links(
     ]
 
     if not preview:
-        additional_links += [
-            get_reference(reference, config.settings.document_storage_url)
-            for reference in model.references
-            if reference is not None
-        ]
 
         # Documentation
         additional_links += [
@@ -367,7 +342,6 @@ def collection_serializer(
 
     # properties not shown in preview mode
     full_view_properties = {} if preview else {}
-
     return models.Dataset(
         type="Collection",
         id=db_model.resource_uid,
@@ -377,8 +351,6 @@ def collection_serializer(
         keywords=db_model.keywords,
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         license="various" if len(db_model.licences) > 1 else "proprietary",
-        providers=db_model.providers or [],
-        summaries=db_model.summaries or {},
         extent=get_extent(db_model),
         links=collection_links,
         **full_view_properties,

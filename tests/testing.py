@@ -36,13 +36,10 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
             "projection": "Regular latitude-longitude grid.",
         },
         abstract="Lorem ipsum dolor",
-        contact=["aaaa", "bbbb"],
         form="resources/reanalysis-era5-pressure-levels/form.json",
         constraints="resources/reanalysis-era5-pressure-levels/constraints.json",
         keywords=["label 1", "label 2"],
-        version="1.0.0",
         variables=["var1", "var2"],
-        providers=["provider 1", "provider 2"],
         geo_extent={"bboxN": 50, "bboxW": -0.5, "bboxS": 45, "bboxE": 15},
         begin_date=datetime.date(1980, 1, 1),
         doi="11.2222/cads.12345",
@@ -55,18 +52,6 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
                     "can be found in the web link above."
                 ),
             }
-        ],
-        references=[
-            {
-                "title": "Citation",
-                "content": "resources/reanalysis-era5-pressure-levels/a-document.html",
-                "url": None,
-            },
-            {
-                "title": "Reference manual",
-                "content": None,
-                "url": "https://somewhere.org/manual.pdf",
-            },
         ],
         publication_date=datetime.datetime.strptime(
             "2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
@@ -104,8 +89,6 @@ def generate_expected(
         "description": "Lorem ipsum dolor",
         "keywords": ["label 1", "label 2"],
         "license": "proprietary",
-        "providers": ["provider 1", "provider 2"],
-        "summaries": {},
         "extent": {
             "spatial": {"bbox": [[-0.5, 45.0, 50.0, 15.0]]},
             "temporal": {"interval": [["1980-01-01T00:00:00Z", None]]},
@@ -139,19 +122,6 @@ def generate_expected(
             []
             if preview
             else [
-                {
-                    "rel": "reference",
-                    "href": urllib.parse.urljoin(
-                        base_url,
-                        f"{document_storage_url}resources/reanalysis-era5-pressure-levels/a-document.html",
-                    ),
-                    "title": "Citation",
-                },
-                {
-                    "rel": "external",
-                    "href": "https://somewhere.org/manual.pdf",
-                    "title": "Reference manual",
-                },
                 {
                     "rel": "describedby",
                     "href": "https://rtd.org/foo-bar",
