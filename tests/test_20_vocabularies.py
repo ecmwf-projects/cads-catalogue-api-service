@@ -76,7 +76,7 @@ def test_vocabularies_license(monkeypatch) -> None:
     }
 
 
-def test_vocabularies_keyworkds(monkeypatch) -> None:
+def test_vocabularies_keywords(monkeypatch) -> None:
     monkeypatch.setattr(
         "cads_catalogue_api_service.vocabularies.query_keywords",
         static_keywords_licence,
