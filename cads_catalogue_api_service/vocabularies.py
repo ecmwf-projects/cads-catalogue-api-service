@@ -29,7 +29,7 @@ router = fastapi.APIRouter(
 
 def query_licences(
     session_maker: sa.orm.Session,
-) -> list[cads_catalogue.database.Licence]:  # pragma: no cover
+) -> list[cads_catalogue.database.Licence]:
     """Query licences."""
     with session_maker.context_session() as session:
         # NOTE: possible issue here if the title of a licence change from a revision to another
@@ -43,6 +43,7 @@ def query_licences(
                 cads_catalogue.database.Licence.licence_uid,
                 cads_catalogue.database.Licence.title,
             )
+            .order_by(cads_catalogue.database.Licence.title)
             .all()
         )
     return results
@@ -50,12 +51,13 @@ def query_licences(
 
 def query_keywords(
     session_maker: sa.orm.Session,
-) -> list[str]:  # pragma: no cover
+) -> list[str]:
     """Query keywords."""
     with session_maker.context_session() as session:
         results = (
             session.query(sa.func.unnest(cads_catalogue.database.Resource.keywords))
             .distinct()
+            .order_by(sa.func.unnest(cads_catalogue.database.Resource.keywords))
             .all()
         )
     return [col[0] for col in results]
