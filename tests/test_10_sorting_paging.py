@@ -54,34 +54,34 @@ class MockSortBy:
 def test_get_cursor_compare_criteria() -> None:
     # unknown criteria
     assert (
-        cads_catalogue_api_service.client.get_cursor_compare_criteria(sorting="foo")
+        cads_catalogue_api_service.client.get_cursor_compare_criteria(sortby="foo")
         == "__ge__"
     )
     assert (
         cads_catalogue_api_service.client.get_cursor_compare_criteria(
-            sorting="foo", back=True
+            sortby="foo", back=True
         )
         == "__lt__"
     )
     # asc criteria
     assert (
-        cads_catalogue_api_service.client.get_cursor_compare_criteria(sorting="id")
+        cads_catalogue_api_service.client.get_cursor_compare_criteria(sortby="id")
         == "__ge__"
     )
     assert (
         cads_catalogue_api_service.client.get_cursor_compare_criteria(
-            sorting="id", back=True
+            sortby="id", back=True
         )
         == "__lt__"
     )
     # desc criteria
     assert (
-        cads_catalogue_api_service.client.get_cursor_compare_criteria(sorting="update")
+        cads_catalogue_api_service.client.get_cursor_compare_criteria(sortby="update")
         == "__le__"
     )
     assert (
         cads_catalogue_api_service.client.get_cursor_compare_criteria(
-            sorting="update", back=True
+            sortby="update", back=True
         )
         == "__gt__"
     )
@@ -91,7 +91,7 @@ def test_apply_sorting() -> None:
     query = FakeQuery()
 
     search, sort_by = cads_catalogue_api_service.client.apply_sorting(
-        query, sorting="id", cursor=None, limit=10
+        query, sortby="id", cursor=None, limit=10
     )
     assert sort_by.key == "resource_uid"
     assert search.limit == 11
@@ -104,7 +104,7 @@ def test_get_next_prev_links() -> None:
         collections=collections[0:11], sort_by=MockSortBy("id"), cursor=None, limit=10
     )
 
-    assert next_prev_links.get("next") == {"cursor": "11"}
+    assert next_prev_links.get("next") == {"cursor": "MTE="}
     assert next_prev_links.get("prev") is None
     assert called_key == "11"
 
@@ -112,8 +112,8 @@ def test_get_next_prev_links() -> None:
         collections=collections[2:13], sort_by=MockSortBy("id"), cursor="2", limit=10
     )
 
-    assert next_prev_links.get("next") == {"cursor": "13"}
-    assert next_prev_links.get("prev") == {"back": "true", "cursor": "3"}
+    assert next_prev_links.get("next") == {"cursor": "MTM="}
+    assert next_prev_links.get("prev") == {"back": "true", "cursor": "Mw=="}
     assert called_key == "3"
 
     next_prev_links = cads_catalogue_api_service.client.get_next_prev_links(
@@ -124,8 +124,8 @@ def test_get_next_prev_links() -> None:
         back=True,
     )
 
-    assert next_prev_links.get("next") == {"cursor": "2"}
-    assert next_prev_links.get("prev") == {"back": "true", "cursor": "12"}
+    assert next_prev_links.get("next") == {"cursor": "Mg=="}
+    assert next_prev_links.get("prev") == {"back": "true", "cursor": "MTI="}
     assert called_key == "12"
 
     next_prev_links = cads_catalogue_api_service.client.get_next_prev_links(
@@ -146,5 +146,5 @@ def test_get_next_prev_links() -> None:
         back=True,
     )
 
-    assert next_prev_links.get("next") == {"cursor": "2"}
-    assert next_prev_links.get("prev") == {"back": "true", "cursor": "6"}
+    assert next_prev_links.get("next") == {"cursor": "Mg=="}
+    assert next_prev_links.get("prev") == {"back": "true", "cursor": "Ng=="}
