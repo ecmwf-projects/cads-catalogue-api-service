@@ -37,8 +37,14 @@ async def datasets_search(
     request: fastapi.Request,
     q: str = fastapi.Query(default=None, description="Full-text search query"),
     kw: list[str] | None = fastapi.Query(default=[]),
-    sorting: CatalogueSortCriterion = fastapi.Query(
+    sortby: CatalogueSortCriterion = fastapi.Query(
         default=CatalogueSortCriterion.update_desc
+    ),
+    # FIXME: remove this deprecated parameter
+    sorting: CatalogueSortCriterion = fastapi.Query(
+        default=CatalogueSortCriterion.update_desc,
+        deprecated=True,
+        description="Deprecated, use sortby instead.",
     ),
     cursor: str = fastapi.Query(default=None, include_in_schema=False),
     limit: int = fastapi.Query(default=20, ge=1, le=config.MAX_LIMIT),
@@ -49,7 +55,7 @@ async def datasets_search(
         request=request,
         q=q,
         kw=kw,
-        sorting=sorting,
+        sortby=sortby or sorting,
         cursor=cursor,
         limit=limit,
         back=back,

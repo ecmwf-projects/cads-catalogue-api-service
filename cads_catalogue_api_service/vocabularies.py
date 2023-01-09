@@ -84,7 +84,7 @@ async def list_licences(
 @router.get("/keywords", response_model=models.Keywords)
 async def list_keywords(
     session_maker=fastapi.Depends(dependencies.get_session),
-) -> models.Licences:
+) -> models.Keywords:
     """Endpoint to get all available keywords."""
     results = query_keywords(session_maker)
     return models.Keywords(

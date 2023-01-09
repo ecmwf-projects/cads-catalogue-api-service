@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
 import datetime
 import logging
 import urllib
@@ -21,6 +22,7 @@ from typing import Any, Type
 
 import attrs
 import cads_catalogue.database
+import dateutil
 import fastapi
 import fastapi_utils.session
 import pydantic
@@ -33,6 +35,45 @@ import stac_pydantic
 from . import config, exceptions, models
 
 logger = logging.getLogger(__name__)
+
+
+def decode_base64(encoded: str) -> str:
+    encoded_bytes = encoded.encode("ascii")
+    decoded_bytes = base64.b64decode(encoded_bytes)
+    decoded_str = decoded_bytes.decode("ascii")
+    return decoded_str
+
+
+def encode_base64(decoded: str) -> str:
+    decoded_bytes = decoded.encode("ascii")
+    encoded_bytes = base64.b64encode(decoded_bytes)
+    encoded_str = encoded_bytes.decode("ascii")
+    return encoded_str
+
+
+def encode_cursor(plain_cursor: Any) -> str:
+    """Encode the cursor.
+
+    Encoding is based on the type of the plain cursor value
+    """
+    encoded = None
+    match type(plain_cursor):
+        case datetime.datetime:
+            encoded = encode_base64(plain_cursor.astimezone().isoformat())
+        case _:
+            encoded = encode_base64(str(plain_cursor))
+    return encoded
+
+
+def decode_cursor(encoded_cursor: str, sortby: str) -> Any:
+    """Decode the cursor to the original entity."""
+    decoded = None
+    match sortby:
+        case "update":
+            decoded = dateutil.parser.parse(decode_base64(encoded_cursor))
+        case _:
+            decoded = decode_base64(encoded_cursor)
+    return decoded
 
 
 def get_sorting_clause(
@@ -57,9 +98,9 @@ DEFINED_SORT_CRITERIA = {
 }
 
 
-def get_cursor_compare_criteria(sorting: str, back: bool = False) -> str:
+def get_cursor_compare_criteria(sortby: str, back: bool = False) -> str:
     """Generate the proper cursor based on sorting criteria."""
-    compare_criteria = DEFINED_SORT_CRITERIA.get(sorting)
+    compare_criteria = DEFINED_SORT_CRITERIA.get(sortby)
     if not compare_criteria:
         return "__ge__" if not back else "__lt__"
     return compare_criteria[0 if not back else 1]
@@ -67,27 +108,29 @@ def get_cursor_compare_criteria(sorting: str, back: bool = False) -> str:
 
 def apply_sorting(
     search: sqlalchemy.orm.Query,
-    sorting: str,
+    sortby: str,
     cursor: str,
     limit: int,
     inverse: bool = False,
 ):
-    """Apply sorting to the running query.
+    """Apply sortby to the running query.
 
     The sorting algorithm influences how pagination is build.
     Pagination is based on cursor: see https://use-the-index-luke.com/no-offset
     """
     sorting_clause = get_sorting_clause(
-        cads_catalogue.database.Resource, sorting, inverse
+        cads_catalogue.database.Resource, sortby, inverse
     )
     sort_by, sort_order_fn = sorting_clause
     search = search.order_by(sort_order_fn(sort_by))
 
-    get_cursor_direction = get_cursor_compare_criteria(sorting, inverse)
+    get_cursor_direction = get_cursor_compare_criteria(sortby, inverse)
 
     # cursor meaning is based on the sorting criteria
     if cursor:
-        sort_expr = getattr(sort_by, get_cursor_direction)(cursor)
+        sort_expr = getattr(sort_by, get_cursor_direction)(
+            decode_cursor(cursor, sortby)
+        )
         search = search.filter(*(sort_expr,))
 
     # limit is +1 for getting the next page
@@ -134,7 +177,7 @@ def get_next_prev_links(
     if len(collections) > limit or back:
         # We need a next link, as we have more records to explore
         next_cursor = cursor if back else getattr(collections[-1], sort_by.key)
-        links["next"] = {"cursor": next_cursor}
+        links["next"] = {"cursor": encode_cursor(next_cursor)}
     # Prev
     if cursor:
         # We have a cursor, so we provide a back link
@@ -142,7 +185,7 @@ def get_next_prev_links(
         # The back link is always present because we don't know anything about the previous page
         back_cursor = getattr((results[0] if not back else results[-1]), sort_by.key)
         links["prev"] = {
-            "cursor": back_cursor,
+            "cursor": encode_cursor(back_cursor),
             "back": "true",
         }
     return links
@@ -414,9 +457,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
     def all_datasets(
         self,
         request: fastapi.Request,
-        q: str = None,
+        q: str | None = None,
         kw: list = [],
-        sorting: str = "update",
+        sortby: str = "update",
         cursor: str = None,
         limit: int = 20,
         back: bool = False,
@@ -429,7 +472,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
             search = apply_filters(search, q, kw)
             search, sort_by = apply_sorting(
-                search=search, sorting=sorting, cursor=cursor, limit=limit, inverse=back
+                search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
 
             collections = search.all()

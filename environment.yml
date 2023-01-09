@@ -16,7 +16,7 @@ dependencies:
 - sphinxcontrib-apidoc
     # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
 - fastapi
-- pystac
+- python-dateutil
 - requests
 - rfc3339-validator
 - sqlalchemy
