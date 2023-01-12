@@ -42,7 +42,7 @@ async def datasets_search(
     ),
     # FIXME: remove this deprecated parameter
     sorting: CatalogueSortCriterion = fastapi.Query(
-        default=CatalogueSortCriterion.update_desc,
+        default=None,
         deprecated=True,
         description="Deprecated, use sortby instead.",
     ),
@@ -55,7 +55,7 @@ async def datasets_search(
         request=request,
         q=q,
         kw=kw,
-        sortby=sortby or sorting,
+        sortby=sorting or sortby,
         cursor=cursor,
         limit=limit,
         back=back,
