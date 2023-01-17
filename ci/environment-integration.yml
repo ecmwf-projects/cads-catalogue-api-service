@@ -3,23 +3,7 @@ channels:
 - conda-forge
 - nodefaults
 dependencies:
-- python>=3.10
-- attrs
-- pip
+- make
 - pytest
 - pytest-cov
-    # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
-- fastapi
-- python-dateutil
-- requests
-- rfc3339-validator
-- sqlalchemy
-- sqlalchemy-stubs
-- jsonschema
-- pip:
-  - fastapi-utils
-  - stac_fastapi.api
-  - stac_fastapi.extensions
-  - stac_fastapi.types
-  - starlette_exporter
-  - brotli-asgi
+# DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
