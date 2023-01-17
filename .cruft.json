@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/ecmwf-projects/cookiecutter-conda-package",
-  "commit": "8863dc1e7f184166bfe30eb1c5329ab497ac3ef1",
+  "commit": "5e23a683532ab1ca0d6329402ff7a5be099ee8be",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -9,6 +9,8 @@
       "project_short_description": "STAC based API service for the Climate & Atmosphere Data Store",
       "copyright_holder": "European Union",
       "copyright_year": "2022",
+      "mypy_strict": "True",
+      "integration_tests": "False",
       "_template": "https://github.com/ecmwf-projects/cookiecutter-conda-package"
     }
   },
