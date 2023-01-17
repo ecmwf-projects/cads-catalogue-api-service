@@ -5,6 +5,8 @@ STAC based API service for the Climate & Atmosphere Data Store.
 ```{toctree}
 :caption: 'Contents:'
 :maxdepth: 2
+
+API Reference <_api/cads_catalogue_api_service/index>
 ```
 
 # Indices and tables

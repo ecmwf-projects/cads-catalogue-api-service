@@ -57,7 +57,7 @@ def encode_cursor(plain_cursor: Any) -> str:
     Encoding is based on the type of the plain cursor value
     """
     encoded = None
-    match type(plain_cursor):
+    match type(plain_cursor):  # noqa: E999
         case datetime.datetime:
             encoded = encode_base64(plain_cursor.astimezone().isoformat())
         case _:
