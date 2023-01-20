@@ -24,7 +24,6 @@ import attrs
 import cads_catalogue.database
 import dateutil
 import fastapi
-import fastapi_utils.session
 import pydantic
 import sqlalchemy.dialects
 import sqlalchemy.orm
@@ -32,7 +31,7 @@ import stac_fastapi.types
 import stac_fastapi.types.core
 import stac_pydantic
 
-from . import config, exceptions, models
+from . import config, exceptions, models, dependencies
 
 logger = logging.getLogger(__name__)
 
@@ -414,11 +413,10 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
     )
 
     @property
-    def reader(self) -> fastapi_utils.session.FastAPISessionMaker:
-        """Return the reader for the catalogue database."""
-        return fastapi_utils.session.FastAPISessionMaker(
-            config.dbsettings.connection_string
-        )
+    def reader(self) -> sqlalchemy.orm.Session:
+        """Return the reader session on the catalogue database."""
+        session = next(dependencies.get_session())
+        return session
 
     def _landing_page(
         self,
@@ -467,96 +465,91 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
     ) -> stac_fastapi.types.stac.Collections:
         """Read datasets from the catalogue."""
         base_url = str(request.base_url)
-        with self.reader.context_session() as session:
-            search = session.query(self.collection_table)
+        search = self.reader.query(self.collection_table)
 
-            search = apply_filters(search, q, kw)
-            search, sort_by = apply_sorting(
-                search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
+        search = apply_filters(search, q, kw)
+        search, sort_by = apply_sorting(
+            search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
+        )
+
+        collections = search.all()
+
+        # Filter function always returns an item more than the limit to know if there is a next/prev page
+        # But response is build or effective page size
+        if len(collections) <= limit:
+            results = collections
+        else:
+            results = collections[:-1]
+
+        if len(results) == 0:
+            raise stac_fastapi.types.errors.NotFoundError(
+                "Search does not match any dataset"
             )
 
-            collections = search.all()
+        serialized_collections = [
+            collection_serializer(collection, request=request, preview=True)
+            for collection in (results if not back else reversed(results))
+        ]
 
-            # Filter function always returns an item more than the limit to know if there is a next/prev page
-            # But response is build or effective page size
-            if len(collections) <= limit:
-                results = collections
-            else:
-                results = collections[:-1]
+        links = [
+            {
+                "rel": stac_pydantic.links.Relations.root.value,
+                "type": stac_pydantic.shared.MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": stac_pydantic.links.Relations.parent.value,
+                "type": stac_pydantic.shared.MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": stac_pydantic.links.Relations.self.value,
+                "type": stac_pydantic.shared.MimeTypes.json,
+                "href": request.url_for(name=route_name),
+            },
+        ]
 
-            if len(results) == 0:
-                raise stac_fastapi.types.errors.NotFoundError(
-                    "Search does not match any dataset"
-                )
-
-            serialized_collections = [
-                collection_serializer(collection, request=request, preview=True)
-                for collection in (results if not back else reversed(results))
-            ]
-
-            links = [
+        next_prev_links = get_next_prev_links(
+            collections=collections,
+            sort_by=sort_by,
+            cursor=cursor,
+            limit=limit,
+            back=back,
+        )
+        if next_prev_links.get("next"):
+            qs = urllib.parse.urlencode(
                 {
-                    "rel": stac_pydantic.links.Relations.root.value,
-                    "type": stac_pydantic.shared.MimeTypes.json,
-                    "href": base_url,
-                },
-                {
-                    "rel": stac_pydantic.links.Relations.parent.value,
-                    "type": stac_pydantic.shared.MimeTypes.json,
-                    "href": base_url,
-                },
-                {
-                    "rel": stac_pydantic.links.Relations.self.value,
-                    "type": stac_pydantic.shared.MimeTypes.json,
-                    "href": request.url_for(name=route_name),
-                },
-            ]
-
-            next_prev_links = get_next_prev_links(
-                collections=collections,
-                sort_by=sort_by,
-                cursor=cursor,
-                limit=limit,
-                back=back,
+                    **{k: v for (k, v) in request.query_params.items() if k != "back"},
+                    "cursor": next_prev_links["next"]["cursor"],
+                }
             )
-            if next_prev_links.get("next"):
-                qs = urllib.parse.urlencode(
-                    {
-                        **{
-                            k: v
-                            for (k, v) in request.query_params.items()
-                            if k != "back"
-                        },
-                        "cursor": next_prev_links["next"]["cursor"],
-                    }
-                )
-                links.append(
-                    {
-                        "rel": "next",
-                        "href": f"{request.url_for(name=route_name)}?{qs}",
-                        "type": stac_pydantic.shared.MimeTypes.json,
-                    }
-                )
-            if next_prev_links.get("prev"):
-                qs = urllib.parse.urlencode(
-                    {
-                        **{k: v for (k, v) in request.query_params.items()},
-                        "cursor": next_prev_links["prev"]["cursor"],
-                        "back": "true",
-                    }
-                )
-                links.append(
-                    {
-                        "rel": "prev",
-                        "href": f"{request.url_for(name=route_name)}?{qs}",
-                        "type": stac_pydantic.shared.MimeTypes.json,
-                    }
-                )
-
-            collection_list = stac_fastapi.types.stac.Collections(
-                collections=serialized_collections or [], links=links
+            links.append(
+                {
+                    "rel": "next",
+                    "href": f"{request.url_for(name=route_name)}?{qs}",
+                    "type": stac_pydantic.shared.MimeTypes.json,
+                }
             )
-            return collection_list
+        if next_prev_links.get("prev"):
+            qs = urllib.parse.urlencode(
+                {
+                    **{k: v for (k, v) in request.query_params.items()},
+                    "cursor": next_prev_links["prev"]["cursor"],
+                    "back": "true",
+                }
+            )
+            links.append(
+                {
+                    "rel": "prev",
+                    "href": f"{request.url_for(name=route_name)}?{qs}",
+                    "type": stac_pydantic.shared.MimeTypes.json,
+                }
+            )
+
+        collection_list = stac_fastapi.types.stac.Collections(
+            collections=serialized_collections or [], links=links
+        )
+        return collection_list
 
     def all_collections(
         self, request: fastapi.Request
@@ -568,9 +561,8 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         self, collection_id: str, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collection:
         """Get a STAC collection by id."""
-        with self.reader.context_session() as session:
-            collection = lookup_id(collection_id, self.collection_table, session)
-            return collection_serializer(collection, request=request, preview=False)
+        collection = lookup_id(collection_id, self.collection_table, self.reader)
+        return collection_serializer(collection, request=request, preview=False)
 
     def get_item(self, **kwargs: dict[str, Any]) -> None:
         """Access to STAC items: explicitly not implemented."""

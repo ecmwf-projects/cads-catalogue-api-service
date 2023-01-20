@@ -14,13 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import fastapi_utils
+import functools
+from typing import Iterator
+
+import fastapi_utils.session
+import sqlalchemy
 
 from . import config
 
 
-def get_session() -> fastapi_utils.session.FastAPISessionMaker:  # pragma: no cover
+@functools.lru_cache()
+def _get_sessionmaker() -> fastapi_utils.session.FastAPISessionMaker:
+    """Generate a DB session using fastapi_utils."""
+    connection_string = config.dbsettings.connection_string
+    return fastapi_utils.session.FastAPISessionMaker(connection_string)
+
+
+def get_session() -> Iterator[sqlalchemy.orm.Session]:
     """Fastapi dependency that provides a sqlalchemy session."""
-    return fastapi_utils.session.FastAPISessionMaker(
-        config.dbsettings.connection_string
-    )
+    yield from _get_sessionmaker().get_db()
