@@ -24,7 +24,7 @@ from . import config
 
 
 @functools.lru_cache()
-def _get_sessionmaker() -> fastapi_utils.session.FastAPISessionMaker:
+def get_sessionmaker() -> fastapi_utils.session.FastAPISessionMaker:
     """Generate a DB session using fastapi_utils."""
     connection_string = config.dbsettings.connection_string
     return fastapi_utils.session.FastAPISessionMaker(connection_string)
@@ -32,4 +32,4 @@ def _get_sessionmaker() -> fastapi_utils.session.FastAPISessionMaker:
 
 def get_session() -> Iterator[sqlalchemy.orm.Session]:
     """Fastapi dependency that provides a sqlalchemy session."""
-    yield from _get_sessionmaker().get_db()
+    yield from get_sessionmaker().get_db()
