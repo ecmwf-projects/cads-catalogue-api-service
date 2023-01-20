@@ -28,47 +28,45 @@ router = fastapi.APIRouter(
 
 
 def query_licences(
-    session_maker: sa.orm.Session,
+    session: sa.orm.Session,
 ) -> list[cads_catalogue.database.Licence]:
     """Query licences."""
-    with session_maker.context_session() as session:
-        # NOTE: possible issue here if the title of a licence change from a revision to another
-        results = (
-            session.query(
-                cads_catalogue.database.Licence.licence_uid,
-                cads_catalogue.database.Licence.title,
-                sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
-            )
-            .group_by(
-                cads_catalogue.database.Licence.licence_uid,
-                cads_catalogue.database.Licence.title,
-            )
-            .order_by(cads_catalogue.database.Licence.title)
-            .all()
+    # NOTE: possible issue here if the title of a licence change from a revision to another
+    results = (
+        session.query(
+            cads_catalogue.database.Licence.licence_uid,
+            cads_catalogue.database.Licence.title,
+            sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
         )
+        .group_by(
+            cads_catalogue.database.Licence.licence_uid,
+            cads_catalogue.database.Licence.title,
+        )
+        .order_by(cads_catalogue.database.Licence.title)
+        .all()
+    )
     return results
 
 
 def query_keywords(
-    session_maker: sa.orm.Session,
+    session: sa.orm.Session,
 ) -> list[str]:
     """Query keywords."""
-    with session_maker.context_session() as session:
-        results = (
-            session.query(sa.func.unnest(cads_catalogue.database.Resource.keywords))
-            .distinct()
-            .order_by(sa.func.unnest(cads_catalogue.database.Resource.keywords))
-            .all()
-        )
+    results = (
+        session.query(sa.func.unnest(cads_catalogue.database.Resource.keywords))
+        .distinct()
+        .order_by(sa.func.unnest(cads_catalogue.database.Resource.keywords))
+        .all()
+    )
     return [col[0] for col in results]
 
 
 @router.get("/licences", response_model=models.Licences)
 async def list_licences(
-    session_maker=fastapi.Depends(dependencies.get_session),
+    session=fastapi.Depends(dependencies.get_session),
 ) -> models.Licences:
     """Endpoint to get all registered licences."""
-    results = query_licences(session_maker)
+    results = query_licences(session)
     return models.Licences(
         licences=[
             models.Licence(
@@ -83,10 +81,10 @@ async def list_licences(
 
 @router.get("/keywords", response_model=models.Keywords)
 async def list_keywords(
-    session_maker=fastapi.Depends(dependencies.get_session),
+    session=fastapi.Depends(dependencies.get_session),
 ) -> models.Keywords:
     """Endpoint to get all available keywords."""
-    results = query_keywords(session_maker)
+    results = query_keywords(session)
     return models.Keywords(
         keywords=[
             models.Keyword(

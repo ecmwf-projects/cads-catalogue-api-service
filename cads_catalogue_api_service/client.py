@@ -24,7 +24,6 @@ import attrs
 import cads_catalogue.database
 import dateutil
 import fastapi
-import fastapi_utils.session
 import pydantic
 import sqlalchemy.dialects
 import sqlalchemy.orm
@@ -32,7 +31,7 @@ import stac_fastapi.types
 import stac_fastapi.types.core
 import stac_pydantic
 
-from . import config, exceptions, models
+from . import config, exceptions, models, dependencies
 
 logger = logging.getLogger(__name__)
 
@@ -432,11 +431,10 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
     )
 
     @property
-    def reader(self) -> fastapi_utils.session.FastAPISessionMaker:
-        """Return the reader for the catalogue database."""
-        return fastapi_utils.session.FastAPISessionMaker(
-            config.dbsettings.connection_string
-        )
+    def reader(self) -> sqlalchemy.orm.Session:
+        """Return the reader session on the catalogue database."""
+        session_maker = dependencies.get_sessionmaker()
+        return session_maker
 
     def _landing_page(
         self,
@@ -574,7 +572,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             collection_list = stac_fastapi.types.stac.Collections(
                 collections=serialized_collections or [], links=links
             )
-            return collection_list
+        return collection_list
 
     def all_collections(
         self, request: fastapi.Request
