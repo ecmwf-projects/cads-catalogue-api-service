@@ -330,6 +330,24 @@ def generate_collection_links(
             for related in model.related_resources
         ]
 
+        # Messages related to dataset
+        additional_links += [
+            {
+                "rel": "messages",
+                "href": f"{request.url_for(name='Get Collections')}/{model.resource_uid}/messages",
+                "title": "All messages related to the selected dataset",
+            }
+        ]
+
+        # Changelog related to dataset
+        additional_links += [
+            {
+                "rel": "changelog",
+                "href": f"{request.url_for(name='Get Collections')}/{model.resource_uid}/messages/changelog",
+                "title": "All archived messages related to the selected dataset",
+            }
+        ]
+
     collection_links += stac_fastapi.types.links.resolve_links(
         additional_links, base_url
     )
