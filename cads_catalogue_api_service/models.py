@@ -64,3 +64,38 @@ class Keywords(TypedDict):
     """Keywords vocabulary."""
 
     keywords: list[Keyword]
+
+
+class Message(TypedDict):
+    """Message definition."""
+
+    id: str
+    date: str
+    summary: str
+    url: str
+    severity: str
+    links: list
+
+
+class Messages(TypedDict):
+    """Messages vocabulary."""
+
+    messages: list[Message]
+
+
+class Changelog(TypedDict):
+    """Changelog definition."""
+
+    id: str
+    date: str
+    summary: str
+    url: str
+    severity: str
+    archived: bool
+    links: list
+
+
+class Changelogs(TypedDict):
+    """Changelogs vocabulary."""
+
+    changelogs: list[Changelog]

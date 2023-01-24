@@ -1,0 +1,133 @@
+"""Messages module."""
+
+# Copyright 2022, European Union.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import fastapi
+import sqlalchemy as sa
+import random
+
+from . import dependencies, models
+
+router = fastapi.APIRouter(
+    prefix="/collections/{collection_id}/messages",
+    tags=["messages"],
+    responses={fastapi.status.HTTP_404_NOT_FOUND: {"description": "Not found"}},
+)
+
+
+def get_links(
+    request: fastapi.Request,
+    route: str = "",
+):
+    base_url = str(request.base_url)
+    return [
+        {
+            "rel": "self",
+            "type": "application/json",
+            "href": f"http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages{route}",
+        }
+    ]
+
+def query_messages(
+    session_maker: sa.orm.Session,
+    request: fastapi.Request
+) -> list[object]:
+    """Query messages."""
+    results = [
+        {
+            "id": "xxx-yyy-zzzz.md",
+            "date": "2023-01-20T08:05:54Z",
+            "summary": "Found an issue on this dataset",
+            "url": "http://object-storage/…/xxx.md",
+            "severity": "warn",
+            "links":get_links(request),
+        },
+        {
+            "id": "yyy-zzz-uuuu.md",
+            "date": "2023-01-20T11:15:54Z",
+            "summary": "Changed something on this other dataset",
+            "url": "http://object-storage/…/yyy.md",
+            "severity": "info",
+            "links":get_links(request),
+        }
+        
+    ]
+    return results
+
+
+def query_changelogs(
+    session_maker: sa.orm.Session,
+    request: fastapi.Request,
+) -> list[object]:
+    """Query changelogs."""
+    results = []
+    severity = ["warn","info","critical"]
+    for i in range(10):
+        results.append(
+        {
+            "id": f"{i}-yyy-zzzz.md",
+            "date": f"2023-01-{i}T08:05:54Z",
+            "summary": "Found a log on this dataset",
+            "url": f"http://object-storage/…/{i}.md",
+            "severity": random.choice(severity),
+            "archived":True,
+            "links":get_links(request, "/changelogs"),
+        })
+    return results
+
+
+@router.get("", response_model=models.Messages)
+async def list_messages(
+    session_maker=fastapi.Depends(dependencies.get_session),
+    request=fastapi.Request,
+) -> models.Message:
+    """Endpoint to get all messages."""
+    results = query_messages(session_maker, request)
+    return models.Messages(
+        messages=[
+            models.Message(
+                id=message["id"],
+                date=message["date"],
+                summary=message["summary"],
+                url=message["url"],
+                severity=message["severity"],
+                links=message["links"],
+            )
+            for message in results
+        ]
+    )
+
+
+@router.get("/changelogs", response_model=models.Changelogs)
+async def list_changelogs(
+    session_maker=fastapi.Depends(dependencies.get_session),
+    request=fastapi.Request,
+) -> models.Changelogs:
+    """Endpoint to get all changelogs."""
+    results = query_changelogs(session_maker, request)
+    return models.Changelogs(
+        changelogs=[
+            models.Changelog(
+                id=changelog["id"],
+                date=changelog["date"],
+                summary=changelog["summary"],
+                url=changelog["url"],
+                severity=changelog["severity"],
+                archived=changelog["archived"],
+                links=changelog["links"],
+            )
+            for changelog in results
+        ]
+    )
