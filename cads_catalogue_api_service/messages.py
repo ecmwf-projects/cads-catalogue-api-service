@@ -90,7 +90,7 @@ async def list_messages(
     )
 
 
-@router.get("/changelogs", response_model=models.Changelogs)
+@router.get("/changelog", response_model=models.Changelogs)
 async def list_changelogs(
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.Changelogs:
