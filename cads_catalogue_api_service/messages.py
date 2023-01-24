@@ -51,10 +51,10 @@ def query_messages(
     return results
 
 
-def query_changelogs(
+def query_changelog_list(
     session_maker: sa.orm.Session
 ) -> list[object]:
-    """Query changelogs."""
+    """Query changelog list."""
     results = []
     severity = ["warn","info","critical"]
     for i in range(10):
@@ -90,14 +90,14 @@ async def list_messages(
     )
 
 
-@router.get("/changelog", response_model=models.Changelogs)
-async def list_changelogs(
+@router.get("/changelog", response_model=models.ChangelogList)
+async def list_changelog(
     session_maker=fastapi.Depends(dependencies.get_session),
-) -> models.Changelogs:
-    """Endpoint to get all changelogs."""
-    results = query_changelogs(session_maker)
-    return models.Changelogs(
-        changelogs=[
+) -> models.ChangelogList:
+    """Endpoint to get all changelog."""
+    results = query_changelog_list(session_maker)
+    return models.ChangelogList(
+        changelog=[
             models.Changelog(
                 id=changelog["id"],
                 date=changelog["date"],

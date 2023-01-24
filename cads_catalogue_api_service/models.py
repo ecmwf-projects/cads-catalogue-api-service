@@ -93,7 +93,7 @@ class Changelog(TypedDict):
     archived: bool
 
 
-class Changelogs(TypedDict):
-    """Changelogs vocabulary."""
+class ChangelogList(TypedDict):
+    """ChangelogList vocabulary."""
 
-    changelogs: list[Changelog]
+    changelog: list[Changelog]

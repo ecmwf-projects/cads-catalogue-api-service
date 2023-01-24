@@ -37,7 +37,7 @@ def static_messages_query(_foo: Any) -> list[cads_catalogue.database.Message]:
     ]
 
 
-def static_changelogs_messages(_foo: Any) -> list[cads_catalogue.database.Message]:
+def static_changelog_messages(_foo: Any) -> list[cads_catalogue.database.Message]:
     return [
         cads_catalogue.database.Message(
             message_id=1, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
@@ -97,17 +97,17 @@ def test_messages(monkeypatch) -> None:
 
 def test_vocabularies_keywords(monkeypatch) -> None:
     monkeypatch.setattr(
-        "cads_catalogue_api_service.messages.query_changelogs",
-        static_changelogs_messages,
+        "cads_catalogue_api_service.messages.query_changelog_list",
+        static_changelog_messages,
     )
-    """Test list of all changelogs."""
+    """Test list of all changelog."""
     response = client.get(
-        "/messages/changelogs",
+        "/messages/changelog",
     )
 
     assert response.status_code == 200
     assert response.json() == {
-        "changelogs": [
+        "changelog": [
         {"id":"0-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/0.md","severity":"warn","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
         {"id":"1-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/1.md","severity":"info","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
         {"id":"2-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/2.md","severity":"critical","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},

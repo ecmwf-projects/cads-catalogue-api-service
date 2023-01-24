@@ -26,17 +26,17 @@ def test_messages() -> None:
         assert type(message.get("links")) == list
 
 
-def test_changelogs_messages() -> None:
+def test_changelog_messages() -> None:
     # TODO: replace with a JSON schema
-    r = requests.get(f"{API_ROOT_PATH}messages/changelogs")
+    r = requests.get(f"{API_ROOT_PATH}messages/changelog")
 
     assert r.status_code == 200
 
     results = r.json()
-    changelogs = results.get("changelogs")
+    changelog_list = results.get("changelog")
 
-    assert type(changelogs) == list
-    for changelog in changelogs:
+    assert type(changelog_list) == list
+    for changelog in changelog_list:
         assert type(changelog) == dict
         assert type(changelog.get("id")) == str
         assert type(changelog.get("date")) == str
