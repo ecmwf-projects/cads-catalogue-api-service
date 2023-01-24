@@ -27,22 +27,8 @@ router = fastapi.APIRouter(
 )
 
 
-def get_links(
-    request: fastapi.Request,
-    route: str = "",
-):
-    base_url = str(request.base_url)
-    return [
-        {
-            "rel": "self",
-            "type": "application/json",
-            "href": f"http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages{route}",
-        }
-    ]
-
 def query_messages(
-    session_maker: sa.orm.Session,
-    request: fastapi.Request
+    session_maker: sa.orm.Session
 ) -> list[object]:
     """Query messages."""
     results = [
@@ -51,16 +37,14 @@ def query_messages(
             "date": "2023-01-20T08:05:54Z",
             "summary": "Found an issue on this dataset",
             "url": "http://object-storage/…/xxx.md",
-            "severity": "warn",
-            "links":get_links(request),
+            "severity": "warn"
         },
         {
             "id": "yyy-zzz-uuuu.md",
             "date": "2023-01-20T11:15:54Z",
             "summary": "Changed something on this other dataset",
             "url": "http://object-storage/…/yyy.md",
-            "severity": "info",
-            "links":get_links(request),
+            "severity": "info"
         }
         
     ]
@@ -68,8 +52,7 @@ def query_messages(
 
 
 def query_changelogs(
-    session_maker: sa.orm.Session,
-    request: fastapi.Request,
+    session_maker: sa.orm.Session
 ) -> list[object]:
     """Query changelogs."""
     results = []
@@ -83,7 +66,6 @@ def query_changelogs(
             "url": f"http://object-storage/…/{i}.md",
             "severity": random.choice(severity),
             "archived":True,
-            "links":get_links(request, "/changelogs"),
         })
     return results
 
@@ -91,10 +73,9 @@ def query_changelogs(
 @router.get("", response_model=models.Messages)
 async def list_messages(
     session_maker=fastapi.Depends(dependencies.get_session),
-    request=fastapi.Request,
 ) -> models.Message:
     """Endpoint to get all messages."""
-    results = query_messages(session_maker, request)
+    results = query_messages(session_maker)
     return models.Messages(
         messages=[
             models.Message(
@@ -103,7 +84,6 @@ async def list_messages(
                 summary=message["summary"],
                 url=message["url"],
                 severity=message["severity"],
-                links=message["links"],
             )
             for message in results
         ]
@@ -113,10 +93,9 @@ async def list_messages(
 @router.get("/changelogs", response_model=models.Changelogs)
 async def list_changelogs(
     session_maker=fastapi.Depends(dependencies.get_session),
-    request=fastapi.Request,
 ) -> models.Changelogs:
     """Endpoint to get all changelogs."""
-    results = query_changelogs(session_maker, request)
+    results = query_changelogs(session_maker)
     return models.Changelogs(
         changelogs=[
             models.Changelog(
@@ -126,7 +105,6 @@ async def list_changelogs(
                 url=changelog["url"],
                 severity=changelog["severity"],
                 archived=changelog["archived"],
-                links=changelog["links"],
             )
             for changelog in results
         ]

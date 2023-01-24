@@ -74,7 +74,6 @@ class Message(TypedDict):
     summary: str
     url: str
     severity: str
-    links: list
 
 
 class Messages(TypedDict):
@@ -92,7 +91,6 @@ class Changelog(TypedDict):
     url: str
     severity: str
     archived: bool
-    links: list
 
 
 class Changelogs(TypedDict):
