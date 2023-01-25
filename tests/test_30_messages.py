@@ -151,9 +151,9 @@ def test_messages(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "messages",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages",
                     }
                 ],
             },
@@ -166,9 +166,9 @@ def test_messages(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "messages",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages",
                     }
                 ],
             },
@@ -198,9 +198,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -213,9 +213,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -228,9 +228,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -243,9 +243,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -258,9 +258,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -273,9 +273,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -288,9 +288,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -303,9 +303,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -318,9 +318,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -333,9 +333,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -348,9 +348,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
@@ -363,9 +363,9 @@ def test_vocabularies_keywords(monkeypatch) -> None:
                 "archived": True,
                 "links": [
                     {
-                        "rel": "self",
+                        "rel": "changelog",
                         "type": "application/json",
-                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
                     }
                 ],
             },
