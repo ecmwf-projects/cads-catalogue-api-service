@@ -31,7 +31,7 @@ import stac_fastapi.types.links
 from brotli_asgi import BrotliMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-from . import client, config, exceptions, extensions, vocabularies, messages
+from . import client, config, exceptions, extensions, messages, vocabularies
 
 logger = logging.getLogger(__name__)
 

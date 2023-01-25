@@ -14,7 +14,6 @@
 
 from typing import Any
 
-import cads_catalogue
 import fastapi
 import fastapi.testclient
 
@@ -24,42 +23,42 @@ from cads_catalogue_api_service.main import app
 client = fastapi.testclient.TestClient(app)
 
 
-def static_messages_query(_foo: Any) -> list[cads_catalogue.database.Message]:
+def static_messages_query(_foo: Any) -> list[Any]:
     return [
-        cads_catalogue.database.Message(
+        Any(
             message_id=1, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
             summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",links=[]
         ),
-        cads_catalogue.database.Message(
+        Any(
             message_id=2, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
             summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",links=[]
         ),
     ]
 
 
-def static_changelog_messages(_foo: Any) -> list[cads_catalogue.database.Message]:
+def static_changelog_messages(_foo: Any) -> list[Any]:
     return [
-        cads_catalogue.database.Message(
+        Any(
             message_id=1, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
             summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
         ),
-        cads_catalogue.database.Message(
+        Any(
             message_id=2, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
             summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
         ),
-        cads_catalogue.database.Message(
+        Any(
             message_id=3, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
             summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
         ),
-        cads_catalogue.database.Message(
+        Any(
             message_id=4, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
             summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
         ),
-        cads_catalogue.database.Message(
+        Any(
             message_id=5, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
             summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
         ),
-        cads_catalogue.database.Message(
+        Any(
             message_id=6, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
             summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
         ),
@@ -89,8 +88,36 @@ def test_messages(monkeypatch) -> None:
     assert response.status_code == 200
     assert response.json() == {
         "messages": [
-            {"id":"0-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/0.md","severity":"critical","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-            {"id":"1-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/1.md","severity":"critical","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]}
+            {
+                "id": "0-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/0.md",
+                "severity": "critical",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "1-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/1.md",
+                "severity": "critical",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
         ],
     }
 
@@ -108,17 +135,185 @@ def test_vocabularies_keywords(monkeypatch) -> None:
     assert response.status_code == 200
     assert response.json() == {
         "changelog": [
-        {"id":"0-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/0.md","severity":"warn","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"1-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/1.md","severity":"info","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"2-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/2.md","severity":"critical","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"3-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/3.md","severity":"critical","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"4-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/4.md","severity":"critical","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"5-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/5.md","severity":"warn","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"6-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/6.md","severity":"warn","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"7-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/7.md","severity":"info","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"8-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/8.md","severity":"warn","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"9-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/9.md","severity":"info","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"10-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/10.md","severity":"info","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
-        {"id":"11-yyy-zzzz.md","date":"2023-01-0T08:05:54Z","summary":"Found a log on this dataset","url":"http://object-storage/…/11.md","severity":"info","archived":True,"links":[{"rel":"self","type":"application/json","href":"<property object at 0x7f0ecfb6ccc0>"}]},
+            {
+                "id": "0-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/0.md",
+                "severity": "warn",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "1-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/1.md",
+                "severity": "info",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "2-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/2.md",
+                "severity": "critical",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "3-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/3.md",
+                "severity": "critical",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "4-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/4.md",
+                "severity": "critical",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "5-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/5.md",
+                "severity": "warn",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "6-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/6.md",
+                "severity": "warn",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "7-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/7.md",
+                "severity": "info",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "8-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/8.md",
+                "severity": "warn",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "9-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/9.md",
+                "severity": "info",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "10-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/10.md",
+                "severity": "info",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
+            {
+                "id": "11-yyy-zzzz.md",
+                "date": "2023-01-0T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": "http://object-storage/…/11.md",
+                "severity": "info",
+                "archived": True,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/json",
+                        "href": "<property object at 0x7f0ecfb6ccc0>",
+                    }
+                ],
+            },
         ],
     }
