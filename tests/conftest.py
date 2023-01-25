@@ -6,7 +6,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def temp_environ() -> Any:
-    """Create a modifiable environment that affect only the test scope"""
+    """Create a modifiable environment that affect only the test scope."""
     old_environ = dict(os.environ)
     os.environ["CATALOGUE_DB_PASSWORD"] = "password"
 
