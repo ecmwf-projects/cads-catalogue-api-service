@@ -14,9 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import random
+
 import fastapi
 import sqlalchemy as sa
-import random
 
 from . import dependencies, models
 
@@ -27,9 +28,7 @@ router = fastapi.APIRouter(
 )
 
 
-def query_messages(
-    session_maker: sa.orm.Session
-) -> list[object]:
+def query_messages(session_maker: sa.orm.Session) -> list[object]:
     """Query messages."""
     results = [
         {
@@ -37,36 +36,34 @@ def query_messages(
             "date": "2023-01-20T08:05:54Z",
             "summary": "Found an issue on this dataset",
             "url": "http://object-storage/…/xxx.md",
-            "severity": "warn"
+            "severity": "warn",
         },
         {
             "id": "yyy-zzz-uuuu.md",
             "date": "2023-01-20T11:15:54Z",
             "summary": "Changed something on this other dataset",
             "url": "http://object-storage/…/yyy.md",
-            "severity": "info"
-        }
-        
+            "severity": "info",
+        },
     ]
     return results
 
 
-def query_changelog_list(
-    session_maker: sa.orm.Session
-) -> list[object]:
+def query_changelog_list(session_maker: sa.orm.Session) -> list[object]:
     """Query changelog list."""
     results = []
-    severity = ["warn","info","critical"]
+    severity = ["warn", "info", "critical"]
     for i in range(10):
         results.append(
-        {
-            "id": f"{i}-yyy-zzzz.md",
-            "date": f"2023-01-{i}T08:05:54Z",
-            "summary": "Found a log on this dataset",
-            "url": f"http://object-storage/…/{i}.md",
-            "severity": random.choice(severity),
-            "archived":True,
-        })
+            {
+                "id": f"{i}-yyy-zzzz.md",
+                "date": f"2023-01-{i}T08:05:54Z",
+                "summary": "Found a log on this dataset",
+                "url": f"http://object-storage/…/{i}.md",
+                "severity": random.choice(severity),
+                "archived": True,
+            }
+        )
     return results
 
 

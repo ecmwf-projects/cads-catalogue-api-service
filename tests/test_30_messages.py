@@ -26,12 +26,24 @@ client = fastapi.testclient.TestClient(app)
 def static_messages_query(_foo: Any) -> list[Any]:
     return [
         Any(
-            message_id=1, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",links=[]
+            message_id=1,
+            message_uid="cc-by-4.0",
+            title="CC-BY-4.0",
+            date="2023-01-0T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/0.md",
+            severity="critical",
+            links=[],
         ),
         Any(
-            message_id=2, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",links=[]
+            message_id=2,
+            message_uid="cc-by-4.0",
+            title="CC-BY-4.0",
+            date="2023-01-0T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/0.md",
+            severity="critical",
+            links=[],
         ),
     ]
 
@@ -39,28 +51,70 @@ def static_messages_query(_foo: Any) -> list[Any]:
 def static_changelog_messages(_foo: Any) -> list[Any]:
     return [
         Any(
-            message_id=1, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
+            message_id=1,
+            message_uid="cc-by-4.0",
+            title="CC-BY-4.0",
+            date="2023-01-0T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/0.md",
+            severity="critical",
+            archived=True,
+            links=[],
         ),
         Any(
-            message_id=2, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
+            message_id=2,
+            message_uid="cc-by-4.0",
+            title="CC-BY-4.0",
+            date="2023-01-0T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/0.md",
+            severity="critical",
+            archived=True,
+            links=[],
         ),
         Any(
-            message_id=3, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
+            message_id=3,
+            message_uid="cc-by-4.0",
+            title="CC-BY-4.0",
+            date="2023-01-0T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/0.md",
+            severity="critical",
+            archived=True,
+            links=[],
         ),
         Any(
-            message_id=4, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
+            message_id=4,
+            message_uid="cc-by-4.0",
+            title="CC-BY-4.0",
+            date="2023-01-0T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/0.md",
+            severity="critical",
+            archived=True,
+            links=[],
         ),
         Any(
-            message_id=5, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
+            message_id=5,
+            message_uid="cc-by-4.0",
+            title="CC-BY-4.0",
+            date="2023-01-0T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/0.md",
+            severity="critical",
+            archived=True,
+            links=[],
         ),
         Any(
-            message_id=6, message_uid="cc-by-4.0", title="CC-BY-4.0", date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",url="http://object-storage/…/0.md",severity="critical",archived=True,links=[]
+            message_id=6,
+            message_uid="cc-by-4.0",
+            title="CC-BY-4.0",
+            date="2023-01-0T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/0.md",
+            severity="critical",
+            archived=True,
+            links=[],
         ),
     ]
 
