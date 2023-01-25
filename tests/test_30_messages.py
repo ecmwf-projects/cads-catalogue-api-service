@@ -25,97 +25,114 @@ client = fastapi.testclient.TestClient(app)
 
 def static_messages_query(_foo: Any) -> list[Any]:
     return [
-        Any(
-            message_id=1,
-            message_uid="cc-by-4.0",
-            title="CC-BY-4.0",
-            date="2023-01-0T08:05:54Z",
+        dict(
+            id="0-yyy-zzzz.md",
+            date="2023-01-01T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/0.md",
-            severity="critical",
-            links=[],
+            severity="info",
         ),
-        Any(
-            message_id=2,
-            message_uid="cc-by-4.0",
-            title="CC-BY-4.0",
-            date="2023-01-0T08:05:54Z",
+        dict(
+            id="1-yyy-zzzz.md",
+            date="2023-01-02T08:05:54Z",
             summary="Found a log on this dataset",
-            url="http://object-storage/…/0.md",
-            severity="critical",
-            links=[],
+            url="http://object-storage/…/1.md",
+            severity="warn",
         ),
     ]
 
 
 def static_changelog_messages(_foo: Any) -> list[Any]:
     return [
-        Any(
-            message_id=1,
-            message_uid="cc-by-4.0",
-            title="CC-BY-4.0",
-            date="2023-01-0T08:05:54Z",
+        dict(
+            id="1-yyy-zzzz.md",
+            date="2023-01-01T08:05:54Z",
             summary="Found a log on this dataset",
-            url="http://object-storage/…/0.md",
+            url="http://object-storage/…/1.md",
+            severity="info",
+            archived=True,
+        ),
+        dict(
+            id="2-yyy-zzzz.md",
+            date="2023-01-01T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/2.md",
+            severity="info",
+            archived=True,
+        ),
+        dict(
+            id="3-yyy-zzzz.md",
+            date="2023-01-02T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/3.md",
+            severity="info",
+            archived=True,
+        ),
+        dict(
+            id="4-yyy-zzzz.md",
+            date="2023-01-02T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/4.md",
+            severity="info",
+            archived=True,
+        ),
+        dict(
+            id="5-yyy-zzzz.md",
+            date="2023-01-03T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/5.md",
+            severity="info",
+            archived=True,
+        ),
+        dict(
+            id="6-yyy-zzzz.md",
+            date="2023-01-03T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/6.md",
+            severity="info",
+            archived=True,
+        ),
+        dict(
+            id="7-yyy-zzzz.md",
+            date="2023-01-04T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/7.md",
+            severity="warn",
+            archived=True,
+        ),
+        dict(
+            id="8-yyy-zzzz.md",
+            date="2023-01-04T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/8.md",
+            severity="warn",
+            archived=True,
+        ),
+        dict(
+            id="9-yyy-zzzz.md",
+            date="2023-01-05T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/9.md",
+            severity="warn",
+            archived=True,
+        ),
+        dict(
+            id="10-yyy-zzzz.md",
+            date="2023-01-05T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/10.md",
+            severity="warn",
+            archived=True,
+        ),
+        dict(
+            id="11-yyy-zzzz.md",
+            date="2023-01-06T08:05:54Z",
+            summary="Found a log on this dataset",
+            url="http://object-storage/…/11.md",
             severity="critical",
             archived=True,
-            links=[],
         ),
-        Any(
-            message_id=2,
-            message_uid="cc-by-4.0",
-            title="CC-BY-4.0",
-            date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",
-            url="http://object-storage/…/0.md",
-            severity="critical",
-            archived=True,
-            links=[],
-        ),
-        Any(
-            message_id=3,
-            message_uid="cc-by-4.0",
-            title="CC-BY-4.0",
-            date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",
-            url="http://object-storage/…/0.md",
-            severity="critical",
-            archived=True,
-            links=[],
-        ),
-        Any(
-            message_id=4,
-            message_uid="cc-by-4.0",
-            title="CC-BY-4.0",
-            date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",
-            url="http://object-storage/…/0.md",
-            severity="critical",
-            archived=True,
-            links=[],
-        ),
-        Any(
-            message_id=5,
-            message_uid="cc-by-4.0",
-            title="CC-BY-4.0",
-            date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",
-            url="http://object-storage/…/0.md",
-            severity="critical",
-            archived=True,
-            links=[],
-        ),
-        Any(
-            message_id=6,
-            message_uid="cc-by-4.0",
-            title="CC-BY-4.0",
-            date="2023-01-0T08:05:54Z",
-            summary="Found a log on this dataset",
-            url="http://object-storage/…/0.md",
-            severity="critical",
-            archived=True,
-            links=[],
-        ),
+
     ]
 
 
@@ -136,7 +153,7 @@ def test_messages(monkeypatch) -> None:
     )
     """Test list of messages."""
     response = client.get(
-        "/messages",
+        "/collections/my-dataset/messages",
     )
 
     assert response.status_code == 200
@@ -144,230 +161,122 @@ def test_messages(monkeypatch) -> None:
         "messages": [
             {
                 "id": "0-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-01T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/0.md",
-                "severity": "critical",
-                "archived": True,
-                "links": [
-                    {
-                        "rel": "messages",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages",
-                    }
-                ],
+                "severity": "info",
             },
             {
                 "id": "1-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-02T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
-                "severity": "critical",
-                "archived": True,
-                "links": [
-                    {
-                        "rel": "messages",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages",
-                    }
-                ],
+                "severity": "warn",
             },
         ],
     }
 
 
-def test_vocabularies_keywords(monkeypatch) -> None:
+def test_changelog(monkeypatch) -> None:
     monkeypatch.setattr(
         "cads_catalogue_api_service.messages.query_changelog_list",
         static_changelog_messages,
     )
     """Test list of all changelog."""
     response = client.get(
-        "/messages/changelog",
+        "/collections/my-dataset/messages/changelog",
     )
 
     assert response.status_code == 200
     assert response.json() == {
         "changelog": [
             {
-                "id": "0-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
-                "summary": "Found a log on this dataset",
-                "url": "http://object-storage/…/0.md",
-                "severity": "warn",
-                "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
-            },
-            {
                 "id": "1-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-01T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
                 "severity": "info",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
             {
                 "id": "2-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-01T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/2.md",
-                "severity": "critical",
+                "severity": "info",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
             {
                 "id": "3-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-02T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/3.md",
-                "severity": "critical",
+                "severity": "info",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
             {
                 "id": "4-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-02T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/4.md",
-                "severity": "critical",
+                "severity": "info",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
             {
                 "id": "5-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-03T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/5.md",
-                "severity": "warn",
+                "severity": "info",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
             {
                 "id": "6-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-03T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/6.md",
-                "severity": "warn",
+                "severity": "info",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
             {
                 "id": "7-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-04T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/7.md",
-                "severity": "info",
+                "severity": "warn",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
             {
                 "id": "8-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-04T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/8.md",
                 "severity": "warn",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
             {
                 "id": "9-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-05T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/9.md",
-                "severity": "info",
+                "severity": "warn",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
             {
                 "id": "10-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-05T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/10.md",
-                "severity": "info",
+                "severity": "warn",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
             {
                 "id": "11-yyy-zzzz.md",
-                "date": "2023-01-0T08:05:54Z",
+                "date": "2023-01-06T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/11.md",
-                "severity": "info",
+                "severity": "critical",
                 "archived": True,
-                "links": [
-                    {
-                        "rel": "changelog",
-                        "type": "application/json",
-                        "href": "http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-pressure-levels/messages/changelog",
-                    }
-                ],
             },
         ],
     }
