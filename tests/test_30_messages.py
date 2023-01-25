@@ -132,7 +132,6 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             severity="critical",
             archived=True,
         ),
-
     ]
 
 
