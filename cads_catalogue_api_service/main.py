@@ -21,6 +21,7 @@ import logging
 from typing import Any
 
 import fastapi
+import fastapi.middleware.cors
 import fastapi.openapi
 import fastapi.responses
 import stac_fastapi.api.app
@@ -45,7 +46,11 @@ api = stac_fastapi.api.app.StacApi(
     settings=config.dbsettings,
     extensions=extensions,
     client=client.cads_client,
-    middlewares=[BrotliMiddleware, PrometheusMiddleware],
+    middlewares=[
+        BrotliMiddleware,
+        PrometheusMiddleware,
+        stac_fastapi.api.middleware.CORSMiddleware,
+    ],
 )
 
 app = api.app
