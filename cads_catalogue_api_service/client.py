@@ -308,9 +308,9 @@ def generate_collection_links(
             }
         )
 
-        logger.info(request.headers)
-        logger.info(request.scope)
-        logger.info(request.base_url)
+        logger.warning(request.headers)
+        logger.warning(request.scope)
+        logger.warning(request.base_url)
 
         if model.layout:
             additional_links.append(
