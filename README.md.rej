@@ -1,8 +1,8 @@
 diff a/README.md b/README.md	(rejected hunks)
 @@ -2,6 +2,13 @@
- 
+
  STAC based API service for the Climate & Atmosphere Data Store
- 
+
 +## Quick Start
 +
 +```python
@@ -11,5 +11,5 @@ diff a/README.md b/README.md	(rejected hunks)
 +```
 +
  ## Workflow for developers/contributors
- 
+
  For best experience create a new conda environment (e.g. DEVELOP) with Python 3.10:

@@ -37,8 +37,8 @@ def query_messages(session_maker: sa.orm.Session) -> list[object]:
             "summary": "Found an issue on this dataset",
             "url": "http://object-storage/…/xxx.md",
             "severity": "warn",
-            "entries":"dataset1",
-            "live":True,
+            "entries": "dataset1",
+            "live": True,
         },
         {
             "id": "yyy-zzz-uuuu.md",
@@ -46,8 +46,8 @@ def query_messages(session_maker: sa.orm.Session) -> list[object]:
             "summary": "Changed something on this other dataset",
             "url": "http://object-storage/…/yyy.md",
             "severity": "info",
-            "entries":"dataset2",
-            "live":True,
+            "entries": "dataset2",
+            "live": True,
         },
     ]
     return results
@@ -66,9 +66,9 @@ def query_changelog_list(session_maker: sa.orm.Session) -> list[object]:
                 "url": f"http://object-storage/…/{i}.md",
                 "severity": random.choice(severity),
                 "archived": True,
-                "entries":"dataset1,dataset2",
-                "live":False,
-                "status":"fixed",
+                "entries": "dataset1,dataset2",
+                "live": False,
+                "status": "fixed",
             }
         )
     return results

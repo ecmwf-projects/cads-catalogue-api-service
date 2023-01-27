@@ -96,6 +96,7 @@ class Changelog(TypedDict):
     live: bool
     status: str
 
+
 class ChangelogList(TypedDict):
     """ChangelogList vocabulary."""
 
