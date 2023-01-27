@@ -74,6 +74,8 @@ class Message(TypedDict):
     summary: str
     url: str
     severity: str
+    entries: str
+    live: bool
 
 
 class Messages(TypedDict):
@@ -90,8 +92,9 @@ class Changelog(TypedDict):
     summary: str
     url: str
     severity: str
-    archived: bool
-
+    entries: str
+    live: bool
+    status: str
 
 class ChangelogList(TypedDict):
     """ChangelogList vocabulary."""
