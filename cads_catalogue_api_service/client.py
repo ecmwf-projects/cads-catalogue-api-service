@@ -308,10 +308,6 @@ def generate_collection_links(
             }
         )
 
-        logger.warning(request.headers)
-        logger.warning(request.scope)
-        logger.warning(request.base_url)
-
         if model.layout:
             additional_links.append(
                 {
