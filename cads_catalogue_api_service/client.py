@@ -16,13 +16,13 @@
 
 import base64
 import datetime
-import logging
 import urllib
 from typing import Any, Type
 
 import attrs
 import cads_catalogue.database
 import dateutil
+import structlog
 import fastapi
 import pydantic
 import sqlalchemy.dialects
@@ -33,7 +33,7 @@ import stac_pydantic
 
 from . import config, exceptions, models, dependencies
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 def decode_base64(encoded: str) -> str:
