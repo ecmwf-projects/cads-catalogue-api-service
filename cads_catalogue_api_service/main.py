@@ -17,7 +17,6 @@ This largely depends on stac_fastapi to generate the RESTful API.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 from typing import Any
 
 import fastapi
@@ -29,12 +28,28 @@ import stac_fastapi.extensions.core
 import stac_fastapi.types
 import stac_fastapi.types.conformance
 import stac_fastapi.types.links
+import starlette
+import structlog
 from brotli_asgi import BrotliMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-from . import client, config, exceptions, extensions, messages, vocabularies
+from . import client, config, exceptions, extensions, middlewares, vocabularies, messages
 
-logger = logging.getLogger(__name__)
+structlog.configure(
+    processors=[
+        structlog.stdlib.filter_by_level,
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M.%S"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.JSONRenderer(),
+    ],
+    wrapper_class=structlog.stdlib.BoundLogger,
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    cache_logger_on_first_use=True,
+)
 
 extensions = [
     # This extenstion is required, seems for a bad implementation
@@ -47,6 +62,7 @@ api = stac_fastapi.api.app.StacApi(
     extensions=extensions,
     client=client.cads_client,
     middlewares=[
+        middlewares.LoggerInitializationMiddleware,
         BrotliMiddleware,
         PrometheusMiddleware,
         stac_fastapi.api.middleware.CORSMiddleware,
@@ -78,11 +94,25 @@ app.openapi = catalogue_openapi
 
 
 @app.exception_handler(exceptions.FeatureNotImplemented)  # type: ignore
-async def unicorn_exception_handler(
+async def feature_not_implemented_handler(
     request: fastapi.Request, exc: exceptions.FeatureNotImplemented
 ) -> fastapi.responses.JSONResponse:
     """Catch FeatureNotImplemented exceptions to properly trigger an HTTP 501."""
     return fastapi.responses.JSONResponse(
         status_code=501,
-        content={"message": exc.message},
+        content={
+            "detail": exc.message,
+            "trace_id": structlog.contextvars.get_contextvars()["trace_id"],
+        },
+    )
+
+
+@app.exception_handler(starlette.exceptions.HTTPException)
+async def http_exception_handler(request, exc):
+    return fastapi.responses.JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "detail": exc.detail,
+            "trace_id": structlog.contextvars.get_contextvars()["trace_id"],
+        },
     )
