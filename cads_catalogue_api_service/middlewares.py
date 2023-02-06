@@ -16,7 +16,6 @@
 
 import uuid
 
-import fastapi
 import starlette
 import structlog
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -31,8 +30,8 @@ class LoggerInitializationMiddleware:
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
 
-        request = fastapi.Request(scope, receive=receive)
-        trace_id = request.headers.get("X-Trace-ID", None)
+        # request = fastapi.Request(scope, receive=receive)
+        # trace_id = request.headers.get("X-Trace-ID", None)
 
         async def send_with_trace_id(message):
             if message["type"] == "http.response.start":
@@ -42,7 +41,6 @@ class LoggerInitializationMiddleware:
             await send(message)
 
         structlog.contextvars.clear_contextvars()
-        if not trace_id:
-            trace_id = str(uuid.uuid4())
+        trace_id = str(uuid.uuid4())
         structlog.contextvars.bind_contextvars(trace_id=trace_id)
         await self.app(scope, receive, send_with_trace_id)
