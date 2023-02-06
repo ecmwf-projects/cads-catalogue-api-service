@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# type: ignore
+
 from typing import Any
 
 import cads_catalogue_api_service.client
 
 
-class FakeQuery:  # type: ignore
+class FakeQuery:
     def order_by(self, order_by):
         self.order_by = order_by
         return self
