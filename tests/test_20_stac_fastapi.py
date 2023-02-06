@@ -87,6 +87,6 @@ def test_search_not_implemented() -> None:
     response = client.get("/search")
 
     assert response.status_code == 501
-    assert response.json()["message"] == "STAC search is not implemented"
+    assert response.json()["detail"] == "STAC search is not implemented"
 
     # TODO testing client.post("/search") which is not working due to stac_fastapi internal implementation details.  # noqa: E501
