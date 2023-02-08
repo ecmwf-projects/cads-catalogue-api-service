@@ -16,17 +16,22 @@
 
 import uuid
 
+import fastapi
 import starlette
 import structlog
-from starlette.types import ASGIApp, Receive, Scope, Send
 
 
 # See https://github.com/snok/asgi-correlation-id/blob/5a7be6337f3b33b84a00d03baae3da999bb722d5/asgi_correlation_id/middleware.py  # noqa: E501
 class LoggerInitializationMiddleware:
-    def __init__(self, app: ASGIApp):
+    def __init__(self, app: starlette.types.ASGIApp):
         self.app = app
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+    async def __call__(
+        self,
+        scope: starlette.types.Scope,
+        receive: starlette.types.Receive,
+        send: starlette.types.Send,
+    ):
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
 
@@ -44,3 +49,26 @@ class LoggerInitializationMiddleware:
         trace_id = str(uuid.uuid4())
         structlog.contextvars.bind_contextvars(trace_id=trace_id)
         await self.app(scope, receive, send_with_trace_id)
+
+
+CACHEABLE_HTTP_METHODS = ["GET", "HEAD"]
+
+
+class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
+    """Set Cache-Control header for any GET and HEAD requests.
+
+    If header is set already by route handler or other middleware, not set by it.
+    """
+
+    async def dispatch(
+        self,
+        request: fastapi.Request,
+        call_next: starlette.middleware.base.RequestResponseEndpoint,
+    ) -> fastapi.Response:
+        response = await call_next(request)
+        if (
+            "cache-control" not in response.headers
+            and request.method in CACHEABLE_HTTP_METHODS
+        ):
+            response.headers.update({"cache-control": "public, max-age=360"})
+        return response
