@@ -66,6 +66,7 @@ api = stac_fastapi.api.app.StacApi(
         BrotliMiddleware,
         PrometheusMiddleware,
         stac_fastapi.api.middleware.CORSMiddleware,
+        middlewares.CacheControlMiddleware,
     ],
 )
 
