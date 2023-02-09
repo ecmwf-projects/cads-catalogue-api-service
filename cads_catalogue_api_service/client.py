@@ -275,26 +275,24 @@ def generate_collection_links(
         ]
 
         # Form definition
-        additional_links.append(
-            {
-                "rel": "form",
-                "href": urllib.parse.urljoin(
-                    config.settings.document_storage_url, model.form
-                ),
-                "type": "application/json",
-            }
-        )
-
-        # Constraints
-        additional_links.append(
-            {
-                "rel": "constraints",
-                "href": urllib.parse.urljoin(
-                    config.settings.document_storage_url, model.constraints
-                ),
-                "type": "application/json",
-            }
-        )
+        if model.form:
+            # More an exception that normality, but we can have dataset with no form
+            additional_links += [
+                {
+                    "rel": "form",
+                    "href": urllib.parse.urljoin(
+                        config.settings.document_storage_url, model.form
+                    ),
+                    "type": "application/json",
+                },
+                {
+                    "rel": "constraints",
+                    "href": urllib.parse.urljoin(
+                        config.settings.document_storage_url, model.constraints
+                    ),
+                    "type": "application/json",
+                },
+            ]
 
         # Retrieve process
         additional_links.append(
