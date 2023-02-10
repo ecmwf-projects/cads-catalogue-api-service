@@ -60,6 +60,7 @@ async def datasets_search(
         limit=limit,
         back=back,
         route_name="Datasets Search",
+        search_stats=True,
     )
 
 
