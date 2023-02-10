@@ -28,7 +28,7 @@ class CollectionsWithStats(stac_fastapi.types.stac.Collections):
 
 
 # FIXME: this is just a provisional solution to get the facets API working
-# Everything needs to be demanded to PostgreSQL (note that stats are _not_ computed)
+# Everything needs to be transfered to PostgreSQL
 def populate_facets(
     search: sa.orm.Query, collections: stac_fastapi.types.stac.Collections
 ) -> CollectionsWithStats:
@@ -38,8 +38,13 @@ def populate_facets(
     kw_stats = {}
     for kw in all_kws:
         category, keyword = [x.strip() for x in kw.split(":")]
-        # FIXME: we don't waste time to get the real count in this temporary solution
-        kw_stats.setdefault(category, {})[keyword] = {"count": None}
+        kw_stats.setdefault(category, []).append(keyword)
 
-    collections["search"] = {"kw": kw_stats}
+    collections["search"] = {
+        "kw": [
+            # FIXME: let's don't waste time to get the real count in this temporary solution
+            {"category": cat, "groups": [{kw: {"count": None}} for kw in kws]}
+            for cat, kws in kw_stats.items()
+        ]
+    }
     return collections
