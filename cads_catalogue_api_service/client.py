@@ -484,7 +484,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
 
-            search = apply_filters(search, q, kw)
+            search = apply_filters(search, q, kw).filter(
+                cads_catalogue.database.Resource.hidden == False
+            )
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
