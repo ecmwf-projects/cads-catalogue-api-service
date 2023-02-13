@@ -43,7 +43,7 @@ def populate_facets(
     collections["search"] = {
         "kw": [
             # FIXME: let's don't waste time to get the real count in this temporary solution
-            {"category": cat, "groups": {kw: {"count": None} for kw in kws}}
+            {"category": cat, "groups": {kw: None for kw in kws}}
             for cat, kws in kw_stats.items()
         ]
     }
