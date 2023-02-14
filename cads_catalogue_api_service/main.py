@@ -62,11 +62,11 @@ api = stac_fastapi.api.app.StacApi(
     extensions=extensions,
     client=client.cads_client,
     middlewares=[
-        middlewares.LoggerInitializationMiddleware,
         BrotliMiddleware,
         PrometheusMiddleware,
         stac_fastapi.api.middleware.CORSMiddleware,
         middlewares.CacheControlMiddleware,
+        middlewares.LoggerInitializationMiddleware,
     ],
 )
 
@@ -101,8 +101,10 @@ async def feature_not_implemented_handler(
     return fastapi.responses.JSONResponse(
         status_code=501,
         content={
-            "detail": exc.message,
-            "trace_id": structlog.contextvars.get_contextvars()["trace_id"],
+            "title": exc.message,
+            "trace_id": structlog.contextvars.get_contextvars().get(
+                "trace_id", "unset"
+            ),
         },
     )
 
@@ -112,7 +114,22 @@ async def http_exception_handler(request, exc):
     return fastapi.responses.JSONResponse(
         status_code=exc.status_code,
         content={
-            "detail": exc.detail,
-            "trace_id": structlog.contextvars.get_contextvars()["trace_id"],
+            "title": exc.detail,
+            "trace_id": structlog.contextvars.get_contextvars().get(
+                "trace_id", "unset"
+            ),
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    return fastapi.responses.JSONResponse(
+        status_code=starlette.status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "title": "internal server error",
+            "trace_id": structlog.contextvars.get_contextvars().get(
+                "trace_id", "unset"
+            ),
         },
     )

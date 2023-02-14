@@ -23,6 +23,21 @@ import structlog
 
 # See https://github.com/snok/asgi-correlation-id/blob/5a7be6337f3b33b84a00d03baae3da999bb722d5/asgi_correlation_id/middleware.py  # noqa: E501
 class LoggerInitializationMiddleware:
+    """
+    Middleware that initializes the logger for each incoming request.
+
+    ASGI middleware that initializes a unique trace ID for each incoming request
+    and adds it to the response headers.
+    The trace ID is also stored in a thread-local variable for logging purposes.
+
+    Parameters
+    ----------
+        app (starlette.types.ASGIApp): The ASGI application to wrap.
+
+    Usage:
+        app = LoggerInitializationMiddleware(app)
+    """
+
     def __init__(self, app: starlette.types.ASGIApp):
         self.app = app
 
@@ -32,11 +47,29 @@ class LoggerInitializationMiddleware:
         receive: starlette.types.Receive,
         send: starlette.types.Send,
     ):
-        if scope["type"] != "http":
-            return await self.app(scope, receive, send)
+        """
+        Compute trace ID for the incoming request and adds it to the response headers.
 
+        Also clears any existing thread-local logging context and binds the trace ID to it.
+
+        Parameters
+        ----------
+            scope (starlette.types.Scope): The ASGI scope of the incoming request.
+            receive (starlette.types.Receive): The ASGI receive channel.
+            send (starlette.types.Send): The ASGI send channel.
+
+        Returns
+        -------
+            None.
+        """
+        structlog.contextvars.clear_contextvars()
         # request = fastapi.Request(scope, receive=receive)
         # trace_id = request.headers.get("X-Trace-ID", None)
+        trace_id = str(uuid.uuid4())
+        structlog.contextvars.bind_contextvars(trace_id=trace_id)
+
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
 
         async def send_with_trace_id(message):
             if message["type"] == "http.response.start":
@@ -45,9 +78,6 @@ class LoggerInitializationMiddleware:
 
             await send(message)
 
-        structlog.contextvars.clear_contextvars()
-        trace_id = str(uuid.uuid4())
-        structlog.contextvars.bind_contextvars(trace_id=trace_id)
         await self.app(scope, receive, send_with_trace_id)
 
 
@@ -70,5 +100,5 @@ class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
             "cache-control" not in response.headers
             and request.method in CACHEABLE_HTTP_METHODS
         ):
-            response.headers.update({"cache-control": "public, max-age=360"})
+            response.headers.update({"cache-control": "public, max-age=60"})
         return response
