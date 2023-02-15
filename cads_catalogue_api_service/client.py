@@ -31,7 +31,7 @@ import stac_fastapi.types
 import stac_fastapi.types.core
 import stac_pydantic
 
-from . import config, exceptions, models, dependencies
+from . import config, exceptions, models, dependencies, search_utils
 
 logger = structlog.getLogger(__name__)
 
@@ -478,6 +478,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         limit: int = 20,
         back: bool = False,
         route_name="Get Collections",
+        search_stats: bool = False,
     ) -> stac_fastapi.types.stac.Collections:
         """Read datasets from the catalogue."""
         base_url = str(request.base_url)
@@ -569,10 +570,22 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                     }
                 )
 
-            collection_list = stac_fastapi.types.stac.Collections(
+            collections = stac_fastapi.types.stac.Collections(
                 collections=serialized_collections or [], links=links
             )
-        return collection_list
+
+        if search_stats:
+
+            with self.reader.context_session() as session:
+                search = session.query(self.collection_table)
+
+                search = apply_filters(search, q, kw).filter(
+                    cads_catalogue.database.Resource.hidden == False
+                )
+
+                search_utils.populate_facets(search, collections)
+
+        return collections
 
     def all_collections(
         self, request: fastapi.Request
