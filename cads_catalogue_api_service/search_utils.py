@@ -34,7 +34,7 @@ def populate_facets(
 ) -> CollectionsWithStats:
     """Populate the collections with the search stats about facets."""
     results = search.all()
-    all_kws = set(list(itertools.chain(*[r.keywords for r in results])))
+    all_kws = sorted(set(list(itertools.chain(*[r.keywords for r in results]))))
     kw_stats = {}
     for kw in all_kws:
         category, keyword = [x.strip() for x in kw.split(":")]
