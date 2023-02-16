@@ -174,6 +174,7 @@ def generate_expected(
             ]
         ),
         "published": "2020-01-01T00:00:00Z",
+        "updated": "2020-02-03T00:00:00Z",
         "sci:doi": "11.2222/cads.12345",
     }
     if not preview:

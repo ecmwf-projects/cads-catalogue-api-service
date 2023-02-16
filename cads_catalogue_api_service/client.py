@@ -393,13 +393,15 @@ def collection_serializer(
             if db_model.publication_date
             else {}
         ),
+        # FIXME: this is not the proper field to be used to "update"
+        "updated": db_model.record_update.replace(tzinfo=None).isoformat("T", "seconds")
+        + "Z",
         # FIXME: this is not a 100% correct implementation of the STAC scientific extension.
         # One of the sci:xxx should be there, but CAMS dataset are not doing this
         **({"sci:doi": db_model.doi} if db_model.doi else {}),
     }
 
     # properties not shown in preview mode
-    full_view_properties = {} if preview else {}
     return models.Dataset(
         type="Collection",
         id=db_model.resource_uid,
@@ -411,7 +413,6 @@ def collection_serializer(
         license="various" if len(db_model.licences) > 1 else "proprietary",
         extent=get_extent(db_model),
         links=collection_links,
-        **full_view_properties,
         **additional_properties,
     )
 
@@ -459,7 +460,8 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         base_conformance_classes = [
             STACConformanceClasses.CORE,
             STACConformanceClasses.COLLECTIONS,
-            "https://github.com/stac-extensions/scientific",
+            "https://github.com/stac-extensions/scientific/tree/v1.0.0",
+            "https://github.com/stac-extensions/timestamps/tree/v1.1.0",
         ]
 
         for extension in self.extensions:
