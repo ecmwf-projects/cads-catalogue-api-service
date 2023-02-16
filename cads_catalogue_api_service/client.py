@@ -383,8 +383,7 @@ def collection_serializer(
         **({"sci:doi": db_model.doi} if db_model.doi else {}),
     }
 
-    # properties not shown in preview mode
-    return models.Dataset(
+    return stac_fastapi.types.stac.Collection(
         type="Collection",
         id=db_model.resource_uid,
         stac_version="1.0.0",

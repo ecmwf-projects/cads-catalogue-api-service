@@ -14,28 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
-from typing import Any, Type, TypedDict
-
-import stac_fastapi.types
-import stac_fastapi.types.stac
-
-DatasetBase = TypedDict(
-    "DatasetBase",
-    {
-        "description": dict[str, Any],
-        "tmp:publication_date": Type[datetime.date],
-        "tmp:variables": dict[str, Any],
-        "tmp:doi": str,
-    },
-)
-
-
-class Dataset(stac_fastapi.types.stac.Collection, DatasetBase):
-    """STAC based dataset.
-
-    This class extends the OGC/STAC Collection with additional non-STAC fields.
-    """
+from typing import TypedDict
 
 
 class Licence(TypedDict):
