@@ -389,7 +389,7 @@ def collection_serializer(
         stac_version="1.0.0",
         title=db_model.title,
         description=db_model.abstract,
-        keywords=db_model.keywords,
+        keywords=[keyword.keyword_name for keyword in db_model.keywords],
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         license="various" if len(db_model.licences) > 1 else "proprietary",
         extent=get_extent(db_model),

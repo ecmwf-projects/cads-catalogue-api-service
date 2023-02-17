@@ -27,13 +27,13 @@ class CollectionsWithStats(stac_fastapi.types.stac.Collections):
     search: dict[str, Any]
 
 
-# FIXME: this is just a provisional solution to get the facets API working
-# Everything needs to be transfered to PostgreSQL
 def populate_facets(
     search: sa.orm.Query, collections: stac_fastapi.types.stac.Collections
 ) -> CollectionsWithStats:
     """Populate the collections with the search stats about facets."""
     results = search.all()
+    # cads_catalogue.faceted_search.get_datasets_by_keywords(search)
+
     all_kws = sorted(set(list(itertools.chain(*[r.keywords for r in results]))))
     kw_stats = {}
     for kw in all_kws:
