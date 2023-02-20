@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
 
+import cads_catalogue
 import fastapi
 import sqlalchemy as sa
 
@@ -28,68 +28,85 @@ router = fastapi.APIRouter(
 )
 
 
-def query_messages(session_maker: sa.orm.Session) -> list[object]:
+def query_messages(
+    session_maker: sa.orm.Session,
+    collection_id: str | None = None,
+) -> list[cads_catalogue.database.Message]:
     """Query messages."""
-    results = [
-        {
-            "id": "xxx-yyy-zzzz.md",
-            "date": "2023-01-20T08:05:54Z",
-            "summary": "Found an issue on this dataset",
-            "url": "http://object-storage/…/xxx.md",
-            "severity": "warn",
-            "entries": "dataset1",
-            "live": True,
-        },
-        {
-            "id": "yyy-zzz-uuuu.md",
-            "date": "2023-01-20T11:15:54Z",
-            "summary": "Changed something on this other dataset",
-            "url": "http://object-storage/…/yyy.md",
-            "severity": "info",
-            "entries": "dataset2",
-            "live": True,
-        },
-    ]
+    with session_maker.context_session() as session:
+        # NOTE: possible issue here if the title of a licence change from a revision to another
+        results = session.query(
+            cads_catalogue.database.Message.message_id,
+            cads_catalogue.database.Message.date,
+            cads_catalogue.database.Message.summary,
+            cads_catalogue.database.Message.url,
+            cads_catalogue.database.Message.severity,
+            cads_catalogue.database.Message.entries,
+            cads_catalogue.database.Message.live,
+            cads_catalogue.database.Message.status,
+        ).where(cads_catalogue.database.Message.live is True)
+        if collection_id:
+            results = results.where(
+                cads_catalogue.database.Message.entries.contains(collection_id)
+            )
+        results = (
+            results.group_by(
+                cads_catalogue.database.Message.message_id,
+            )
+            .order_by(cads_catalogue.database.Message.message_id)
+            .all()
+        )
     return results
 
 
-def query_changelog_list(session_maker: sa.orm.Session) -> list[object]:
+def query_changelog_list(
+    session_maker: sa.orm.Session, collection_id: str | None = None
+) -> list[object]:
     """Query changelog list."""
-    results = []
-    severity = ["warn", "info", "critical"]
-    for i in range(10):
-        results.append(
-            {
-                "id": f"{i}-yyy-zzzz.md",
-                "date": f"2023-01-{i}T08:05:54Z",
-                "summary": "Found a log on this dataset",
-                "url": f"http://object-storage/…/{i}.md",
-                "severity": random.choice(severity),
-                "archived": True,
-                "entries": "dataset1,dataset2",
-                "live": False,
-                "status": "fixed",
-            }
+    with session_maker.context_session() as session:
+        # NOTE: possible issue here if the title of a licence change from a revision to another
+        results = session.query(
+            cads_catalogue.database.Message.message_id,
+            cads_catalogue.database.Message.date,
+            cads_catalogue.database.Message.summary,
+            cads_catalogue.database.Message.url,
+            cads_catalogue.database.Message.severity,
+            cads_catalogue.database.Message.entries,
+            cads_catalogue.database.Message.live,
+            cads_catalogue.database.Message.status,
+        ).where(cads_catalogue.database.Message.live is False)
+        if collection_id:
+            results = results.where(
+                cads_catalogue.database.Message.entries.contains(collection_id)
+            )
+
+        results = (
+            results.group_by(
+                cads_catalogue.database.Message.message_id,
+            )
+            .order_by(cads_catalogue.database.Message.message_id)
+            .all()
         )
     return results
 
 
 @router.get("/collections/{collection_id}/messages", response_model=models.Messages)
 async def list_messages_by_id(
+    collection_id: str,
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.Message:
     """Endpoint to get all messages of a specific collection."""
-    results = query_messages(session_maker)
+    results = query_messages(session_maker, collection_id=collection_id)
     return models.Messages(
         messages=[
             models.Message(
-                id=message["id"],
-                date=message["date"],
-                summary=message["summary"],
-                url=message["url"],
-                severity=message["severity"],
-                entries=message["entries"],
-                live=message["live"],
+                message_id=message.message_id,
+                date=message.date,
+                summary=message.summary,
+                url=message.url,
+                severity=message.severity,
+                entries=message.entries,
+                live=message.live,
             )
             for message in results
         ]
@@ -101,21 +118,22 @@ async def list_messages_by_id(
     response_model=models.ChangelogList,
 )
 async def list_changelog_by_id(
+    collection_id: str,
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.ChangelogList:
     """Endpoint to get all changelog of a specific collection."""
-    results = query_changelog_list(session_maker)
+    results = query_changelog_list(session_maker, collection_id=collection_id)
     return models.ChangelogList(
         changelog=[
             models.Changelog(
-                id=changelog["id"],
-                date=changelog["date"],
-                summary=changelog["summary"],
-                url=changelog["url"],
-                severity=changelog["severity"],
-                entries=changelog["entries"],
-                live=changelog["live"],
-                status=changelog["status"],
+                message_id=changelog.message_id,
+                date=changelog.date,
+                summary=changelog.summary,
+                url=changelog.url,
+                severity=changelog.severity,
+                entries=changelog.entries,
+                live=changelog.live,
+                status=changelog.status,
             )
             for changelog in results
         ]
@@ -131,13 +149,13 @@ async def list_messages(
     return models.Messages(
         messages=[
             models.Message(
-                id=message["id"],
-                date=message["date"],
-                summary=message["summary"],
-                url=message["url"],
-                severity=message["severity"],
-                entries=message["entries"],
-                live=message["live"],
+                message_id=message.message_id,
+                date=message.date,
+                summary=message.summary,
+                url=message.url,
+                severity=message.severity,
+                entries=message.entries,
+                live=message.live,
             )
             for message in results
         ]
@@ -153,14 +171,14 @@ async def list_changelog(
     return models.ChangelogList(
         changelog=[
             models.Changelog(
-                id=changelog["id"],
-                date=changelog["date"],
-                summary=changelog["summary"],
-                url=changelog["url"],
-                severity=changelog["severity"],
-                entries=changelog["entries"],
-                live=changelog["live"],
-                status=changelog["status"],
+                message_id=changelog.message_id,
+                date=changelog.date,
+                summary=changelog.summary,
+                url=changelog.url,
+                severity=changelog.severity,
+                entries=changelog.entries,
+                live=changelog.live,
+                status=changelog.status,
             )
             for changelog in results
         ]

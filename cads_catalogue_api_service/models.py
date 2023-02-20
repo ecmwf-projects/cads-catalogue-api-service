@@ -69,8 +69,8 @@ class Keywords(TypedDict):
 class Message(TypedDict):
     """Message definition."""
 
-    id: str
-    date: str
+    message_id: str
+    date: datetime.datetime
     summary: str
     url: str
     severity: str
@@ -87,8 +87,8 @@ class Messages(TypedDict):
 class Changelog(TypedDict):
     """Changelog definition."""
 
-    id: str
-    date: str
+    message_id: str
+    date: datetime.datetime
     summary: str
     url: str
     severity: str

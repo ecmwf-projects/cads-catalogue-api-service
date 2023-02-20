@@ -26,7 +26,7 @@ client = fastapi.testclient.TestClient(app)
 def static_messages_query(_foo: Any) -> list[Any]:
     return [
         dict(
-            id="0-yyy-zzzz.md",
+            message_id="0-yyy-zzzz.md",
             date="2023-01-01T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/0.md",
@@ -35,7 +35,7 @@ def static_messages_query(_foo: Any) -> list[Any]:
             live=True,
         ),
         dict(
-            id="1-yyy-zzzz.md",
+            message_id="1-yyy-zzzz.md",
             date="2023-01-02T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/1.md",
@@ -49,7 +49,7 @@ def static_messages_query(_foo: Any) -> list[Any]:
 def static_changelog_messages(_foo: Any) -> list[Any]:
     return [
         dict(
-            id="1-yyy-zzzz.md",
+            message_id="1-yyy-zzzz.md",
             date="2023-01-01T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/1.md",
@@ -59,7 +59,7 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             status="fixed",
         ),
         dict(
-            id="2-yyy-zzzz.md",
+            message_id="2-yyy-zzzz.md",
             date="2023-01-01T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/2.md",
@@ -69,7 +69,7 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             status="fixed",
         ),
         dict(
-            id="3-yyy-zzzz.md",
+            message_id="3-yyy-zzzz.md",
             date="2023-01-02T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/3.md",
@@ -79,7 +79,7 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             status="fixed",
         ),
         dict(
-            id="4-yyy-zzzz.md",
+            message_id="4-yyy-zzzz.md",
             date="2023-01-02T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/4.md",
@@ -89,7 +89,7 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             status="fixed",
         ),
         dict(
-            id="5-yyy-zzzz.md",
+            message_id="5-yyy-zzzz.md",
             date="2023-01-03T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/5.md",
@@ -99,7 +99,7 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             status="fixed",
         ),
         dict(
-            id="6-yyy-zzzz.md",
+            message_id="6-yyy-zzzz.md",
             date="2023-01-03T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/6.md",
@@ -109,7 +109,7 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             status="fixed",
         ),
         dict(
-            id="7-yyy-zzzz.md",
+            message_id="7-yyy-zzzz.md",
             date="2023-01-04T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/7.md",
@@ -119,7 +119,7 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             status="fixed",
         ),
         dict(
-            id="8-yyy-zzzz.md",
+            message_id="8-yyy-zzzz.md",
             date="2023-01-04T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/8.md",
@@ -129,7 +129,7 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             status="fixed",
         ),
         dict(
-            id="9-yyy-zzzz.md",
+            message_id="9-yyy-zzzz.md",
             date="2023-01-05T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/9.md",
@@ -139,7 +139,7 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             status="fixed",
         ),
         dict(
-            id="10-yyy-zzzz.md",
+            message_id="10-yyy-zzzz.md",
             date="2023-01-05T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/10.md",
@@ -149,7 +149,7 @@ def static_changelog_messages(_foo: Any) -> list[Any]:
             status="fixed",
         ),
         dict(
-            id="11-yyy-zzzz.md",
+            message_id="11-yyy-zzzz.md",
             date="2023-01-06T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/11.md",
@@ -185,7 +185,7 @@ def test_messages(monkeypatch) -> None:
     assert response.json() == {
         "messages": [
             {
-                "id": "0-yyy-zzzz.md",
+                "message_id": "0-yyy-zzzz.md",
                 "date": "2023-01-01T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/0.md",
@@ -194,7 +194,7 @@ def test_messages(monkeypatch) -> None:
                 "live": True,
             },
             {
-                "id": "1-yyy-zzzz.md",
+                "message_id": "1-yyy-zzzz.md",
                 "date": "2023-01-02T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
@@ -220,7 +220,7 @@ def test_changelog(monkeypatch) -> None:
     assert response.json() == {
         "changelog": [
             {
-                "id": "1-yyy-zzzz.md",
+                "message_id": "1-yyy-zzzz.md",
                 "date": "2023-01-01T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
@@ -230,7 +230,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "fixed",
             },
             {
-                "id": "2-yyy-zzzz.md",
+                "message_id": "2-yyy-zzzz.md",
                 "date": "2023-01-01T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/2.md",
@@ -240,7 +240,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "fixed",
             },
             {
-                "id": "3-yyy-zzzz.md",
+                "message_id": "3-yyy-zzzz.md",
                 "date": "2023-01-02T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/3.md",
@@ -250,7 +250,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "fixed",
             },
             {
-                "id": "4-yyy-zzzz.md",
+                "message_id": "4-yyy-zzzz.md",
                 "date": "2023-01-02T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/4.md",
@@ -260,7 +260,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "fixed",
             },
             {
-                "id": "5-yyy-zzzz.md",
+                "message_id": "5-yyy-zzzz.md",
                 "date": "2023-01-03T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/5.md",
@@ -270,7 +270,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "fixed",
             },
             {
-                "id": "6-yyy-zzzz.md",
+                "message_id": "6-yyy-zzzz.md",
                 "date": "2023-01-03T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/6.md",
@@ -280,7 +280,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "fixed",
             },
             {
-                "id": "7-yyy-zzzz.md",
+                "message_id": "7-yyy-zzzz.md",
                 "date": "2023-01-04T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/7.md",
@@ -290,7 +290,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "fixed",
             },
             {
-                "id": "8-yyy-zzzz.md",
+                "message_id": "8-yyy-zzzz.md",
                 "date": "2023-01-04T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/8.md",
@@ -300,7 +300,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "fixed",
             },
             {
-                "id": "9-yyy-zzzz.md",
+                "message_id": "9-yyy-zzzz.md",
                 "date": "2023-01-05T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/9.md",
@@ -310,7 +310,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "fixed",
             },
             {
-                "id": "10-yyy-zzzz.md",
+                "message_id": "10-yyy-zzzz.md",
                 "date": "2023-01-05T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/10.md",
@@ -320,7 +320,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "fixed",
             },
             {
-                "id": "11-yyy-zzzz.md",
+                "message_id": "11-yyy-zzzz.md",
                 "date": "2023-01-06T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/11.md",
