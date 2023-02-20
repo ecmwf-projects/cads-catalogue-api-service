@@ -30,63 +30,19 @@ router = fastapi.APIRouter(
 
 def query_messages(
     session_maker: sa.orm.Session,
+    live: bool = True,
     collection_id: str | None = None,
 ) -> list[cads_catalogue.database.Message]:
     """Query messages."""
     with session_maker.context_session() as session:
-        # NOTE: possible issue here if the title of a licence change from a revision to another
-        results = session.query(
-            cads_catalogue.database.Message.message_id,
-            cads_catalogue.database.Message.date,
-            cads_catalogue.database.Message.summary,
-            cads_catalogue.database.Message.url,
-            cads_catalogue.database.Message.severity,
-            cads_catalogue.database.Message.entries,
-            cads_catalogue.database.Message.live,
-            cads_catalogue.database.Message.status,
-        ).where(cads_catalogue.database.Message.live is True)
+        results = session.query(models.Changelog).where(
+            cads_catalogue.database.Message.live.is_(live)
+        )
         if collection_id:
             results = results.where(
                 cads_catalogue.database.Message.entries.contains(collection_id)
             )
-        results = (
-            results.group_by(
-                cads_catalogue.database.Message.message_id,
-            )
-            .order_by(cads_catalogue.database.Message.message_id)
-            .all()
-        )
-    return results
-
-
-def query_changelog_list(
-    session_maker: sa.orm.Session, collection_id: str | None = None
-) -> list[object]:
-    """Query changelog list."""
-    with session_maker.context_session() as session:
-        # NOTE: possible issue here if the title of a licence change from a revision to another
-        results = session.query(
-            cads_catalogue.database.Message.message_id,
-            cads_catalogue.database.Message.date,
-            cads_catalogue.database.Message.summary,
-            cads_catalogue.database.Message.url,
-            cads_catalogue.database.Message.severity,
-            cads_catalogue.database.Message.entries,
-            cads_catalogue.database.Message.live,
-            cads_catalogue.database.Message.status,
-        ).where(cads_catalogue.database.Message.live is False)
-        if collection_id:
-            results = results.where(
-                cads_catalogue.database.Message.entries.contains(collection_id)
-            )
-
-        results = (
-            results.group_by(
-                cads_catalogue.database.Message.message_id,
-            )
-            .order_by(cads_catalogue.database.Message.message_id)
-            .all()
-        )
+        results = results.order_by(cads_catalogue.database.Message.date).all()
     return results
 
 
@@ -96,7 +52,7 @@ async def list_messages_by_id(
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.Message:
     """Endpoint to get all messages of a specific collection."""
-    results = query_messages(session_maker, collection_id=collection_id)
+    results = query_messages(session_maker, live=True, collection_id=collection_id)
     return models.Messages(
         messages=[
             models.Message(
@@ -122,7 +78,7 @@ async def list_changelog_by_id(
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.ChangelogList:
     """Endpoint to get all changelog of a specific collection."""
-    results = query_changelog_list(session_maker, collection_id=collection_id)
+    results = query_messages(session_maker, live=False, collection_id=collection_id)
     return models.ChangelogList(
         changelog=[
             models.Changelog(
@@ -145,7 +101,7 @@ async def list_messages(
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.Message:
     """Endpoint to get all messages."""
-    results = query_messages(session_maker)
+    results = query_messages(session_maker, live=True)
     return models.Messages(
         messages=[
             models.Message(
@@ -167,7 +123,7 @@ async def list_changelog(
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.ChangelogList:
     """Endpoint to get all changelog."""
-    results = query_changelog_list(session_maker)
+    results = query_messages(session_maker, live=False)
     return models.ChangelogList(
         changelog=[
             models.Changelog(
