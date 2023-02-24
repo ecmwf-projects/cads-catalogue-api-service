@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import itertools
 from typing import Any
 
+import cads_catalogue.faceted_search
 import sqlalchemy as sa
 import stac_fastapi.types
 
@@ -27,24 +27,47 @@ class CollectionsWithStats(stac_fastapi.types.stac.Collections):
     search: dict[str, Any]
 
 
-def populate_facets(
-    search: sa.orm.Query, collections: stac_fastapi.types.stac.Collections
-) -> CollectionsWithStats:
-    """Populate the collections with the search stats about facets."""
-    results = search.all()
-    # cads_catalogue.faceted_search.get_datasets_by_keywords(search)
+def generate_keywords_structure(keywords: list[str]) -> dict[str, Any]:
+    """Generate a structure with the categories and keywords.
 
-    all_kws = sorted(set(list(itertools.chain(*[r.keywords for r in results]))))
-    kw_stats = {}
-    for kw in all_kws:
+    Structure in build upon given a list of keywords (semicolon separated).
+    """
+    keywords_structure = {}
+    for kw in keywords:
         category, keyword = [x.strip() for x in kw.split(":")]
-        kw_stats.setdefault(category, []).append(keyword)
+        keywords_structure.setdefault(category, []).append(keyword)
+    return keywords_structure
+
+
+def populate_facets(
+    session: sa.orm.Session,
+    collections: stac_fastapi.types.stac.Collections,
+    search: sa.orm.Query,
+    keywords: list[str],
+) -> CollectionsWithStats:
+    """Populate the collections entity with facets."""
+    search.all()
+
+    keywords_structure = generate_keywords_structure(keywords)
+    dataset_kw_grouping = cads_catalogue.faceted_search.get_datasets_by_keywords(
+        search, keywords_structure
+    )
+    results_ids = [d.resource_id for d in dataset_kw_grouping]
+    faceted_stats = cads_catalogue.faceted_search.get_faceted_stats(
+        session, results_ids
+    )
+
+    facets = {}
+    for kw in faceted_stats:
+        category_name = kw["category_name"]
+        category_value = kw["category_value"]
+        count = kw["count"]
+        facets.setdefault(category_name, {})[category_value] = count
 
     collections["search"] = {
         "kw": [
-            # FIXME: let's don't waste time to get the real count in this temporary solution
-            {"category": cat, "groups": {kw: None for kw in kws}}
-            for cat, kws in kw_stats.items()
+            {"category": cat, "groups": {kw: count for kw, count in kws.items()}}
+            for cat, kws in facets.items()
         ]
     }
     return collections

@@ -25,6 +25,7 @@ import dateutil
 import structlog
 import fastapi
 import pydantic
+from sqlalchemy.sql.expression import and_, or_
 import sqlalchemy.dialects
 import sqlalchemy.orm
 import stac_fastapi.types
@@ -138,7 +139,23 @@ def apply_sorting(
     return search, sort_by
 
 
-def apply_filters(search: sqlalchemy.orm.Query, q: str, kw: list):
+def split_by_category(keywords: list) -> list:
+    """Given a list of keywords composed by a "category: value", split them in multiple lists.
+
+    Splitting is based on the category.
+    """
+    categories = {}
+    for keyword in keywords:
+        category, value = keyword.split(":", 1)
+        if category not in categories:
+            categories[category] = []
+        categories[category].append(":".join([category, value]))
+    return list(categories.values())
+
+
+def apply_filters(
+    session: sqlalchemy.orm.Session, search: sqlalchemy.orm.Query, q: str, kw: list
+):
     """Apply allowed search filters to the running query.
 
     Args
@@ -150,7 +167,32 @@ def apply_filters(search: sqlalchemy.orm.Query, q: str, kw: list):
     if q:
         search = search.filter(cads_catalogue.database.Resource.title.ilike(f"%{q}%"))
     if kw:
-        search = search.filter(cads_catalogue.database.Resource.keywords.contains(kw))
+        # Facetes search criteria is to run on OR in the same category, and AND between categories
+        # We split in groups of categories:
+        splitted_categories = split_by_category(kw)
+        # Let's filter for proper keywords.
+        subquery_kw = (
+            session.query(cads_catalogue.database.Keyword.keyword_id)
+            # We cannot just use in_ on all kws because we need to AND on different categories
+            # .filter(cads_catalogue.database.Keyword.keyword_name.in_(kw)).subquery()
+        )
+        subquery_kw = subquery_kw.filter(
+            or_(
+                *[
+                    cads_catalogue.database.Keyword.keyword_name.in_(category_keywords)
+                    for category_keywords in splitted_categories
+                ]
+            )
+        ).scalar_subquery()
+        # Continue with the many to many relationship, as normal
+        subquery_mtm = (
+            session.query(cads_catalogue.database.ResourceKeyword.resource_id)
+            .filter(cads_catalogue.database.ResourceKeyword.keyword_id.in_(subquery_kw))
+            .scalar_subquery()
+        )
+        search = search.filter(
+            cads_catalogue.database.Resource.resource_id.in_(subquery_mtm)
+        )
     return search
 
 
@@ -468,7 +510,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
 
-            search = apply_filters(search, q, kw).filter(
+            search = apply_filters(session, search, q, kw).filter(
                 cads_catalogue.database.Resource.hidden == False
             )
             search, sort_by = apply_sorting(
@@ -558,15 +600,16 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             )
 
         if search_stats:
-
             with self.reader.context_session() as session:
                 search = session.query(self.collection_table)
 
-                search = apply_filters(search, q, kw).filter(
+                search = apply_filters(session, search, q, kw).filter(
                     cads_catalogue.database.Resource.hidden == False
                 )
 
-                search_utils.populate_facets(search, collections)
+                search_utils.populate_facets(
+                    session=session, collections=collections, search=search, keywords=kw
+                )
 
         return collections
 
