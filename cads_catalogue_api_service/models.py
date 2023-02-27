@@ -74,9 +74,7 @@ class Message(TypedDict):
     summary: str
     url: str | None
     severity: str
-    body: str | None
-    entries: str | None
-    is_global: bool
+    content: str
     live: bool
     status: str
 
