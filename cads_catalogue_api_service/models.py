@@ -72,10 +72,13 @@ class Message(TypedDict):
     message_id: str
     date: datetime.datetime
     summary: str
-    url: str
+    url: str | None
     severity: str
-    entries: str
+    body: str | None
+    entries: str | None
+    is_global: bool
     live: bool
+    status: str
 
 
 class Messages(TypedDict):
@@ -85,19 +88,6 @@ class Messages(TypedDict):
 
 
 class Changelog(TypedDict):
-    """Changelog definition."""
+    """Changelog vocabulary."""
 
-    message_id: str
-    date: datetime.datetime
-    summary: str
-    url: str
-    severity: str
-    entries: str
-    live: bool
-    status: str
-
-
-class ChangelogList(TypedDict):
-    """ChangelogList vocabulary."""
-
-    changelog: list[Changelog]
+    changelog: list[Message]

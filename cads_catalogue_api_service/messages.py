@@ -35,24 +35,33 @@ def query_messages(
 ) -> list[cads_catalogue.database.Message]:
     """Query messages."""
     with session_maker.context_session() as session:
-        results = session.query(models.Changelog).where(
-            cads_catalogue.database.Message.live.is_(live)
-        )
+        results = session.query(
+            cads_catalogue.database.Message.message_id,
+            cads_catalogue.database.Message.date,
+            cads_catalogue.database.Message.summary,
+            cads_catalogue.database.Message.url,
+            cads_catalogue.database.Message.severity,
+            cads_catalogue.database.Message.body,
+            cads_catalogue.database.Message.entries,
+            cads_catalogue.database.Message.is_global,
+            cads_catalogue.database.Message.live,
+            cads_catalogue.database.Message.status,
+        ).where(cads_catalogue.database.Message.live.is_(live))
         if collection_id:
             results = results.where(
                 cads_catalogue.database.Message.entries.contains(collection_id)
             )
-        results = results.order_by(cads_catalogue.database.Message.date).all()
+        results = results.order_by(sa.desc(cads_catalogue.database.Message.date)).all()
     return results
 
 
 @router.get("/collections/{collection_id}/messages", response_model=models.Messages)
-async def list_messages_by_id(
+def list_messages_by_id(
     collection_id: str,
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.Message:
     """Endpoint to get all messages of a specific collection."""
-    results = query_messages(session_maker, live=True, collection_id=collection_id)
+    results = query_messages(session_maker, True, collection_id)
     return models.Messages(
         messages=[
             models.Message(
@@ -61,8 +70,11 @@ async def list_messages_by_id(
                 summary=message.summary,
                 url=message.url,
                 severity=message.severity,
+                body=message.body,
                 entries=message.entries,
+                is_global=message.is_global,
                 live=message.live,
+                status=message.status,
             )
             for message in results
         ]
@@ -71,37 +83,39 @@ async def list_messages_by_id(
 
 @router.get(
     "/collections/{collection_id}/messages/changelog",
-    response_model=models.ChangelogList,
+    response_model=models.Changelog,
 )
-async def list_changelog_by_id(
+def list_changelog_by_id(
     collection_id: str,
     session_maker=fastapi.Depends(dependencies.get_session),
-) -> models.ChangelogList:
+) -> models.Changelog:
     """Endpoint to get all changelog of a specific collection."""
-    results = query_messages(session_maker, live=False, collection_id=collection_id)
-    return models.ChangelogList(
+    results = query_messages(session_maker, False, collection_id)
+    return models.Changelog(
         changelog=[
-            models.Changelog(
-                message_id=changelog.message_id,
-                date=changelog.date,
-                summary=changelog.summary,
-                url=changelog.url,
-                severity=changelog.severity,
-                entries=changelog.entries,
-                live=changelog.live,
-                status=changelog.status,
+            models.Message(
+                message_id=message.message_id,
+                date=message.date,
+                summary=message.summary,
+                url=message.url,
+                severity=message.severity,
+                body=message.body,
+                entries=message.entries,
+                is_global=message.is_global,
+                live=message.live,
+                status=message.status,
             )
-            for changelog in results
+            for message in results
         ]
     )
 
 
 @router.get("/messages", response_model=models.Messages)
-async def list_messages(
+def list_messages(
     session_maker=fastapi.Depends(dependencies.get_session),
 ) -> models.Message:
     """Endpoint to get all messages."""
-    results = query_messages(session_maker, live=True)
+    results = query_messages(session_maker, True)
     return models.Messages(
         messages=[
             models.Message(
@@ -110,32 +124,37 @@ async def list_messages(
                 summary=message.summary,
                 url=message.url,
                 severity=message.severity,
+                body=message.body,
                 entries=message.entries,
+                is_global=message.is_global,
                 live=message.live,
+                status=message.status,
             )
             for message in results
         ]
     )
 
 
-@router.get("/messages/changelog", response_model=models.ChangelogList)
-async def list_changelog(
+@router.get("/messages/changelog", response_model=models.Changelog)
+def list_changelog(
     session_maker=fastapi.Depends(dependencies.get_session),
-) -> models.ChangelogList:
+) -> models.Changelog:
     """Endpoint to get all changelog."""
-    results = query_messages(session_maker, live=False)
-    return models.ChangelogList(
+    results = query_messages(session_maker, False)
+    return models.Changelog(
         changelog=[
-            models.Changelog(
-                message_id=changelog.message_id,
-                date=changelog.date,
-                summary=changelog.summary,
-                url=changelog.url,
-                severity=changelog.severity,
-                entries=changelog.entries,
-                live=changelog.live,
-                status=changelog.status,
+            models.Message(
+                message_id=message.message_id,
+                date=message.date,
+                summary=message.summary,
+                url=message.url,
+                severity=message.severity,
+                body=message.body,
+                entries=message.entries,
+                is_global=message.is_global,
+                live=message.live,
+                status=message.status,
             )
-            for changelog in results
+            for message in results
         ]
     )
