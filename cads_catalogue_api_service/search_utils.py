@@ -21,6 +21,66 @@ import sqlalchemy as sa
 import stac_fastapi.types
 
 
+def split_by_category(keywords: list) -> list:
+    """Given a list of keywords composed by a "category: value", split them in multiple lists.
+
+    Splitting is based on the category.
+    """
+    categories = {}
+    for keyword in keywords:
+        category, value = keyword.split(":", 1)
+        if category not in categories:
+            categories[category] = []
+        categories[category].append(":".join([category, value]))
+    return list(categories.values())
+
+
+def apply_filters(session: sa.orm.Session, search: sa.orm.Query, q: str, kw: list):
+    """Apply allowed search filters to the running query.
+
+    Args
+    ----
+        search (sqlalchemy.orm.Query): current query
+        q (str): search query (full text search)
+        kw (list): list of keywords query
+    """
+    if q:
+        search = search.filter(cads_catalogue.database.Resource.title.ilike(f"%{q}%"))
+    if kw:
+        # Facetes search criteria is to run on OR in the same category, and AND between categories
+        # To make this working be perform subqueryes joint with the INTERSECT operator
+        splitted_categories = split_by_category(kw)
+        print(splitted_categories)
+
+        subqueries = []
+
+        for categorized in splitted_categories:
+            # 1. Filter by all keywords in this category
+            subquery_kw = (
+                session.query(cads_catalogue.database.Keyword.keyword_id)
+                # We cannot just use in_ on all kws because we need to AND on different
+                .filter(cads_catalogue.database.Keyword.keyword_name.in_(categorized))
+            ).subquery()
+            # 2. Manually build many to many relation
+            subquery_mtm = (
+                session.query(cads_catalogue.database.ResourceKeyword.resource_id)
+                .filter(
+                    cads_catalogue.database.ResourceKeyword.keyword_id.in_(subquery_kw)
+                )
+                .scalar_subquery()
+            )
+            # 3. Perform partial query
+            subquery = session.query(cads_catalogue.database.Resource).filter(
+                cads_catalogue.database.Resource.resource_id.in_(subquery_mtm)
+            )
+            subqueries.append(subquery)
+
+        # 4. Join all subqueries with INTERSECT
+        search = search.intersect(*subqueries)
+
+    return search
+
+
 class CollectionsWithStats(stac_fastapi.types.stac.Collections):
     """A collection with search stats."""
 
