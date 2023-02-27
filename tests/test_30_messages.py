@@ -15,6 +15,7 @@
 from typing import Any
 
 import cads_catalogue
+import cads_catalogue
 import fastapi
 import fastapi.testclient
 
