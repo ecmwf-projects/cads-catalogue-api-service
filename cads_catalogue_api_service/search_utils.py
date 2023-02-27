@@ -50,10 +50,8 @@ def apply_filters(session: sa.orm.Session, search: sa.orm.Query, q: str, kw: lis
         # Facetes search criteria is to run on OR in the same category, and AND between categories
         # To make this working be perform subqueryes joint with the INTERSECT operator
         splitted_categories = split_by_category(kw)
-        print(splitted_categories)
 
         subqueries = []
-
         for categorized in splitted_categories:
             # 1. Filter by all keywords in this category
             subquery_kw = (
