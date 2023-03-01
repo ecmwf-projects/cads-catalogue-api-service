@@ -35,7 +35,7 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
             "data-type": "Gridded",
             "projection": "Regular latitude-longitude grid.",
         },
-        keywords=[],
+        keywords=[cads_catalogue.database.Keyword(keyword_name="kw1")],
         abstract="Lorem ipsum dolor",
         form="resources/reanalysis-era5-pressure-levels/form.json",
         constraints="resources/reanalysis-era5-pressure-levels/constraints.json",
@@ -87,7 +87,7 @@ def generate_expected(
         "stac_version": "1.0.0",
         "title": "ERA5",
         "description": "Lorem ipsum dolor",
-        "keywords": [],
+        "keywords":["kw1"],
         "license": "proprietary",
         "extent": {
             "spatial": {"bbox": [[-0.5, 45.0, 50.0, 15.0]]},
