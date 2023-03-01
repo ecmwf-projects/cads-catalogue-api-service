@@ -43,8 +43,13 @@ KEYWORDS = [
 ]
 
 
-def static_keywords_licence(_foo: Any) -> list[str]:
-    return KEYWORDS
+class Keyword:
+    def __init__(self, keyword_name: str):
+        self.keyword_name = keyword_name
+
+
+def static_keywords_licence(_foo: Any) -> list[cads_catalogue.database.Keyword]:
+    return [Keyword(keyword_name=kw) for kw in KEYWORDS]
 
 
 def get_session() -> None:
@@ -81,7 +86,7 @@ def test_vocabularies_keywords(monkeypatch) -> None:
         "cads_catalogue_api_service.vocabularies.query_keywords",
         static_keywords_licence,
     )
-    """Test list of licences."""
+    """Test list of keywords."""
     response = client.get(
         "/vocabularies/keywords",
     )

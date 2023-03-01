@@ -97,15 +97,9 @@ def generate_keywords_structure(keywords: list[str]) -> dict[str, Any]:
     return keywords_structure
 
 
-def populate_facets(
-    session: sa.orm.Session,
-    collections: stac_fastapi.types.stac.Collections,
-    search: sa.orm.Query,
-    keywords: list[str],
-) -> CollectionsWithStats:
-    """Populate the collections entity with facets."""
-    search.all()
-
+def read_facets(
+    session: sa.orm.Session, search: sa.orm.Query, keywords: list[str], facets: dict
+):
     keywords_structure = generate_keywords_structure(keywords)
     dataset_kw_grouping = cads_catalogue.faceted_search.get_datasets_by_keywords(
         search, keywords_structure
@@ -121,7 +115,19 @@ def populate_facets(
         category_value = kw["category_value"]
         count = kw["count"]
         facets.setdefault(category_name, {})[category_value] = count
+    return facets
 
+
+def populate_facets(
+    session: sa.orm.Session,
+    collections: stac_fastapi.types.stac.Collections,
+    search: sa.orm.Query,
+    keywords: list[str],
+) -> CollectionsWithStats:
+    """Populate the collections entity with facets."""
+    search.all()
+    facets = {}
+    facets = read_facets(session, search, keywords, facets)
     collections["search"] = {
         "kw": [
             {"category": cat, "groups": {kw: count for kw, count in kws.items()}}

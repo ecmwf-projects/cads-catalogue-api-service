@@ -12,13 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
+
+import fastapi
+import fastapi.testclient
+
+import cads_catalogue_api_service
+from cads_catalogue_api_service.main import app
 from cads_catalogue_api_service.search_utils import (
     CollectionsWithStats,
     populate_facets,
 )
 
+client = fastapi.testclient.TestClient(app)
 
-def test_populate_facets():
+
+def mock_read_facets(
+    session: Any, search: Any, keywords: list[str], facets: dict = {}
+) -> Any:
+    """Mock session generation."""
+    return {"cat1": {"kw1": None, "kw2": None}, "cat2": {"kw3": None}}
+
+
+app.dependency_overrides[
+    cads_catalogue_api_service.search_utils.read_facets
+] = mock_read_facets
+
+
+def test_populate_facets(monkeypatch):
     """Test populate_facets."""
 
     class MockSearch:
@@ -27,21 +48,32 @@ def test_populate_facets():
         def all(self):
             """Mock the all method."""
             return [
-                MockResult(["cat1:kw1", "cat1:kw2"]),
-                MockResult(["cat1:kw1", "cat2:kw3"]),
-                MockResult(["cat1:kw2", "cat2:kw3"]),
+                MockResult(["cat1:kw1", "cat1:kw2"], 1),
+                MockResult(["cat1:kw1", "cat2:kw3"], 2),
+                MockResult(["cat1:kw2", "cat2:kw3"], 3),
             ]
+
+        def __iter__(self):
+            for each in self.all():
+                yield each
 
     class MockResult:
         """Mock the result."""
 
-        def __init__(self, keywords):
+        def __init__(self, keywords, resource_id):
             """Init."""
             self.keywords = keywords
+            self.resource_id = resource_id
+
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.search_utils.read_facets", mock_read_facets
+    )
 
     search = MockSearch()
     collections = CollectionsWithStats()
-    collections = populate_facets(search, collections)
+    collections = populate_facets(
+        session=None, collections=collections, search=search, keywords=[]
+    )
     assert collections["search"] == {
         "kw": [
             {"category": "cat1", "groups": {"kw1": None, "kw2": None}},
