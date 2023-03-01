@@ -125,7 +125,6 @@ def populate_facets(
     keywords: list[str],
 ) -> CollectionsWithStats:
     """Populate the collections entity with facets."""
-    search.all()
     facets = {}
     facets = read_facets(session, search, keywords, facets)
     collections["search"] = {
