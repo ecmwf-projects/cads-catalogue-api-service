@@ -138,22 +138,6 @@ def apply_sorting(
     return search, sort_by
 
 
-def apply_filters(search: sqlalchemy.orm.Query, q: str, kw: list):
-    """Apply allowed search filters to the running query.
-
-    Args
-    ----
-        search (sqlalchemy.orm.Query): current query
-        q (str): search query (full text search)
-        kw (list): list of keywords query
-    """
-    if q:
-        search = search.filter(cads_catalogue.database.Resource.title.ilike(f"%{q}%"))
-    if kw:
-        search = search.filter(cads_catalogue.database.Resource.keywords.contains(kw))
-    return search
-
-
 def get_next_prev_links(
     collections: list,
     sort_by,
@@ -407,7 +391,7 @@ def collection_serializer(
         stac_version="1.0.0",
         title=db_model.title,
         description=db_model.abstract,
-        keywords=db_model.keywords,
+        keywords=[keyword.keyword_name for keyword in db_model.keywords],
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         license="various" if len(db_model.licences) > 1 else "proprietary",
         extent=get_extent(db_model),
@@ -486,7 +470,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
 
-            search = apply_filters(search, q, kw).filter(
+            search = search_utils.apply_filters(session, search, q, kw).filter(
                 cads_catalogue.database.Resource.hidden == False
             )
             search, sort_by = apply_sorting(
@@ -576,15 +560,16 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             )
 
         if search_stats:
-
             with self.reader.context_session() as session:
                 search = session.query(self.collection_table)
 
-                search = apply_filters(search, q, kw).filter(
+                search = search_utils.apply_filters(session, search, q, kw).filter(
                     cads_catalogue.database.Resource.hidden == False
                 )
 
-                search_utils.populate_facets(search, collections)
+                search_utils.populate_facets(
+                    session=session, collections=collections, search=search, keywords=kw
+                )
 
         return collections
 
