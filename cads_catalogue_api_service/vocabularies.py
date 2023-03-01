@@ -53,12 +53,11 @@ def query_keywords(
 ) -> list[str]:
     """Query keywords."""
     results = (
-        session.query(sa.func.unnest(cads_catalogue.database.Resource.keywords))
-        .distinct()
-        .order_by(sa.func.unnest(cads_catalogue.database.Resource.keywords))
+        session.query(cads_catalogue.database.Keyword)
+        .order_by(cads_catalogue.database.Keyword.keyword_name)
         .all()
     )
-    return [col[0] for col in results]
+    return results
 
 
 @router.get("/licences", response_model=models.Licences)
@@ -88,8 +87,8 @@ async def list_keywords(
     return models.Keywords(
         keywords=[
             models.Keyword(
-                id=keyword,
-                label=keyword,
+                id=keyword.keyword_name,
+                label=keyword.keyword_name,
             )
             for keyword in results
         ]

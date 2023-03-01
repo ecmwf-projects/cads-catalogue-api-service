@@ -14,11 +14,69 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import itertools
 from typing import Any
 
+import cads_catalogue.faceted_search
 import sqlalchemy as sa
 import stac_fastapi.types
+
+
+def split_by_category(keywords: list) -> list:
+    """Given a list of keywords composed by a "category: value", split them in multiple lists.
+
+    Splitting is based on the category.
+    """
+    categories = {}
+    for keyword in keywords:
+        category, value = keyword.split(":", 1)
+        if category not in categories:
+            categories[category] = []
+        categories[category].append(":".join([category, value]))
+    return list(categories.values())
+
+
+def apply_filters(session: sa.orm.Session, search: sa.orm.Query, q: str, kw: list):
+    """Apply allowed search filters to the running query.
+
+    Args
+    ----
+        search (sqlalchemy.orm.Query): current query
+        q (str): search query (full text search)
+        kw (list): list of keywords query
+    """
+    if q:
+        search = search.filter(cads_catalogue.database.Resource.title.ilike(f"%{q}%"))
+    if kw:
+        # Facetes search criteria is to run on OR in the same category, and AND between categories
+        # To make this working be perform subqueryes joint with the INTERSECT operator
+        splitted_categories = split_by_category(kw)
+
+        subqueries = []
+        for categorized in splitted_categories:
+            # 1. Filter by all keywords in this category
+            subquery_kw = (
+                session.query(cads_catalogue.database.Keyword.keyword_id)
+                # We cannot just use in_ on all kws because we need to AND on different
+                .filter(cads_catalogue.database.Keyword.keyword_name.in_(categorized))
+            ).subquery()
+            # 2. Manually build many to many relation
+            subquery_mtm = (
+                session.query(cads_catalogue.database.ResourceKeyword.resource_id)
+                .filter(
+                    cads_catalogue.database.ResourceKeyword.keyword_id.in_(subquery_kw)
+                )
+                .scalar_subquery()
+            )
+            # 3. Perform partial query
+            subquery = session.query(cads_catalogue.database.Resource).filter(
+                cads_catalogue.database.Resource.resource_id.in_(subquery_mtm)
+            )
+            subqueries.append(subquery)
+
+        # 4. Join all subqueries with INTERSECT
+        search = search.intersect(*subqueries)
+
+    return search
 
 
 class CollectionsWithStats(stac_fastapi.types.stac.Collections):
@@ -27,24 +85,52 @@ class CollectionsWithStats(stac_fastapi.types.stac.Collections):
     search: dict[str, Any]
 
 
-# FIXME: this is just a provisional solution to get the facets API working
-# Everything needs to be transfered to PostgreSQL
-def populate_facets(
-    search: sa.orm.Query, collections: stac_fastapi.types.stac.Collections
-) -> CollectionsWithStats:
-    """Populate the collections with the search stats about facets."""
-    results = search.all()
-    all_kws = sorted(set(list(itertools.chain(*[r.keywords for r in results]))))
-    kw_stats = {}
-    for kw in all_kws:
-        category, keyword = [x.strip() for x in kw.split(":")]
-        kw_stats.setdefault(category, []).append(keyword)
+def generate_keywords_structure(keywords: list[str]) -> dict[str, Any]:
+    """Generate a structure with the categories and keywords.
 
+    Structure in build upon given a list of keywords (semicolon separated).
+    """
+    keywords_structure = {}
+    for kw in keywords:
+        category, keyword = [x.strip() for x in kw.split(":")]
+        keywords_structure.setdefault(category, []).append(keyword)
+    return keywords_structure
+
+
+def read_facets(
+    session: sa.orm.Session, search: sa.orm.Query, keywords: list[str], facets: dict
+):
+    keywords_structure = generate_keywords_structure(keywords)
+    dataset_kw_grouping = cads_catalogue.faceted_search.get_datasets_by_keywords(
+        search, keywords_structure
+    )
+    results_ids = [d.resource_id for d in dataset_kw_grouping]
+    faceted_stats = cads_catalogue.faceted_search.get_faceted_stats(
+        session, results_ids
+    )
+
+    facets = {}
+    for kw in faceted_stats:
+        category_name = kw["category_name"]
+        category_value = kw["category_value"]
+        count = kw["count"]
+        facets.setdefault(category_name, {})[category_value] = count
+    return facets
+
+
+def populate_facets(
+    session: sa.orm.Session,
+    collections: stac_fastapi.types.stac.Collections,
+    search: sa.orm.Query,
+    keywords: list[str],
+) -> CollectionsWithStats:
+    """Populate the collections entity with facets."""
+    facets = {}
+    facets = read_facets(session, search, keywords, facets)
     collections["search"] = {
         "kw": [
-            # FIXME: let's don't waste time to get the real count in this temporary solution
-            {"category": cat, "groups": {kw: None for kw in kws}}
-            for cat, kws in kw_stats.items()
+            {"category": cat, "groups": {kw: count for kw, count in kws.items()}}
+            for cat, kws in facets.items()
         ]
     }
     return collections
