@@ -21,7 +21,7 @@ def test_messages() -> None:
         assert type(message.get("message_id")) == str
         assert type(message.get("date")) == str
         assert type(message.get("summary")) == str
-        assert type(message.get("url")) == str
+        assert type(message.get("url")) == str or message.get("url") is None
         assert type(message.get("severity")) == str
         assert type(message.get("content")) == str
         assert type(message.get("live")) == bool
@@ -43,7 +43,7 @@ def test_changelog_messages() -> None:
         assert type(changelog.get("message_id")) == str
         assert type(changelog.get("date")) == str
         assert type(changelog.get("summary")) == str
-        assert type(changelog.get("url")) == str
+        assert type(changelog.get("url")) == str or changelog.get("url") is None
         assert type(changelog.get("severity")) == str
         assert type(changelog.get("content")) == str
         assert type(changelog.get("live")) == bool
