@@ -33,7 +33,15 @@ import structlog
 from brotli_asgi import BrotliMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-from . import client, config, exceptions, extensions, middlewares, vocabularies, messages
+from . import (
+    client,
+    config,
+    exceptions,
+    extensions,
+    messages,
+    middlewares,
+    vocabularies,
+)
 
 structlog.configure(
     processors=[

@@ -18,12 +18,14 @@ def test_messages() -> None:
     assert type(messages) == list
     for message in messages:
         assert type(message) == dict
-        assert type(message.get("id")) == str
+        assert type(message.get("message_id")) == str
         assert type(message.get("date")) == str
         assert type(message.get("summary")) == str
         assert type(message.get("url")) == str
         assert type(message.get("severity")) == str
-        assert type(message.get("links")) == list
+        assert type(message.get("content")) == str
+        assert type(message.get("live")) == bool
+        assert type(message.get("status")) == str
 
 
 def test_changelog_messages() -> None:
@@ -38,10 +40,11 @@ def test_changelog_messages() -> None:
     assert type(changelog_list) == list
     for changelog in changelog_list:
         assert type(changelog) == dict
-        assert type(changelog.get("id")) == str
+        assert type(changelog.get("message_id")) == str
         assert type(changelog.get("date")) == str
         assert type(changelog.get("summary")) == str
         assert type(changelog.get("url")) == str
         assert type(changelog.get("severity")) == str
-        assert type(changelog.get("archived")) == bool
-        assert type(changelog.get("links")) == list
+        assert type(changelog.get("content")) == str
+        assert type(changelog.get("live")) == bool
+        assert type(changelog.get("status")) == str
