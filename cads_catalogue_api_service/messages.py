@@ -29,27 +29,26 @@ router = fastapi.APIRouter(
 
 
 def query_messages(
-    session_maker: sa.orm.Session,
+    session: sa.orm.Session,
     live: bool = True,
     collection_id: str | None = None,
 ) -> list[cads_catalogue.database.Message]:
     """Query messages."""
-    with session_maker.context_session() as session:
-        results = session.query(
-            cads_catalogue.database.Message.message_id,
-            cads_catalogue.database.Message.date,
-            cads_catalogue.database.Message.summary,
-            cads_catalogue.database.Message.url,
-            cads_catalogue.database.Message.severity,
-            cads_catalogue.database.Message.content,
-            cads_catalogue.database.Message.live,
-            cads_catalogue.database.Message.status,
-        ).where(cads_catalogue.database.Message.live.is_(live))
-        if collection_id:
-            results = results.where(
-                cads_catalogue.database.Message.entries.contains(collection_id)
-            )
-        results = results.order_by(sa.desc(cads_catalogue.database.Message.date)).all()
+    results = session.query(
+        cads_catalogue.database.Message.message_id,
+        cads_catalogue.database.Message.date,
+        cads_catalogue.database.Message.summary,
+        cads_catalogue.database.Message.url,
+        cads_catalogue.database.Message.severity,
+        cads_catalogue.database.Message.content,
+        cads_catalogue.database.Message.live,
+        cads_catalogue.database.Message.status,
+    ).where(cads_catalogue.database.Message.live.is_(live))
+    if collection_id:
+        results = results.where(
+            cads_catalogue.database.Message.entries.contains(collection_id)
+        )
+    results = results.order_by(sa.desc(cads_catalogue.database.Message.date)).all()
     return results
 
 
