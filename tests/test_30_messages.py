@@ -47,7 +47,10 @@ class Message:
 
 
 def static_messages_query(
-    session: Any, live: bool = True, collection_id: str | None = None
+    session: Any,
+    live: bool = True,
+    is_global: bool = True,
+    collection_id: str | None = None,
 ) -> list[cads_catalogue.database.Message]:
     return [
         Message(
@@ -74,7 +77,10 @@ def static_messages_query(
 
 
 def static_changelog_query(
-    session: Any, live: bool = False, collection_id: str | None = None
+    session: Any,
+    live: bool = False,
+    is_global: bool = True,
+    collection_id: str | None = None,
 ) -> list[cads_catalogue.database.Message]:
     return [
         Message(
