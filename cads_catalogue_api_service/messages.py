@@ -31,6 +31,7 @@ router = fastapi.APIRouter(
 def query_messages(
     session: sa.orm.Session,
     live: bool = True,
+    is_global: bool = True,
     collection_id: str | None = None,
 ) -> list[cads_catalogue.database.Message]:
     """Query messages."""
@@ -43,7 +44,10 @@ def query_messages(
         cads_catalogue.database.Message.content,
         cads_catalogue.database.Message.live,
         cads_catalogue.database.Message.status,
-    ).where(cads_catalogue.database.Message.live.is_(live))
+    ).where(
+        cads_catalogue.database.Message.live.is_(live),
+        cads_catalogue.database.Message.is_global.is_(is_global),
+    )
     if collection_id:
         results = results.where(
             cads_catalogue.database.Message.entries.contains(collection_id)
@@ -55,10 +59,12 @@ def query_messages(
 @router.get("/collections/{collection_id}/messages", response_model=models.Messages)
 def list_messages_by_id(
     collection_id: str,
-    session_maker=fastapi.Depends(dependencies.get_session),
+    session=fastapi.Depends(dependencies.get_session),
 ) -> models.Message:
     """Endpoint to get all messages of a specific collection."""
-    results = query_messages(session_maker, True, collection_id)
+    results = query_messages(
+        session=session, live=True, is_global=False, collection_id=collection_id
+    )
     return models.Messages(
         messages=[
             models.Message(
@@ -82,10 +88,12 @@ def list_messages_by_id(
 )
 def list_changelog_by_id(
     collection_id: str,
-    session_maker=fastapi.Depends(dependencies.get_session),
+    session=fastapi.Depends(dependencies.get_session),
 ) -> models.Changelog:
     """Endpoint to get all changelog of a specific collection."""
-    results = query_messages(session_maker, False, collection_id)
+    results = query_messages(
+        session=session, live=False, is_global=False, collection_id=collection_id
+    )
     return models.Changelog(
         changelog=[
             models.Message(
@@ -105,10 +113,10 @@ def list_changelog_by_id(
 
 @router.get("/messages", response_model=models.Messages)
 def list_messages(
-    session_maker=fastapi.Depends(dependencies.get_session),
+    session=fastapi.Depends(dependencies.get_session),
 ) -> models.Message:
     """Endpoint to get all messages."""
-    results = query_messages(session_maker, True)
+    results = query_messages(session=session, live=True, is_global=True)
     return models.Messages(
         messages=[
             models.Message(
@@ -128,10 +136,10 @@ def list_messages(
 
 @router.get("/messages/changelog", response_model=models.Changelog)
 def list_changelog(
-    session_maker=fastapi.Depends(dependencies.get_session),
+    session=fastapi.Depends(dependencies.get_session),
 ) -> models.Changelog:
     """Endpoint to get all changelog."""
-    results = query_messages(session_maker, False)
+    results = query_messages(session=session, live=False, is_global=True)
     return models.Changelog(
         changelog=[
             models.Message(
