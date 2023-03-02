@@ -157,6 +157,20 @@ def generate_expected(
                     ),
                     "title": "Yet another dataset",
                 },
+                {
+                    "rel": "messages",
+                    "href": urllib.parse.urljoin(
+                        base_url, "collections/era5-something/messages"
+                    ),
+                    "title": "All messages related to the selected dataset",
+                },
+                {
+                    "rel": "changelog",
+                    "href": urllib.parse.urljoin(
+                        base_url, "collections/era5-something/messages/changelog"
+                    ),
+                    "title": "All archived messages related to the selected dataset",
+                },
             ]
         ),
         "published": "2020-01-01T00:00:00Z",

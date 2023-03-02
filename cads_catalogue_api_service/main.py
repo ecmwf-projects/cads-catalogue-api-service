@@ -33,7 +33,15 @@ import structlog
 from brotli_asgi import BrotliMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-from . import client, config, exceptions, extensions, middlewares, vocabularies
+from . import (
+    client,
+    config,
+    exceptions,
+    extensions,
+    messages,
+    middlewares,
+    vocabularies,
+)
 
 structlog.configure(
     processors=[
@@ -73,6 +81,7 @@ api = stac_fastapi.api.app.StacApi(
 app = api.app
 app.add_route("/metrics", handle_metrics)
 app.include_router(vocabularies.router)
+app.include_router(messages.router)
 
 
 def catalogue_openapi() -> dict[str, Any]:

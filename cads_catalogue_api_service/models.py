@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 from typing import TypedDict
 
 
@@ -43,3 +44,28 @@ class Keywords(TypedDict):
     """Keywords vocabulary."""
 
     keywords: list[Keyword]
+
+
+class Message(TypedDict):
+    """Message definition."""
+
+    message_id: str
+    date: datetime.datetime
+    summary: str
+    url: str | None
+    severity: str
+    content: str
+    live: bool
+    status: str
+
+
+class Messages(TypedDict):
+    """Messages vocabulary."""
+
+    messages: list[Message]
+
+
+class Changelog(TypedDict):
+    """Changelog vocabulary."""
+
+    changelog: list[Message]
