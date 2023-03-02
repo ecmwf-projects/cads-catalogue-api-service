@@ -73,8 +73,6 @@ ignore = [
 
 [tool.setuptools]
 packages = ["cads_catalogue_api_service"]
-[tool.setuptools]
-packages = ["cads_catalogue_api_service"]
 
 [tool.setuptools_scm]
 write_to = "cads_catalogue_api_service/version.py"
