@@ -35,22 +35,37 @@ def query_messages(
     collection_id: str | None = None,
 ) -> list[cads_catalogue.database.Message]:
     """Query messages."""
-    results = session.query(
-        cads_catalogue.database.Message.message_id,
-        cads_catalogue.database.Message.date,
-        cads_catalogue.database.Message.summary,
-        cads_catalogue.database.Message.url,
-        cads_catalogue.database.Message.severity,
-        cads_catalogue.database.Message.content,
-        cads_catalogue.database.Message.live,
-        cads_catalogue.database.Message.status,
-    ).where(
-        cads_catalogue.database.Message.live.is_(live),
-        cads_catalogue.database.Message.is_global.is_(is_global),
+    results = (
+        session.query(
+            cads_catalogue.database.Message.message_id,
+            cads_catalogue.database.Message.date,
+            cads_catalogue.database.Message.summary,
+            cads_catalogue.database.Message.url,
+            cads_catalogue.database.Message.severity,
+            cads_catalogue.database.Message.content,
+            cads_catalogue.database.Message.live,
+            cads_catalogue.database.Message.status,
+        )
+        .join(
+            cads_catalogue.database.ResourceMessage,
+            cads_catalogue.database.ResourceMessage.message_id
+            == cads_catalogue.database.Message.message_id,
+            isouter=True,
+        )
+        .join(
+            cads_catalogue.database.Resource,
+            cads_catalogue.database.Resource.resource_id
+            == cads_catalogue.database.ResourceMessage.resource_id,
+            full=True,
+        )
+        .where(
+            cads_catalogue.database.Message.live.is_(live),
+            cads_catalogue.database.Message.is_global.is_(is_global),
+        )
     )
     if collection_id:
         results = results.where(
-            cads_catalogue.database.Message.entries.contains(collection_id)
+            cads_catalogue.database.Resource.resource_uid.__eq__(collection_id)
         )
     results = results.order_by(sa.desc(cads_catalogue.database.Message.date)).all()
     return results
