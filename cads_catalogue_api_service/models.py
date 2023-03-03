@@ -49,7 +49,7 @@ class Keywords(TypedDict):
 class Message(TypedDict):
     """Message definition."""
 
-    message_uid: str
+    id: str
     date: datetime.datetime
     summary: str
     url: str | None

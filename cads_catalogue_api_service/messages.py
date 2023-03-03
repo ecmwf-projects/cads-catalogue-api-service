@@ -79,7 +79,7 @@ def list_messages_by_id(
     return models.Messages(
         messages=[
             models.Message(
-                message_uid=message.message_uid,
+                id=message.message_uid,
                 date=message.date,
                 summary=message.summary,
                 url=message.url,
@@ -108,7 +108,7 @@ def list_changelog_by_id(
     return models.Changelog(
         changelog=[
             models.Message(
-                message_uid=message.message_uid,
+                id=message.message_uid,
                 date=message.date,
                 summary=message.summary,
                 url=message.url,
@@ -131,7 +131,7 @@ def list_messages(
     return models.Messages(
         messages=[
             models.Message(
-                message_uid=message.message_uid,
+                id=message.message_uid,
                 date=message.date,
                 summary=message.summary,
                 url=message.url,
@@ -154,7 +154,7 @@ def list_changelog(
     return models.Changelog(
         changelog=[
             models.Message(
-                message_uid=message.message_uid,
+                id=message.message_uid,
                 date=message.date,
                 summary=message.summary,
                 url=message.url,

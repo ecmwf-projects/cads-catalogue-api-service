@@ -180,7 +180,7 @@ def test_messages(monkeypatch) -> None:
     assert response.json() == {
         "messages": [
             {
-                "message_uid": "0-yyy-zzzz.md",
+                "id": "0-yyy-zzzz.md",
                 "date": "2023-01-01T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/0.md",
@@ -190,7 +190,7 @@ def test_messages(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "1-yyy-zzzz.md",
+                "id": "1-yyy-zzzz.md",
                 "date": "2023-01-02T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
@@ -217,7 +217,7 @@ def test_messages_all(monkeypatch) -> None:
     assert response.json() == {
         "messages": [
             {
-                "message_uid": "0-yyy-zzzz.md",
+                "id": "0-yyy-zzzz.md",
                 "date": "2023-01-01T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/0.md",
@@ -227,7 +227,7 @@ def test_messages_all(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "1-yyy-zzzz.md",
+                "id": "1-yyy-zzzz.md",
                 "date": "2023-01-02T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
@@ -254,7 +254,7 @@ def test_changelog(monkeypatch) -> None:
     assert response.json() == {
         "changelog": [
             {
-                "message_uid": "0-yyy-zzzz.md",
+                "id": "0-yyy-zzzz.md",
                 "date": "2023-01-01T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/0.md",
@@ -264,7 +264,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "1-yyy-zzzz.md",
+                "id": "1-yyy-zzzz.md",
                 "date": "2023-01-02T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
@@ -274,7 +274,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "2-yyy-zzzz.md",
+                "id": "2-yyy-zzzz.md",
                 "date": "2023-01-03T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/2.md",
@@ -284,7 +284,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "3-yyy-zzzz.md",
+                "id": "3-yyy-zzzz.md",
                 "date": "2023-01-04T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/3.md",
@@ -294,7 +294,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "4-yyy-zzzz.md",
+                "id": "4-yyy-zzzz.md",
                 "date": "2023-01-05T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/4.md",
@@ -304,7 +304,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "5-yyy-zzzz.md",
+                "id": "5-yyy-zzzz.md",
                 "date": "2023-01-05T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/5.md",
@@ -314,7 +314,7 @@ def test_changelog(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "6-yyy-zzzz.md",
+                "id": "6-yyy-zzzz.md",
                 "date": "2023-01-06T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/6.md",
@@ -341,7 +341,7 @@ def test_changelog_all(monkeypatch) -> None:
     assert response.json() == {
         "changelog": [
             {
-                "message_uid": "0-yyy-zzzz.md",
+                "id": "0-yyy-zzzz.md",
                 "date": "2023-01-01T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/0.md",
@@ -351,7 +351,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "1-yyy-zzzz.md",
+                "id": "1-yyy-zzzz.md",
                 "date": "2023-01-02T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
@@ -361,7 +361,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "2-yyy-zzzz.md",
+                "id": "2-yyy-zzzz.md",
                 "date": "2023-01-03T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/2.md",
@@ -371,7 +371,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "3-yyy-zzzz.md",
+                "id": "3-yyy-zzzz.md",
                 "date": "2023-01-04T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/3.md",
@@ -381,7 +381,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "4-yyy-zzzz.md",
+                "id": "4-yyy-zzzz.md",
                 "date": "2023-01-05T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/4.md",
@@ -391,7 +391,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "5-yyy-zzzz.md",
+                "id": "5-yyy-zzzz.md",
                 "date": "2023-01-05T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/5.md",
@@ -401,7 +401,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "status": "ongoing",
             },
             {
-                "message_uid": "6-yyy-zzzz.md",
+                "id": "6-yyy-zzzz.md",
                 "date": "2023-01-06T08:05:54+00:00",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/6.md",
