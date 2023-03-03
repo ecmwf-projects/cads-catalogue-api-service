@@ -35,22 +35,33 @@ def query_messages(
     collection_id: str | None = None,
 ) -> list[cads_catalogue.database.Message]:
     """Query messages."""
-    results = session.query(
-        cads_catalogue.database.Message.message_id,
-        cads_catalogue.database.Message.date,
-        cads_catalogue.database.Message.summary,
-        cads_catalogue.database.Message.url,
-        cads_catalogue.database.Message.severity,
-        cads_catalogue.database.Message.content,
-        cads_catalogue.database.Message.live,
-        cads_catalogue.database.Message.status,
-    ).where(
-        cads_catalogue.database.Message.live.is_(live),
-        cads_catalogue.database.Message.is_global.is_(is_global),
+    results = (
+        session.query(
+            cads_catalogue.database.Message.message_uid,
+            cads_catalogue.database.Message.date,
+            cads_catalogue.database.Message.summary,
+            cads_catalogue.database.Message.url,
+            cads_catalogue.database.Message.severity,
+            cads_catalogue.database.Message.content,
+            cads_catalogue.database.Message.live,
+            cads_catalogue.database.Message.status,
+        )
+        .join(
+            cads_catalogue.database.ResourceMessage,
+            isouter=True,
+        )
+        .join(
+            cads_catalogue.database.Resource,
+            full=True,
+        )
+        .where(
+            cads_catalogue.database.Message.live.is_(live),
+            cads_catalogue.database.Message.is_global.is_(is_global),
+        )
     )
     if collection_id:
         results = results.where(
-            cads_catalogue.database.Message.entries.contains(collection_id)
+            cads_catalogue.database.Resource.resource_uid == collection_id
         )
     results = results.order_by(sa.desc(cads_catalogue.database.Message.date)).all()
     return results
@@ -68,7 +79,7 @@ def list_messages_by_id(
     return models.Messages(
         messages=[
             models.Message(
-                message_id=message.message_id,
+                id=message.message_uid,
                 date=message.date,
                 summary=message.summary,
                 url=message.url,
@@ -97,7 +108,7 @@ def list_changelog_by_id(
     return models.Changelog(
         changelog=[
             models.Message(
-                message_id=message.message_id,
+                id=message.message_uid,
                 date=message.date,
                 summary=message.summary,
                 url=message.url,
@@ -120,7 +131,7 @@ def list_messages(
     return models.Messages(
         messages=[
             models.Message(
-                message_id=message.message_id,
+                id=message.message_uid,
                 date=message.date,
                 summary=message.summary,
                 url=message.url,
@@ -143,7 +154,7 @@ def list_changelog(
     return models.Changelog(
         changelog=[
             models.Message(
-                message_id=message.message_id,
+                id=message.message_uid,
                 date=message.date,
                 summary=message.summary,
                 url=message.url,
