@@ -51,7 +51,7 @@ class Message(TypedDict):
 
     id: str
     date: datetime.datetime
-    summary: str
+    summary: str | None
     url: str | None
     severity: str
     content: str
