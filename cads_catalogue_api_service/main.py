@@ -102,43 +102,27 @@ def catalogue_openapi() -> dict[str, Any]:
 app.openapi = catalogue_openapi
 
 
-@app.exception_handler(exceptions.FeatureNotImplemented)  # type: ignore
+@app.exception_handler(exceptions.FeatureNotImplemented)
 async def feature_not_implemented_handler(
     request: fastapi.Request, exc: exceptions.FeatureNotImplemented
 ) -> fastapi.responses.JSONResponse:
     """Catch FeatureNotImplemented exceptions to properly trigger an HTTP 501."""
-    return fastapi.responses.JSONResponse(
-        status_code=501,
-        content={
-            "title": exc.message,
-            "trace_id": structlog.contextvars.get_contextvars().get(
-                "trace_id", "unset"
-            ),
-        },
-    )
+    return exceptions.generate_exception_response(title=exc.message, status_code=501)
 
 
 @app.exception_handler(starlette.exceptions.HTTPException)
-async def http_exception_handler(request, exc):
-    return fastapi.responses.JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "title": exc.detail,
-            "trace_id": structlog.contextvars.get_contextvars().get(
-                "trace_id", "unset"
-            ),
-        },
+async def http_exception_handler(
+    request: fastapi.Request, exc: starlette.exceptions.HTTPException
+):
+    print("aaaaaa")
+    return exceptions.generate_exception_response(
+        title=exc.detail, status_code=exc.status_code
     )
 
 
 @app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
-    return fastapi.responses.JSONResponse(
+async def general_exception_handler(request: fastapi.Request, exc: Exception):
+    return exceptions.generate_exception_response(
+        title="internal server error",
         status_code=starlette.status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "title": "internal server error",
-            "trace_id": structlog.contextvars.get_contextvars().get(
-                "trace_id", "unset"
-            ),
-        },
     )
