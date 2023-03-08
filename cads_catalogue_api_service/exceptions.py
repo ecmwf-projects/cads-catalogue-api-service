@@ -65,8 +65,8 @@ def add_exception_handlers(
         request: fastapi.Request, exc: fastapi.exceptions.RequestValidationError
     ) -> fastapi.responses.JSONResponse:
         return generate_exception_response(
-            title=str(exc),
-            detail=exc.__class__.__name__,
+            title="submitted data is not valid",
+            detail=str(exc),
             status_code=starlette.status.HTTP_422_UNPROCESSABLE_ENTITY,
         )
 
