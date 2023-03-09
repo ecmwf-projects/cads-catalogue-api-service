@@ -15,7 +15,13 @@
 # limitations under the License.
 
 import datetime
+import enum
 from typing import TypedDict
+
+
+class LicenceCategories(str, enum.Enum):
+    dataset: str = "dataset"
+    portal: str = "portal"
 
 
 class Licence(TypedDict):
@@ -25,6 +31,7 @@ class Licence(TypedDict):
     id: str
     label: str
     revision: int
+    scope: LicenceCategories
 
 
 class Licences(TypedDict):

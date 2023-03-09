@@ -14,11 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import enum
+
 import cads_catalogue
 import fastapi
 import sqlalchemy as sa
 
 from . import dependencies, models
+
+
+class LicenceScopeCriterion(str, enum.Enum):
+    all: str = "all"
+    dataset: str = "dataset"
+    portal: str = "portal"
+
 
 router = fastapi.APIRouter(
     prefix="/vocabularies",
@@ -29,18 +38,23 @@ router = fastapi.APIRouter(
 
 def query_licences(
     session: sa.orm.Session,
+    scope: LicenceScopeCriterion,
 ) -> list[cads_catalogue.database.Licence]:
     """Query licences."""
     # NOTE: possible issue here if the title of a licence change from a revision to another
+    query = session.query(
+        cads_catalogue.database.Licence.licence_uid,
+        cads_catalogue.database.Licence.title,
+        sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
+        cads_catalogue.database.Licence.scope,
+    )
+    if scope and scope != LicenceScopeCriterion.all:
+        query = query.filter(cads_catalogue.database.Licence.scope == scope)
     results = (
-        session.query(
+        query.group_by(
             cads_catalogue.database.Licence.licence_uid,
             cads_catalogue.database.Licence.title,
-            sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
-        )
-        .group_by(
-            cads_catalogue.database.Licence.licence_uid,
-            cads_catalogue.database.Licence.title,
+            cads_catalogue.database.Licence.scope,
         )
         .order_by(cads_catalogue.database.Licence.title)
         .all()
@@ -63,15 +77,17 @@ def query_keywords(
 @router.get("/licences", response_model=models.Licences)
 async def list_licences(
     session=fastapi.Depends(dependencies.get_session),
+    scope: LicenceScopeCriterion = fastapi.Query(default=LicenceScopeCriterion.all),
 ) -> models.Licences:
     """Endpoint to get all registered licences."""
-    results = query_licences(session)
+    results = query_licences(session, scope)
     return models.Licences(
         licences=[
             models.Licence(
                 id=licence.licence_uid,
                 label=licence.title,
                 revision=licence.revision,
+                scope=licence.scope,
             )
             for licence in results
         ]
