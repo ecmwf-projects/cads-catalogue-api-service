@@ -24,13 +24,23 @@ from cads_catalogue_api_service.main import app
 client = fastapi.testclient.TestClient(app)
 
 
-def static_licences_query(_foo: Any) -> list[cads_catalogue.database.Licence]:
+def static_licences_query(
+    _foo: Any, scope: str = "dataset"
+) -> list[cads_catalogue.database.Licence]:
     return [
         cads_catalogue.database.Licence(
-            licence_id=1, licence_uid="cc-by-4.0", title="CC-BY-4.0", revision=1
+            licence_id=1,
+            licence_uid="cc-by-4.0",
+            title="CC-BY-4.0",
+            revision=1,
+            scope="dataset",
         ),
         cads_catalogue.database.Licence(
-            licence_id=3, licence_uid="cc-by-sa-4.0", title="CC-BY-SA-4.0", revision=2
+            licence_id=3,
+            licence_uid="cc-by-sa-4.0",
+            title="CC-BY-SA-4.0",
+            revision=2,
+            scope="dataset",
         ),
     ]
 
@@ -75,8 +85,18 @@ def test_vocabularies_license(monkeypatch) -> None:
     assert response.status_code == 200
     assert response.json() == {
         "licences": [
-            {"id": "cc-by-4.0", "label": "CC-BY-4.0", "revision": 1},
-            {"id": "cc-by-sa-4.0", "label": "CC-BY-SA-4.0", "revision": 2},
+            {
+                "id": "cc-by-4.0",
+                "label": "CC-BY-4.0",
+                "revision": 1,
+                "scope": "dataset",
+            },
+            {
+                "id": "cc-by-sa-4.0",
+                "label": "CC-BY-SA-4.0",
+                "revision": 2,
+                "scope": "dataset",
+            },
         ],
     }
 
