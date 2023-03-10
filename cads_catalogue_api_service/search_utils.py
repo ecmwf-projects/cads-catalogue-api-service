@@ -54,16 +54,16 @@ def apply_filters(session: sa.orm.Session, search: sa.orm.Query, q: str, kw: lis
         subqueries = []
         for categorized in splitted_categories:
             # 1. Filter by all keywords in this category
-            subquery_kw = (
+            query_kw = (
                 session.query(cads_catalogue.database.Keyword.keyword_id)
                 # We cannot just use in_ on all kws because we need to AND on different
                 .filter(cads_catalogue.database.Keyword.keyword_name.in_(categorized))
-            ).subquery()
+            )
             # 2. Manually build many to many relation
             subquery_mtm = (
                 session.query(cads_catalogue.database.ResourceKeyword.resource_id)
                 .filter(
-                    cads_catalogue.database.ResourceKeyword.keyword_id.in_(subquery_kw)
+                    cads_catalogue.database.ResourceKeyword.keyword_id.in_(query_kw)
                 )
                 .scalar_subquery()
             )
