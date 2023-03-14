@@ -33,7 +33,6 @@ message_validator = MessageValidator(
 
 
 def test_messages() -> None:
-    # TODO: replace with a JSON schema
     r = requests.get(f"{API_ROOT_PATH}messages")
 
     assert r.status_code == 200
@@ -46,7 +45,6 @@ def test_messages() -> None:
 
 
 def test_changelog_messages() -> None:
-    # TODO: replace with a JSON schema
     r = requests.get(f"{API_ROOT_PATH}messages/changelog")
 
     assert r.status_code == 200
