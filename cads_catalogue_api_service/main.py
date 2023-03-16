@@ -114,7 +114,6 @@ async def feature_not_implemented_handler(
 async def http_exception_handler(
     request: fastapi.Request, exc: starlette.exceptions.HTTPException
 ):
-    print("aaaaaa")
     return exceptions.generate_exception_response(
         title=exc.detail, status_code=exc.status_code
     )
