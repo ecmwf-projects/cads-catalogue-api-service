@@ -22,7 +22,7 @@ class Request:
     def __init__(self, base_url: str) -> None:
         self.base_url = base_url
 
-    def url_for(self, name: str, **kwargs: str) -> str:
+    def url_for(self, __name: str, **kwargs: str) -> str:
         return "/collections"
 
 
