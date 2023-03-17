@@ -305,7 +305,7 @@ def generate_collection_links(
         additional_links += [
             {
                 "rel": "related",
-                "href": f"{request.url_for(name='Get Collections')}/{related.resource_uid}",
+                "href": f"{request.url_for('Get Collections')}/{related.resource_uid}",
                 "title": related.title,
             }
             for related in model.related_resources
@@ -315,7 +315,7 @@ def generate_collection_links(
         additional_links += [
             {
                 "rel": "messages",
-                "href": f"{request.url_for(name='Get Collections')}/{model.resource_uid}/messages",
+                "href": f"{request.url_for('Get Collections')}/{model.resource_uid}/messages",
                 "title": "All messages related to the selected dataset",
             }
         ]
@@ -324,7 +324,7 @@ def generate_collection_links(
         additional_links += [
             {
                 "rel": "changelog",
-                "href": f"{request.url_for(name='Get Collections')}/{model.resource_uid}/messages/changelog",
+                "href": f"{request.url_for('Get Collections')}/{model.resource_uid}/messages/changelog",
                 "title": "All archived messages related to the selected dataset",
             }
         ]
@@ -510,7 +510,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 {
                     "rel": stac_pydantic.links.Relations.self.value,
                     "type": stac_pydantic.shared.MimeTypes.json,
-                    "href": request.url_for(name=route_name),
+                    "href": request.url_for(route_name),
                 },
             ]
 
@@ -535,7 +535,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 links.append(
                     {
                         "rel": "next",
-                        "href": f"{request.url_for(name=route_name)}?{qs}",
+                        "href": f"{request.url_for(route_name)}?{qs}",
                         "type": stac_pydantic.shared.MimeTypes.json,
                     }
                 )
@@ -550,7 +550,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 links.append(
                     {
                         "rel": "prev",
-                        "href": f"{request.url_for(name=route_name)}?{qs}",
+                        "href": f"{request.url_for(route_name)}?{qs}",
                         "type": stac_pydantic.shared.MimeTypes.json,
                     }
                 )
