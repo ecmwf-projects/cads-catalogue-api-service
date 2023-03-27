@@ -1,0 +1,49 @@
+{
+    "$id": "/schemas/changelogs",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "CADS changelogs",
+    "type": "object",
+    "properties": {
+      "changelog":{
+        "title":"Changelogs",
+        "type":"array",
+        "items":{
+          "type":"object",
+          "properties":{
+            "id":{
+              "type":"string"
+            },
+            "date": {
+              "type": "string"
+            },
+            "summary": {
+              "type": ["string","null"]
+            },
+            "url": {
+              "type": ["string","null"]
+            },
+            "severity": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            },
+            "live": {
+              "type": "boolean"
+            },
+            "status": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "date",
+            "severity",
+            "content",
+            "live",
+            "status"
+          ]
+        }
+      }
+    }
+  }
