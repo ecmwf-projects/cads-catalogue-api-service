@@ -17,8 +17,10 @@ This largely depends on stac_fastapi to generate the RESTful API.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from contextlib import asynccontextmanager
 from typing import Any
 
+import cads_common.logging
 import fastapi
 import fastapi.middleware.cors
 import fastapi.openapi
@@ -43,22 +45,12 @@ from . import (
     vocabularies,
 )
 
-structlog.configure(
-    processors=[
-        structlog.stdlib.filter_by_level,
-        structlog.contextvars.merge_contextvars,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M.%S"),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.processors.JSONRenderer(),
-    ],
-    wrapper_class=structlog.stdlib.BoundLogger,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    cache_logger_on_first_use=True,
-)
+@asynccontextmanager
+async def lifespan(application: fastapi.FastAPI):
+    cads_common.logging.config_logging()
+    yield
 
+    
 extensions = [
     # This extenstion is required, seems for a bad implementation
     stac_fastapi.extensions.core.TokenPaginationExtension(),
@@ -76,6 +68,7 @@ api = stac_fastapi.api.app.StacApi(
         middlewares.CacheControlMiddleware,
         middlewares.LoggerInitializationMiddleware,
     ],
+    lifespan=lifespan
 )
 
 app = api.app
