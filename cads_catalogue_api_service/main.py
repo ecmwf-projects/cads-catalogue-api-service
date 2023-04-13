@@ -31,7 +31,6 @@ import stac_fastapi.types
 import stac_fastapi.types.conformance
 import stac_fastapi.types.links
 import starlette
-import structlog
 from brotli_asgi import BrotliMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
@@ -45,12 +44,13 @@ from . import (
     vocabularies,
 )
 
+
 @asynccontextmanager
 async def lifespan(application: fastapi.FastAPI):
     cads_common.logging.config_logging()
     yield
 
-    
+
 extensions = [
     # This extenstion is required, seems for a bad implementation
     stac_fastapi.extensions.core.TokenPaginationExtension(),
@@ -68,10 +68,10 @@ api = stac_fastapi.api.app.StacApi(
         middlewares.CacheControlMiddleware,
         middlewares.LoggerInitializationMiddleware,
     ],
-    lifespan=lifespan
 )
 
 app = api.app
+app.router.lifespan_context = lifespan
 app.add_route("/metrics", handle_metrics)
 app.include_router(vocabularies.router)
 app.include_router(messages.router)
