@@ -20,6 +20,7 @@ dynamic = ["version"]
 dependencies =[
   "attrs",
   "cads-catalogue",
+  "cads-common",
   "fastapi",
   "fastapi-utils",
   "python-dateutil",
