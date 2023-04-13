@@ -48,6 +48,7 @@ from . import (
 @asynccontextmanager
 async def lifespan(application: fastapi.FastAPI):
     cads_common.logging.config_logging()
+    cads_common.logging.configure_logger()
     yield
 
 
