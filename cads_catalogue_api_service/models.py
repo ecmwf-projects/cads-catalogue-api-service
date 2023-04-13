@@ -31,6 +31,8 @@ class Licence(TypedDict):
     id: str
     label: str
     revision: int
+    text: str
+    file: str
     scope: LicenceCategories
 
 

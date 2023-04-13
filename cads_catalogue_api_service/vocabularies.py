@@ -15,12 +15,13 @@
 # limitations under the License.
 
 import enum
+import urllib
 
 import cads_catalogue
 import fastapi
 import sqlalchemy as sa
 
-from . import dependencies, models
+from . import config, dependencies, models
 
 
 class LicenceScopeCriterion(str, enum.Enum):
@@ -45,6 +46,8 @@ def query_licences(
     query = session.query(
         cads_catalogue.database.Licence.licence_uid,
         cads_catalogue.database.Licence.title,
+        cads_catalogue.database.Licence.md_filename,
+        cads_catalogue.database.Licence.download_filename,
         sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
         cads_catalogue.database.Licence.scope,
     )
@@ -54,6 +57,8 @@ def query_licences(
         query.group_by(
             cads_catalogue.database.Licence.licence_uid,
             cads_catalogue.database.Licence.title,
+            cads_catalogue.database.Licence.md_filename,
+            cads_catalogue.database.Licence.download_filename,
             cads_catalogue.database.Licence.scope,
         )
         .order_by(cads_catalogue.database.Licence.title)
@@ -87,6 +92,12 @@ async def list_licences(
                 id=licence.licence_uid,
                 label=licence.title,
                 revision=licence.revision,
+                text=urllib.parse.urljoin(
+                    config.settings.document_storage_url, licence.md_filename
+                ),
+                file=urllib.parse.urljoin(
+                    config.settings.document_storage_url, licence.download_filename
+                ),
                 scope=licence.scope,
             )
             for licence in results
