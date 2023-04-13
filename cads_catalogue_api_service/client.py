@@ -469,7 +469,6 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         base_url = str(request.base_url)
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
-
             search = search_utils.apply_filters(session, search, q, kw).filter(
                 cads_catalogue.database.Resource.hidden == False
             )
@@ -510,7 +509,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 {
                     "rel": stac_pydantic.links.Relations.self.value,
                     "type": stac_pydantic.shared.MimeTypes.json,
-                    "href": request.url_for(route_name),
+                    "href": str(request.url_for(route_name)),
                 },
             ]
 

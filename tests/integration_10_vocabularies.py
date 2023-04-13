@@ -45,10 +45,8 @@ def test_licences_vocabulary() -> None:
     assert r.status_code == 200
 
     results = r.json()
-    licences = results.get("licences")
 
-    assert type(licences) == list
-    assert licence_validator.validate(results, ref_mapping["/schemas/licences"])
+    assert licence_validator.validate(results, ref_mapping["/schemas/licences"]) is None
 
 
 def test_keywords_vocabulary() -> None:
@@ -57,7 +55,5 @@ def test_keywords_vocabulary() -> None:
     assert r.status_code == 200
 
     results = r.json()
-    licences = results.get("keywords")
 
-    assert type(licences) == list
-    assert keyword_validator.validate(results, ref_mapping["/schemas/keywords"])
+    assert keyword_validator.validate(results, ref_mapping["/schemas/keywords"]) is None

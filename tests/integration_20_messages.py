@@ -46,10 +46,8 @@ def test_messages() -> None:
     assert r.status_code == 200
 
     results = r.json()
-    messages = results.get("messages")
 
-    assert type(messages) == list
-    assert message_validator.validate(results, ref_mapping["/schemas/messages"])
+    assert message_validator.validate(results, ref_mapping["/schemas/messages"]) is None
 
 
 def test_changelog_messages() -> None:
@@ -58,7 +56,7 @@ def test_changelog_messages() -> None:
     assert r.status_code == 200
 
     results = r.json()
-    changelog_list = results.get("changelog")
 
-    assert type(changelog_list) == list
-    assert changelog_validator.validate(results, ref_mapping["/schemas/changelog"])
+    assert (
+        changelog_validator.validate(results, ref_mapping["/schemas/changelog"]) is None
+    )

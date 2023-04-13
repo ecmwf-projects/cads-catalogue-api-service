@@ -3,31 +3,33 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "CADS licences vocabularies",
   "type": "object",
-    "properties": {
-      "licences": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
-            },
-            "revision": {
-              "type": "number"
-            }
+  "properties": {
+    "licences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
           },
-          "required": [
-            "id",
-            "label",
-            "revision"
-          ]
-        }
+          "label": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "text": {
+            "type": "string",
+            "format": "uri"
+          },
+          "file": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": ["id", "label", "revision", "text"]
       }
-    },
-    "required": [
-      "licences"
-    ]
-  }
+    }
+  },
+  "required": ["licences"]
+}
