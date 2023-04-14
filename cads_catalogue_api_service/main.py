@@ -72,7 +72,7 @@ api = stac_fastapi.api.app.StacApi(
 )
 
 app = api.app
-# FIXME : "app.router.lifespan_context" is not officially supported and would likely break 
+# FIXME : "app.router.lifespan_context" is not officially supported and would likely break
 app.router.lifespan_context = lifespan
 app.add_route("/metrics", handle_metrics)
 app.include_router(vocabularies.router)
