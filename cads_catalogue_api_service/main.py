@@ -47,8 +47,8 @@ from . import (
 
 @asynccontextmanager
 async def lifespan(application: fastapi.FastAPI):
-    cads_common.logging.config_logging()
-    cads_common.logging.configure_logger()
+    cads_common.logging.structlog_configure()
+    cads_common.logging.logging_configure()
     yield
 
 
@@ -72,6 +72,7 @@ api = stac_fastapi.api.app.StacApi(
 )
 
 app = api.app
+# FIXME : "app.router.lifespan_context" is not officially supported and would likely break 
 app.router.lifespan_context = lifespan
 app.add_route("/metrics", handle_metrics)
 app.include_router(vocabularies.router)
