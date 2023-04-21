@@ -31,8 +31,8 @@ class Licence(TypedDict):
     id: str
     label: str
     revision: int
-    text: str
-    file: str
+    contents_url: str
+    attachment_url: str
     scope: LicenceCategories
 
 

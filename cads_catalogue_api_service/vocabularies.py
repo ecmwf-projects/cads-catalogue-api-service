@@ -92,10 +92,10 @@ async def list_licences(
                 id=licence.licence_uid,
                 label=licence.title,
                 revision=licence.revision,
-                text=urllib.parse.urljoin(
+                contents_url=urllib.parse.urljoin(
                     config.settings.document_storage_url, licence.md_filename
                 ),
-                file=urllib.parse.urljoin(
+                attachment_url=urllib.parse.urljoin(
                     config.settings.document_storage_url, licence.download_filename
                 ),
                 scope=licence.scope,
