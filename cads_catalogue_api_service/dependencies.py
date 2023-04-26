@@ -17,16 +17,17 @@
 import functools
 from typing import Iterator
 
+import fastapi_utils.session
 import sqlalchemy
 
-from . import config, fastapisessionmaker
+from . import config
 
 
 @functools.lru_cache()
-def get_sessionmaker() -> fastapisessionmaker.FastAPISessionMaker:
+def get_sessionmaker() -> fastapi_utils.session.FastAPISessionMaker:
     """Generate a DB session using fastapi_utils."""
     connection_string = config.dbsettings.connection_string
-    return fastapisessionmaker.FastAPISessionMaker(connection_string)
+    return fastapi_utils.session.FastAPISessionMaker(connection_string)
 
 
 def get_session() -> Iterator[sqlalchemy.orm.Session]:
