@@ -15,13 +15,12 @@ dependencies:
 - python-dateutil
 - requests
 - rfc3339-validator
-- sqlalchemy==1.4*
+- sqlalchemy>=2.0.9
 - structlog
 - uvicorn
 - jsonschema
 - pip:
   - brotli-asgi
-  - fastapi-utils
   - stac_fastapi.api==2.4.1
   - stac_fastapi.extensions==2.4.1
   - stac_fastapi.types==2.4.1

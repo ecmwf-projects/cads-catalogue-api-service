@@ -21,9 +21,8 @@ dependencies =[
   "attrs",
   "cads-catalogue",
   "fastapi",
-  "fastapi-utils",
   "python-dateutil",
-  "sqlalchemy",
+  "sqlalchemy>=2.0.9",
   "stac_fastapi.api",
   "stac_fastapi.extensions",
   "stac_fastapi.types",
@@ -33,7 +32,7 @@ dependencies =[
 branch = true
 
 [tool.mypy]
-plugins = "sqlmypy"
+plugins = "sqlalchemy.ext.mypy.plugin"
 strict = true
 
 [[tool.mypy.overrides]]
