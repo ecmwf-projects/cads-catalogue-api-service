@@ -17,8 +17,10 @@ This largely depends on stac_fastapi to generate the RESTful API.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from contextlib import asynccontextmanager
 from typing import Any
 
+import cads_common.logging
 import fastapi
 import fastapi.middleware.cors
 import fastapi.openapi
@@ -29,7 +31,6 @@ import stac_fastapi.types
 import stac_fastapi.types.conformance
 import stac_fastapi.types.links
 import starlette
-import structlog
 from brotli_asgi import BrotliMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
@@ -43,21 +44,13 @@ from . import (
     vocabularies,
 )
 
-structlog.configure(
-    processors=[
-        structlog.stdlib.filter_by_level,
-        structlog.contextvars.merge_contextvars,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M.%S"),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.processors.JSONRenderer(),
-    ],
-    wrapper_class=structlog.stdlib.BoundLogger,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    cache_logger_on_first_use=True,
-)
+
+@asynccontextmanager
+async def lifespan(application: fastapi.FastAPI):
+    cads_common.logging.structlog_configure()
+    cads_common.logging.logging_configure()
+    yield
+
 
 extensions = [
     # This extenstion is required, seems for a bad implementation
@@ -79,6 +72,8 @@ api = stac_fastapi.api.app.StacApi(
 )
 
 app = api.app
+# FIXME : "app.router.lifespan_context" is not officially supported and would likely break
+app.router.lifespan_context = lifespan
 app.add_route("/metrics", handle_metrics)
 app.include_router(vocabularies.router)
 app.include_router(messages.router)
