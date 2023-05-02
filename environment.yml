@@ -15,7 +15,7 @@ dependencies:
 - python-dateutil
 - requests
 - rfc3339-validator
-- sqlalchemy==1.4*
+- sqlalchemy>=2.0.9
 - structlog
 - uvicorn
 - jsonschema
