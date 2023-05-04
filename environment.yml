@@ -21,7 +21,6 @@ dependencies:
 - jsonschema
 - pip:
   - brotli-asgi
-  - fastapi-utils
   - stac_fastapi.api==2.4.1
   - stac_fastapi.extensions==2.4.1
   - stac_fastapi.types==2.4.1
