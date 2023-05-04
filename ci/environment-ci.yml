@@ -13,7 +13,7 @@ dependencies:
 - sphinx
 - sphinx-autoapi
 # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
-- sqlalchemy-stubs
+- sqlalchemy[mypy]
 - tabulate  # for test notebooks
 - types-jsonschema
 - types-python-dateutil
