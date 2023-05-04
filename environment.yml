@@ -9,6 +9,7 @@ channels:
 # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW AS SHOWN IN THE EXAMPLE
 dependencies:
 - attrs
+- brotli-asgi
 - fastapi>=0.93.0
 - httpx
 - pip
@@ -20,7 +21,6 @@ dependencies:
 - uvicorn
 - jsonschema
 - pip:
-  - brotli-asgi
   - stac_fastapi.api==2.4.1
   - stac_fastapi.extensions==2.4.1
   - stac_fastapi.types==2.4.1
