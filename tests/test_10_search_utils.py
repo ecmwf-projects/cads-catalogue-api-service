@@ -27,9 +27,7 @@ from cads_catalogue_api_service.search_utils import (
 client = fastapi.testclient.TestClient(app)
 
 
-def mock_read_facets(
-    session: Any, search: Any, keywords: list[str], facets: dict = {}
-) -> Any:
+def mock_read_facets(session: Any, search: Any, keywords: list[str]) -> Any:
     """Mock session generation."""
     return {"cat1": {"kw1": None, "kw2": None}, "cat2": {"kw3": None}}
 
