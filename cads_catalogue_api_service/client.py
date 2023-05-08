@@ -476,7 +476,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
 
-            collections = search.all()
+            collections = session.execute(search).all()
 
             # Filter function always returns an item more than the limit to know if there is a next/prev page
             # But response is build or effective page size
