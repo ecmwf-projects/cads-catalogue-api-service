@@ -45,15 +45,9 @@ def apply_filters(session: sa.orm.Session, search: sa.orm.Query, q: str, kw: lis
         kw (list): list of keywords query
     """
     if q:
-        tsquery = sa.func.plainto_tsquery("english", q)
-        search = (
-            sa.select(cads_catalogue.database.Resource)
-            .where(cads_catalogue.database.Resource.fulltext_tsv.bool_op("@@")(tsquery))
-            .order_by(
-                sa.func.ts_rank(
-                    cads_catalogue.database.Resource.fulltext_tsv, tsquery
-                ).desc()
-            )
+
+        search = search.filter(
+            cads_catalogue.database.Resource.fulltext_tsv.match(f"%{q}%")
         )
 
     if kw:
