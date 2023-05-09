@@ -475,7 +475,6 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
-
             collections = search.all()
 
             # Filter function always returns an item more than the limit to know if there is a next/prev page
