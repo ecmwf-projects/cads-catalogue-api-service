@@ -23,6 +23,8 @@ import stac_fastapi.types.config
 
 MAX_LIMIT = 999
 
+PORTAL_HEADER_NAME = "X-CADS-Portal"
+
 
 class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
     """Postgres-specific API settings."""

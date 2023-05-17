@@ -17,6 +17,7 @@
 import functools
 from typing import Iterator
 
+import fastapi
 import sqlalchemy
 
 from . import config, fastapisessionmaker
@@ -32,3 +33,11 @@ def get_sessionmaker() -> fastapisessionmaker.FastAPISessionMaker:
 def get_session() -> Iterator[sqlalchemy.orm.Session]:
     """Fastapi dependency that provides a sqlalchemy session."""
     yield from get_sessionmaker().get_db()
+
+
+def get_portal(
+    portal=fastapi.Header(default=None, alias=config.PORTAL_HEADER_NAME)
+) -> str | None:
+    """Fastapi dependency that provides the CADS portal profile."""
+    print(portal)
+    return portal

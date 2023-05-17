@@ -246,7 +246,6 @@ def generate_collection_links(
     ]
 
     if not preview:
-
         # Documentation
         additional_links += [
             {
@@ -575,6 +574,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         self, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the catalogue."""
+        print(request.headers)
         return self.all_datasets(request=request)
 
     def get_collection(
