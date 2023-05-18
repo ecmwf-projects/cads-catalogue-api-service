@@ -53,15 +53,11 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
                 ),
             }
         ],
-        publication_date=datetime.datetime.strptime(
-            "2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
-        ),
+        publication_date=datetime.date(2020, 1, 1),
         record_update=datetime.datetime.strptime(
             "2020-02-03T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
         ),
-        resource_update=datetime.datetime.strptime(
-            "2020-02-05T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
-        ),
+        resource_update=datetime.date(2020, 2, 5),
         licences=[
             cads_catalogue.database.Licence(
                 licence_id="creative-commons",
