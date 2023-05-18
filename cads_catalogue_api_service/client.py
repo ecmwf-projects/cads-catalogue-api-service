@@ -81,7 +81,7 @@ def get_sorting_clause(
     """Get the sorting clause."""
     supported_sorts = {
         "update": (
-            model.record_update,
+            model.resource_update,
             sqlalchemy.desc if not inverse else sqlalchemy.asc,
         ),
         "title": (model.title, sqlalchemy.asc if not inverse else sqlalchemy.desc),
@@ -246,7 +246,6 @@ def generate_collection_links(
     ]
 
     if not preview:
-
         # Documentation
         additional_links += [
             {
@@ -378,7 +377,9 @@ def collection_serializer(
             else {}
         ),
         # FIXME: this is not the proper field to be used to "update"
-        "updated": db_model.record_update.replace(tzinfo=None).isoformat("T", "seconds")
+        "updated": db_model.resource_update.replace(tzinfo=None).isoformat(
+            "T", "seconds"
+        )
         + "Z",
         # FIXME: this is not a 100% correct implementation of the STAC scientific extension.
         # One of the sci:xxx should be there, but CAMS dataset are not doing this
