@@ -376,11 +376,7 @@ def collection_serializer(
             if db_model.publication_date
             else {}
         ),
-        # FIXME: this is not the proper field to be used to "update"
-        "updated": db_model.resource_update.replace(tzinfo=None).isoformat(
-            "T", "seconds"
-        )
-        + "Z",
+        "updated": db_model.resource_update.isoformat("T", "seconds") + "Z",
         # FIXME: this is not a 100% correct implementation of the STAC scientific extension.
         # One of the sci:xxx should be there, but CAMS dataset are not doing this
         **({"sci:doi": db_model.doi} if db_model.doi else {}),
