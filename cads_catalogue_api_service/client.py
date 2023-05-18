@@ -366,17 +366,15 @@ def collection_serializer(
     additional_properties = {
         **({"assets": assets} if assets else {}),
         **(
-            {
-                # FIXME: to be removed as soon as database switch to datetime column
-                "published": datetime.datetime.combine(
-                    db_model.publication_date, datetime.time.min
-                ).isoformat()
-                + "Z"
-            }
+            {"published": db_model.publication_date.isoformat() + "T00:00:00Z"}
             if db_model.publication_date
             else {}
         ),
-        "updated": db_model.resource_update.isoformat("T", "seconds") + "Z",
+        **(
+            {"updated": db_model.resource_update.isoformat() + "T00:00:00Z"}
+            if db_model.resource_update
+            else {}
+        ),
         # FIXME: this is not a 100% correct implementation of the STAC scientific extension.
         # One of the sci:xxx should be there, but CAMS dataset are not doing this
         **({"sci:doi": db_model.doi} if db_model.doi else {}),
