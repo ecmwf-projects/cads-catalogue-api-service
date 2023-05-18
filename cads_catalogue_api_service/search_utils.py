@@ -121,6 +121,20 @@ def read_facets(session: sa.orm.Session, search: sa.orm.Query, keywords: list[st
     return facets
 
 
+def counts(collections: stac_fastapi.types.stac.Collections, keywords: list[str],):
+    res, results = {}, {}
+    for collection in collections["collections"]:
+        for kw in collection["keywords"]:
+            res[kw] = res[kw]+1 if kw in res else 1
+    #formatting
+    for kw in res:
+        category, keyword = [x.strip() for x in kw.split(":")]
+        if category not in results:
+            results[category] = {keyword: res[kw]}
+        else:
+            results[category][keyword] = res[kw]
+    return results
+
 def populate_facets(
     session: sa.orm.Session,
     collections: stac_fastapi.types.stac.Collections,
@@ -128,11 +142,18 @@ def populate_facets(
     keywords: list[str],
 ) -> CollectionsWithStats:
     """Populate the collections entity with facets."""
+    
     facets = read_facets(session, search, keywords)
     collections["search"] = {
         "kw": [
             {"category": cat, "groups": {kw: count for kw, count in kws.items()}}
             for cat, kws in facets.items()
+        ]
+    }
+    collections["counts"] = {
+        "kw": [
+            {"category": cat, "groups": {kw: count for kw, count in kws.items()}}
+            for cat, kws in counts(collections, keywords).items()
         ]
     }
     return collections
