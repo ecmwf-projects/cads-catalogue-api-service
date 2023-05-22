@@ -105,58 +105,75 @@ def generate_keywords_structure(keywords: list[str]) -> dict[str, Any]:
     return keywords_structure
 
 
-def read_facets(session: sa.orm.Session, search: sa.orm.Query, keywords: list[str]):
-    keywords_structure = generate_keywords_structure(keywords)
-    dataset_kw_grouping = cads_catalogue.faceted_search.get_datasets_by_keywords(
-        search, keywords_structure
-    )
-    results_ids = [d.resource_id for d in dataset_kw_grouping]
-    faceted_stats = cads_catalogue.faceted_search.get_faceted_stats(
-        session, results_ids
-    )
-
-    facets = {}
-    for category_name, category_value, count in faceted_stats:
-        facets.setdefault(category_name, {})[category_value] = count
-    return facets
-
-
-def counts(
-    collections: stac_fastapi.types.stac.Collections,
-    keywords: list[str],
-):
-    res, results = {}, {}
-    for collection in collections["collections"]:
-        for kw in collection["keywords"]:
-            res[kw] = res[kw] + 1 if kw in res else 1
-    # formatting
-    for kw in res:
-        category, keyword = [x.strip() for x in kw.split(":")]
-        if category not in results:
-            results[category] = {keyword: res[kw]}
+def count_facets(
+    kw_struct: dict, key: str, values: list[str], to_ignore: list[str], result: dict
+) -> bool:
+    for k, v in kw_struct.items():
+        if k in to_ignore:
+            continue
+        elif k == key:
+            for el in v:
+                if k in result and el in result[k]:
+                    result[k][el] += 1
+                elif k in result and el not in result[k]:
+                    result[k][el] = 1
+                else:
+                    result[k] = {}
+                    result[k][el] = 1
+            if not any(item in v for item in values):
+                return False
         else:
-            results[category][keyword] = res[kw]
-    return results
+            if any(item in kw_struct[key] for item in values):
+                for el in v:
+                    if k in result and el in result[k]:
+                        result[k][el] += 1
+                    elif k in result and el not in result[k]:
+                        result[k][el] = 1
+                    else:
+                        result[k] = {}
+                        result[k][el] = 1
+    return True
+
+
+def elaborate_facets(
+    collections: list, k: str, v: list[str], to_ignore: list[str], result: dict
+) -> list[str]:
+    to_remove = []
+    for collection in collections:
+        kw_struct = generate_keywords_structure(collection["keywords"])
+        if k in kw_struct:
+            if not count_facets(kw_struct, k, v, to_ignore, result):
+                to_remove.append(collection["id"])
+        else:
+            to_remove.append(collection["id"])
+    return to_remove
+
+
+def clean_result(to_ignore: list[str], result: dict) -> None:
+    for key, value in result.items():
+        if key not in to_ignore:
+            for k, v in value.items():
+                result[key][k] = 0
 
 
 def populate_facets(
-    session: sa.orm.Session,
+    all_collections: list,
     collections: stac_fastapi.types.stac.Collections,
-    search: sa.orm.Query,
     keywords: list[str],
 ) -> CollectionsWithStats:
     """Populate the collections entity with facets."""
-    facets = read_facets(session, search, keywords)
-    collections["search"] = {
-        "kw": [
-            {"category": cat, "groups": {kw: count for kw, count in kws.items()}}
-            for cat, kws in facets.items()
-        ]
-    }
-    collections["counts"] = {
-        "kw": [
-            {"category": cat, "groups": {kw: count for kw, count in kws.items()}}
-            for cat, kws in counts(collections, keywords).items()
-        ]
-    }
+    to_ignore = []
+    result = {}
+    keywords_structure = generate_keywords_structure(keywords)
+    for k, v in keywords_structure.items():
+        to_remove = elaborate_facets(all_collections, k, v, to_ignore, result)
+        to_ignore.append(k)
+        all_collections = list(
+            filter(
+                lambda collection: collection["id"] not in to_remove, all_collections
+            )
+        )
+        if len(to_ignore) < len(keywords_structure):
+            clean_result(to_ignore, result)
+    collections["search"] = result
     return collections
