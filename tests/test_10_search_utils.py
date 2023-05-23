@@ -45,14 +45,26 @@ def test_populate_facets(monkeypatch):
     result = populate_facets(
         all_collections=all_collections, collections=collections, keywords=[]
     )
-    assert result["search"] == {}
+    assert result["search"] == {
+        "kw": [
+            {"category": "cat1", "groups": {"kw1": 2, "kw2": 2}},
+            {"category": "cat2", "groups": {"kw1": 2}},
+        ]
+    }
 
     result = populate_facets(
         all_collections=all_collections, collections=collections, keywords=["cat1: kw1"]
     )
-    assert result["search"] == {"cat1": {"kw1": 2, "kw2": 2}}
+    assert result["search"] == {
+        "kw": [{"category": "cat1", "groups": {"kw1": 2, "kw2": 2}}]
+    }
 
     result = populate_facets(
         all_collections=all_collections, collections=collections, keywords=["cat2: kw1"]
     )
-    assert result["search"] == {"cat2": {"kw1": 2}, "cat1": {"kw2": 1}}
+    assert result["search"] == {
+        "kw": [
+            {"category": "cat2", "groups": {"kw1": 2}},
+            {"category": "cat1", "groups": {"kw2": 1}},
+        ]
+    }
