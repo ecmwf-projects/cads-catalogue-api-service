@@ -176,6 +176,7 @@ def populate_facets(
                 clean_result(to_ignore, result)
     else:
         count_all(all_collections, result)
+    result = {key: val for key, val in result.items() if val != {}}
     collections["search"] = {
         "kw": [
             {"category": cat, "groups": {kw: count for kw, count in kws.items()}}
