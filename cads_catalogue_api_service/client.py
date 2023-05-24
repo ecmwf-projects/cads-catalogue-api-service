@@ -562,7 +562,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 all_collections = (
                     session.query(self.collection_table)
                     .filter(
-                        cads_catalogue.database.Resource.hidden is False  # noqa E712
+                        cads_catalogue.database.Resource.hidden == False  # noqa E712
                     )
                     .all()
                 )
