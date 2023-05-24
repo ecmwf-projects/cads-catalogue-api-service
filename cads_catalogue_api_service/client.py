@@ -559,9 +559,18 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 search = search_utils.apply_filters(session, search, q, kw).filter(
                     cads_catalogue.database.Resource.hidden is False
                 )
-
+                all_collections = (
+                    session.query(self.collection_table)
+                    .filter(cads_catalogue.database.Resource.hidden == False)
+                    .all()
+                )
                 search_utils.populate_facets(
-                    session=session, collections=collections, search=search, keywords=kw
+                    all_collections=[
+                        collection_serializer(collection, request=request, preview=True)
+                        for collection in all_collections
+                    ],
+                    collections=collections,
+                    keywords=kw,
                 )
 
         return collections
