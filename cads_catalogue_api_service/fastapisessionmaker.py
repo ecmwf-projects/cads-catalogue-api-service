@@ -52,14 +52,14 @@ class FastAPISessionMaker:
         return sessionmaker
 
     def get_new_engine(self) -> sa.engine.Engine:
-        """Returns a new sqlalchemy engine using the instance's database_uri."""
+        """Return a new sqlalchemy engine using the instance's database_uri."""
         return get_engine(self.database_uri)
 
     def get_new_sessionmaker(
         self, engine: sa.engine.Engine | None
     ) -> sa.orm.sessionmaker:
         """
-        Returns a new sessionmaker for the provided sqlalchemy engine.
+        Return a new sessionmaker for the provided sqlalchemy engine.
 
         If no engine is provided, the instance's (lazily-cached) engine is used.
         """
@@ -68,7 +68,7 @@ class FastAPISessionMaker:
 
     def get_db(self) -> Iterator[Session]:
         """
-        Yields a sqlalchemy orm session and cleans up the session once resumed after yielding.
+        Yield a sqlalchemy orm session and cleans up the session once resumed after yielding.
 
         Can be used directly as a context-manager FastAPI dependency, or yielded from inside a
         separate dependency.
@@ -78,7 +78,7 @@ class FastAPISessionMaker:
     @contextmanager
     def context_session(self) -> Iterator[Session]:
         """
-        A context-manager wrapped version of the `get_db` method.
+        context-manager wrapped version of the `get_db` method.
 
         This makes it possible to get a context-managed orm session for the relevant database_uri without
         needing to rely on FastAPI's dependency injection.
@@ -94,7 +94,7 @@ class FastAPISessionMaker:
 
     def reset_cache(self) -> None:
         """
-        Resets the engine and sessionmaker caches.
+        Reset the engine and sessionmaker caches.
 
         After calling this method, the next time you try to use the cached engine or sessionmaker,
         new ones will be created.
@@ -105,7 +105,7 @@ class FastAPISessionMaker:
 
 def get_engine(uri: str) -> sa.engine.Engine:
     """
-    Returns a sqlalchemy engine with pool_pre_ping enabled.
+    Return a sqlalchemy engine with pool_pre_ping enabled.
 
     This function may be updated over time to reflect recommended engine configuration
     for use with FastAPI.
@@ -115,7 +115,7 @@ def get_engine(uri: str) -> sa.engine.Engine:
 
 def get_sessionmaker_for_engine(engine: sa.engine.Engine) -> sa.orm.sessionmaker:
     """
-    Returns a sqlalchemy sessionmaker for the provided engine with recommended configuration settings.
+    Return a sqlalchemy sessionmaker for the provided engine with recommended configuration settings.
 
     This function may be updated over time to reflect recommended sessionmaker configuration
     for use with FastAPI.
@@ -126,7 +126,7 @@ def get_sessionmaker_for_engine(engine: sa.engine.Engine) -> sa.orm.sessionmaker
 @contextmanager
 def context_session(engine: sa.engine.Engine) -> Iterator[Session]:
     """
-    This contextmanager yields a managed session for the provided engine.
+    contextmanager yielding a managed session for the provided engine.
 
     Usage is similar to `FastAPISessionMaker.context_session`, except that you have to
     provide the engine to use.
@@ -139,7 +139,7 @@ def context_session(engine: sa.engine.Engine) -> Iterator[Session]:
 
 
 def _get_db(sessionmaker: sa.orm.sessionmaker) -> Iterator[Session]:
-    """Yields an ORM session using the provided sessionmaker, and cleans it up when resumed."""
+    """Yield an ORM session using the provided sessionmaker, and cleans it up when resumed."""
     session = sessionmaker()
     try:
         yield session

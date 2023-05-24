@@ -22,7 +22,6 @@ from typing import Any, Type
 import attrs
 import cads_catalogue.database
 import dateutil
-import structlog
 import fastapi
 import pydantic
 import sqlalchemy.dialects
@@ -30,8 +29,9 @@ import sqlalchemy.orm
 import stac_fastapi.types
 import stac_fastapi.types.core
 import stac_pydantic
+import structlog
 
-from . import config, exceptions, models, dependencies, search_utils
+from . import config, dependencies, exceptions, search_utils
 
 logger = structlog.getLogger(__name__)
 
@@ -465,7 +465,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
             search = search_utils.apply_filters(session, search, q, kw).filter(
-                cads_catalogue.database.Resource.hidden == False
+                cads_catalogue.database.Resource.hidden is False
             )
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
@@ -557,7 +557,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 search = session.query(self.collection_table)
 
                 search = search_utils.apply_filters(session, search, q, kw).filter(
-                    cads_catalogue.database.Resource.hidden == False
+                    cads_catalogue.database.Resource.hidden is False
                 )
 
                 search_utils.populate_facets(
