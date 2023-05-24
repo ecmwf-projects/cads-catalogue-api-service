@@ -465,7 +465,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
             search = search_utils.apply_filters(session, search, q, kw).filter(
-                cads_catalogue.database.Resource.hidden is False
+                cads_catalogue.database.Resource.hidden == False  # noqa E712
             )
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
@@ -557,11 +557,13 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 search = session.query(self.collection_table)
 
                 search = search_utils.apply_filters(session, search, q, kw).filter(
-                    cads_catalogue.database.Resource.hidden is False
+                    cads_catalogue.database.Resource.hidden == False  # noqa E712
                 )
                 all_collections = (
                     session.query(self.collection_table)
-                    .filter(cads_catalogue.database.Resource.hidden == False)
+                    .filter(
+                        cads_catalogue.database.Resource.hidden is False  # noqa E712
+                    )
                     .all()
                 )
                 search_utils.populate_facets(
