@@ -177,7 +177,7 @@ def populate_facets(
     else:
         count_all(all_collections, result)
     result = {key: val for key, val in result.items() if val != {}}
-    sorted_result = dict( sorted(result.items(), key=lambda x: x[0].lower()) )
+    sorted_result = dict(sorted(result.items(), key=lambda x: x[0].lower()))
     collections["search"] = {
         "kw": [
             {"category": cat, "groups": {kw: count for kw, count in kws.items()}}

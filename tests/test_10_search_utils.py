@@ -64,7 +64,7 @@ def test_populate_facets(monkeypatch):
     )
     assert result["search"] == {
         "kw": [
-            {"category": "cat2", "groups": {"kw1": 2}},
             {"category": "cat1", "groups": {"kw2": 1}},
+            {"category": "cat2", "groups": {"kw1": 2}},
         ]
     }
