@@ -30,6 +30,7 @@ def exception_handler_factory(status_code: int) -> Callable:
     """Create a FastAPI exception handler for a particular status code.
 
     Args:
+    ----
         status_code: HTTP status code.
 
     Returns
@@ -51,6 +52,7 @@ def add_exception_handlers(
     """Add exception handlers to the FastAPI application.
 
     Args:
+    ----
         app: the FastAPI application.
         status_codes: mapping between exceptions and status codes.
 
@@ -58,7 +60,7 @@ def add_exception_handlers(
     -------
         None.
     """
-    for (exc, code) in status_codes.items():
+    for exc, code in status_codes.items():
         app.add_exception_handler(exc, exception_handler_factory(code))
 
     def request_validation_exception_handler(
