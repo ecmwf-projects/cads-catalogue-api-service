@@ -12,69 +12,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
 
 import fastapi
 import fastapi.testclient
 
-import cads_catalogue_api_service
 from cads_catalogue_api_service.main import app
 from cads_catalogue_api_service.search_utils import (
-    CollectionsWithStats,
     populate_facets,
 )
 
 client = fastapi.testclient.TestClient(app)
 
 
-def mock_read_facets(session: Any, search: Any, keywords: list[str]) -> Any:
-    """Mock session generation."""
-    return {"cat1": {"kw1": None, "kw2": None}, "cat2": {"kw3": None}}
-
-
-app.dependency_overrides[
-    cads_catalogue_api_service.search_utils.read_facets
-] = mock_read_facets
-
-
 def test_populate_facets(monkeypatch):
     """Test populate_facets."""
+    all_collections = [
+        {"id": "dataset1", "keywords": ["cat1: kw1"]},
+        {"id": "dataset2", "keywords": ["cat1: kw1", "cat1: kw2"]},
+        {"id": "dataset3", "keywords": ["cat2: kw1"]},
+        {"id": "dataset4", "keywords": ["cat1: kw2", "cat2: kw1"]},
+    ]
 
-    class MockSearch:
-        """Mock the search."""
+    collections = {
+        "collections": [
+            {"id": "dataset1", "keywords": ["cat1: kw1"]},
+            {"id": "dataset2", "keywords": ["cat1: kw1", "cat1: kw2"]},
+            {"id": "dataset3", "keywords": ["cat2: kw1"]},
+            {"id": "dataset4", "keywords": ["cat1: kw2", "cat2: kw1"]},
+        ]
+    }
 
-        def all(self):
-            """Mock the all method."""
-            return [
-                MockResult(["cat1:kw1", "cat1:kw2"], 1),
-                MockResult(["cat1:kw1", "cat2:kw3"], 2),
-                MockResult(["cat1:kw2", "cat2:kw3"], 3),
-            ]
-
-        def __iter__(self):
-            for each in self.all():
-                yield each
-
-    class MockResult:
-        """Mock the result."""
-
-        def __init__(self, keywords, resource_id):
-            """Init."""
-            self.keywords = keywords
-            self.resource_id = resource_id
-
-    monkeypatch.setattr(
-        "cads_catalogue_api_service.search_utils.read_facets", mock_read_facets
+    result = populate_facets(
+        all_collections=all_collections, collections=collections, keywords=[]
     )
-
-    search = MockSearch()
-    collections = CollectionsWithStats()
-    collections = populate_facets(
-        session=None, collections=collections, search=search, keywords=[]
-    )
-    assert collections["search"] == {
+    assert result["search"] == {
         "kw": [
-            {"category": "cat1", "groups": {"kw1": None, "kw2": None}},
-            {"category": "cat2", "groups": {"kw3": None}},
+            {"category": "cat1", "groups": {"kw1": 2, "kw2": 2}},
+            {"category": "cat2", "groups": {"kw1": 2}},
+        ]
+    }
+
+    result = populate_facets(
+        all_collections=all_collections, collections=collections, keywords=["cat1: kw1"]
+    )
+    assert result["search"] == {
+        "kw": [{"category": "cat1", "groups": {"kw1": 2, "kw2": 2}}]
+    }
+
+    result = populate_facets(
+        all_collections=all_collections, collections=collections, keywords=["cat2: kw1"]
+    )
+    assert result["search"] == {
+        "kw": [
+            {"category": "cat1", "groups": {"kw2": 1}},
+            {"category": "cat2", "groups": {"kw1": 2}},
         ]
     }

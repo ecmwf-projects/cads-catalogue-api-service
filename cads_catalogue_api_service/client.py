@@ -22,7 +22,6 @@ from typing import Any, Type
 import attrs
 import cads_catalogue.database
 import dateutil
-import structlog
 import fastapi
 import pydantic
 import sqlalchemy.dialects
@@ -30,8 +29,9 @@ import sqlalchemy.orm
 import stac_fastapi.types
 import stac_fastapi.types.core
 import stac_pydantic
+import structlog
 
-from . import config, exceptions, models, dependencies, search_utils
+from . import config, dependencies, exceptions, search_utils
 
 logger = structlog.getLogger(__name__)
 
@@ -81,7 +81,7 @@ def get_sorting_clause(
     """Get the sorting clause."""
     supported_sorts = {
         "update": (
-            model.record_update,
+            model.resource_update,
             sqlalchemy.desc if not inverse else sqlalchemy.asc,
         ),
         "title": (model.title, sqlalchemy.asc if not inverse else sqlalchemy.desc),
@@ -366,19 +366,15 @@ def collection_serializer(
     additional_properties = {
         **({"assets": assets} if assets else {}),
         **(
-            {
-                # FIXME: to be removed as soon as database switch to datetime column
-                "published": datetime.datetime.combine(
-                    db_model.publication_date, datetime.time.min
-                ).isoformat()
-                + "Z"
-            }
+            {"published": db_model.publication_date.isoformat() + "T00:00:00Z"}
             if db_model.publication_date
             else {}
         ),
-        # FIXME: this is not the proper field to be used to "update"
-        "updated": db_model.record_update.replace(tzinfo=None).isoformat("T", "seconds")
-        + "Z",
+        **(
+            {"updated": db_model.resource_update.isoformat() + "T00:00:00Z"}
+            if db_model.resource_update
+            else {}
+        ),
         # FIXME: this is not a 100% correct implementation of the STAC scientific extension.
         # One of the sci:xxx should be there, but CAMS dataset are not doing this
         **({"sci:doi": db_model.doi} if db_model.doi else {}),
@@ -469,7 +465,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
             search = search_utils.apply_filters(session, search, q, kw).filter(
-                cads_catalogue.database.Resource.hidden == False
+                cads_catalogue.database.Resource.hidden == False  # noqa E712
             )
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
@@ -561,11 +557,22 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 search = session.query(self.collection_table)
 
                 search = search_utils.apply_filters(session, search, q, kw).filter(
-                    cads_catalogue.database.Resource.hidden == False
+                    cads_catalogue.database.Resource.hidden == False  # noqa E712
                 )
-
+                all_collections = (
+                    session.query(self.collection_table)
+                    .filter(
+                        cads_catalogue.database.Resource.hidden == False  # noqa E712
+                    )
+                    .all()
+                )
                 search_utils.populate_facets(
-                    session=session, collections=collections, search=search, keywords=kw
+                    all_collections=[
+                        collection_serializer(collection, request=request, preview=True)
+                        for collection in all_collections
+                    ],
+                    collections=collections,
+                    keywords=kw,
                 )
 
         return collections
