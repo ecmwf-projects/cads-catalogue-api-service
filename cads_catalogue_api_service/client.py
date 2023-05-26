@@ -581,7 +581,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         self, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the catalogue."""
-        print(request.headers)
+        print(request.headers.get("x-cads-portal"))
         return self.all_datasets(request=request)
 
     def get_collection(
