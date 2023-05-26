@@ -45,12 +45,18 @@ def apply_filters(session: sa.orm.Session, search: sa.orm.Query, q: str, kw: lis
         kw (list): list of keywords query
     """
     if q:
+        # TODO: apply weigths according to some configuration
+        weight_title = 1.0
+        weight_description = 0.4
+        weight_fulltext = 0.2
         tsquery = sa.func.to_tsquery("english", "|".join(q.split()))
         search = search.filter(
-            cads_catalogue.database.Resource.fulltext_tsv.bool_op("@@")(tsquery)
+            cads_catalogue.database.Resource.search_field.bool_op("@@")(tsquery)
         ).order_by(
             sa.func.ts_rank(
-                cads_catalogue.database.Resource.fulltext_tsv, tsquery
+                "{0.1,%s,%s,%s}" % (weight_fulltext, weight_description, weight_title),
+                cads_catalogue.database.Resource.search_field,
+                tsquery,
             ).desc()
         )
 
