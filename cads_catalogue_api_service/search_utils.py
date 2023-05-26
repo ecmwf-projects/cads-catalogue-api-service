@@ -55,7 +55,8 @@ def apply_filters(session: sa.orm.Session, search: sa.orm.Query, q: str, kw: lis
         ).order_by(
             sa.func.ts_rank(
                 "{0.1,%s,%s,%s}" % (weight_fulltext, weight_description, weight_title),
-                cads_catalogue.database.Resource.search_field, tsquery
+                cads_catalogue.database.Resource.search_field,
+                tsquery,
             ).desc()
         )
 
