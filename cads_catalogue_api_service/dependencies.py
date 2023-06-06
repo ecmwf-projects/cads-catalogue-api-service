@@ -35,9 +35,14 @@ def get_session() -> Iterator[sqlalchemy.orm.Session]:
     yield from get_sessionmaker().get_db()
 
 
-def get_portal(
+def get_portals_values(portal: str) -> list[str]:
+    portals = [p.strip() for p in portal.split(",")] if portal else None
+    return portals
+
+
+def get_portals(
     portal=fastapi.Header(default=None, alias=config.PORTAL_HEADER_NAME)
 ) -> str | None:
     """Fastapi dependency that provides the CADS portal profile."""
-    print(portal)
-    return portal
+    portals = get_portals_values(portal)
+    return portals

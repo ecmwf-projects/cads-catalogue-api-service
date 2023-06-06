@@ -83,11 +83,10 @@ def query_keywords(
 async def list_licences(
     session=fastapi.Depends(dependencies.get_session),
     scope: LicenceScopeCriterion = fastapi.Query(default=LicenceScopeCriterion.all),
-    portal: str | None = fastapi.Depends(dependencies.get_portal),
+    portals: list[str] | None = fastapi.Depends(dependencies.get_portals),
 ) -> models.Licences:
     """Endpoint to get all registered licences."""
     results = query_licences(session, scope)
-    print(portal)
     return models.Licences(
         licences=[
             models.Licence(

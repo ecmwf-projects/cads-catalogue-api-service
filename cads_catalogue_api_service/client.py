@@ -461,12 +461,13 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         search_stats: bool = False,
     ) -> stac_fastapi.types.stac.Collections:
         """Read datasets from the catalogue."""
+        portals = dependencies.get_portals_values(
+            request.headers.get(config.PORTAL_HEADER_NAME)
+        )
         base_url = str(request.base_url)
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
-            search = search_utils.apply_filters(session, search, q, kw).filter(
-                cads_catalogue.database.Resource.hidden == False  # noqa E712
-            )
+            search = search_utils.apply_filters(session, search, q, kw, portals=portals)
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
@@ -554,19 +555,10 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         if search_stats:
             with self.reader.context_session() as session:
-                search = session.query(self.collection_table)
-
-                search = search_utils.apply_filters(session, search, q, kw).filter(
-                    cads_catalogue.database.Resource.hidden == False  # noqa E712
-                )
                 all_collections = session.query(self.collection_table)
-                all_collections = (
-                    search_utils.apply_filters(session, all_collections, q, None)
-                    .filter(
-                        cads_catalogue.database.Resource.hidden == False  # noqa E712
-                    )
-                    .all()
-                )
+                all_collections = search_utils.apply_filters(
+                    session, all_collections, q, None, portals=portals
+                ).all()
 
                 search_utils.populate_facets(
                     all_collections=[
@@ -583,7 +575,6 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         self, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the catalogue."""
-        print(request.headers.get("x-cads-portal"))
         return self.all_datasets(request=request)
 
     def get_collection(
