@@ -15,7 +15,6 @@ type-check:
 	python -m mypy .
 
 conda-env-update:
-	$(CONDA) env update $(CONDAFLAGS) -f ci/environment-ci.yml
 	$(CONDA) env update $(CONDAFLAGS) -f environment.yml
 
 docker-build:

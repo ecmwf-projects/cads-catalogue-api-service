@@ -559,13 +559,15 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 search = search_utils.apply_filters(session, search, q, kw).filter(
                     cads_catalogue.database.Resource.hidden == False  # noqa E712
                 )
+                all_collections = session.query(self.collection_table)
                 all_collections = (
-                    session.query(self.collection_table)
+                    search_utils.apply_filters(session, all_collections, q, None)
                     .filter(
                         cads_catalogue.database.Resource.hidden == False  # noqa E712
                     )
                     .all()
                 )
+
                 search_utils.populate_facets(
                     all_collections=[
                         collection_serializer(collection, request=request, preview=True)
