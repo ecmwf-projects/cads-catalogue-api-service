@@ -15,6 +15,7 @@ type-check:
 	python -m mypy .
 
 conda-env-update:
+	$(CONDA) env update $(CONDAFLAGS) -f ci/environment-ci.yml
 	$(CONDA) env update $(CONDAFLAGS) -f environment.yml
 
 docker-build:
@@ -30,7 +31,6 @@ docs-build:
 	cd docs && rm -fr _api && make clean && make html
 
 # DO NOT EDIT ABOVE THIS LINE, ADD COMMANDS BELOW
-
 API_ROOT_PATH := http://localhost:8080/api/catalogue/v1/
 
 start:
