@@ -40,7 +40,7 @@ def apply_filters(
     search: sa.orm.Query,
     q: str,
     kw: list,
-    portals: list[str] = None,
+    portals: list[str] | None = None,
 ):
     """Apply allowed search filters to the running query.
 
