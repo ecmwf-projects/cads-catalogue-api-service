@@ -65,7 +65,6 @@ class Message(TypedDict):
     severity: str
     content: str
     live: bool
-    status: str
 
 
 class Messages(TypedDict):

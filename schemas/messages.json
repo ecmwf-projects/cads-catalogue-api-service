@@ -30,9 +30,6 @@
           },
           "live": {
             "type": "boolean"
-          },
-          "status": {
-            "type": "string"
           }
         },
         "required": [
@@ -40,8 +37,7 @@
           "date",
           "severity",
           "content",
-          "live",
-          "status"
+          "live"
         ]
       }
     }
