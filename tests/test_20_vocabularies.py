@@ -47,7 +47,7 @@ TEST_DATA = [
 
 
 def static_licences_query(
-    _foo: Any, scope: str = "dataset"
+    _foo: Any, scope: str = "dataset", portals: list[str] | None = None
 ) -> list[cads_catalogue.database.Licence]:
     return TEST_DATA
 

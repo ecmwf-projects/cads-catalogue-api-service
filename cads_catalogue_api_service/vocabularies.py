@@ -54,6 +54,13 @@ def query_licences(
     )
     if scope and scope != LicenceScopeCriterion.all:
         query = query.filter(cads_catalogue.database.Licence.scope == scope)
+    if portals:
+        query = query.filter(
+            sa.or_(
+                cads_catalogue.database.Licence.portal.in_(portals),
+                cads_catalogue.database.Licence.portal.is_(None),
+            )
+        )
     results = (
         query.group_by(
             cads_catalogue.database.Licence.licence_uid,
