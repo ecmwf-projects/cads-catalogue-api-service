@@ -124,16 +124,16 @@ def apply_sorting(
 
     if sortby != "relevance":
         search = search.order_by(sort_order_fn(sort_by))
-        get_cursor_direction = get_cursor_compare_criteria(sortby, inverse)
-        # cursor meaning is based on the sorting criteria
-        if cursor:
-            sort_expr = getattr(sort_by, get_cursor_direction)(
-                decode_cursor(cursor, sortby)
-            )
-            search = search.filter(*(sort_expr,))
+    get_cursor_direction = get_cursor_compare_criteria(sortby, inverse)
+    # cursor meaning is based on the sorting criteria
+    if cursor:
+        sort_expr = getattr(sort_by, get_cursor_direction)(
+            decode_cursor(cursor, sortby)
+        )
+        search = search.filter(*(sort_expr,))
 
-        # limit is +1 for getting the next page
-        search = search.limit(limit + 1)
+    # limit is +1 for getting the next page
+    search = search.limit(limit + 1)
 
     return search, sort_by
 
