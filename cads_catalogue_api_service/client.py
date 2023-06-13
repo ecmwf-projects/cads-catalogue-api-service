@@ -338,10 +338,15 @@ def lookup_id(
     id: str,
     record: Type[cads_catalogue.database.Resource],
     session: sqlalchemy.orm.Session,
+    portals: list[str] | None = None,
 ) -> cads_catalogue.database.Resource:
     """Lookup row by id."""
     try:
-        row = session.query(record).filter(record.resource_uid == id).one()
+        search = session.query(record).filter(record.resource_uid == id)
+        if portals:
+            # avoid loading datasets from other portals, to block URL manipulation/pollution
+            search = search.filter(record.portal.in_(portals))
+        row = search.one()
     except sqlalchemy.orm.exc.NoResultFound:
         raise stac_fastapi.types.errors.NotFoundError(
             f"{record.__name__} {id} not found"
@@ -461,12 +466,13 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         search_stats: bool = False,
     ) -> stac_fastapi.types.stac.Collections:
         """Read datasets from the catalogue."""
+        portals = dependencies.get_portals_values(
+            request.headers.get(config.PORTAL_HEADER_NAME)
+        )
         base_url = str(request.base_url)
         with self.reader.context_session() as session:
             search = session.query(self.collection_table)
-            search = search_utils.apply_filters(session, search, q, kw).filter(
-                cads_catalogue.database.Resource.hidden == False  # noqa E712
-            )
+            search = search_utils.apply_filters(session, search, q, kw, portals=portals)
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
@@ -554,19 +560,10 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         if search_stats:
             with self.reader.context_session() as session:
-                search = session.query(self.collection_table)
-
-                search = search_utils.apply_filters(session, search, q, kw).filter(
-                    cads_catalogue.database.Resource.hidden == False  # noqa E712
-                )
                 all_collections = session.query(self.collection_table)
-                all_collections = (
-                    search_utils.apply_filters(session, all_collections, q, None)
-                    .filter(
-                        cads_catalogue.database.Resource.hidden == False  # noqa E712
-                    )
-                    .all()
-                )
+                all_collections = search_utils.apply_filters(
+                    session, all_collections, q, None, portals=portals
+                ).all()
 
                 search_utils.populate_facets(
                     all_collections=[
@@ -589,8 +586,13 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         self, collection_id: str, request: fastapi.Request
     ) -> stac_fastapi.types.stac.Collection:
         """Get a STAC collection by id."""
+        portals = dependencies.get_portals_values(
+            request.headers.get(config.PORTAL_HEADER_NAME)
+        )
         with self.reader.context_session() as session:
-            collection = lookup_id(collection_id, self.collection_table, session)
+            collection = lookup_id(
+                collection_id, self.collection_table, session, portals=portals
+            )
             return collection_serializer(collection, request=request, preview=False)
 
     def get_item(self, **kwargs: dict[str, Any]) -> None:

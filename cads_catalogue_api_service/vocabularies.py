@@ -40,6 +40,7 @@ router = fastapi.APIRouter(
 def query_licences(
     session: sa.orm.Session,
     scope: LicenceScopeCriterion,
+    portals: list[str] | None = None,
 ) -> list[cads_catalogue.database.Licence]:
     """Query licences."""
     # NOTE: possible issue here if the title of a licence change from a revision to another
@@ -53,6 +54,13 @@ def query_licences(
     )
     if scope and scope != LicenceScopeCriterion.all:
         query = query.filter(cads_catalogue.database.Licence.scope == scope)
+    if portals:
+        query = query.filter(
+            sa.or_(
+                cads_catalogue.database.Licence.portal.in_(portals),
+                cads_catalogue.database.Licence.portal.is_(None),
+            )
+        )
     results = (
         query.group_by(
             cads_catalogue.database.Licence.licence_uid,
@@ -111,9 +119,10 @@ def query_keywords(
 async def list_licences(
     session=fastapi.Depends(dependencies.get_session),
     scope: LicenceScopeCriterion = fastapi.Query(default=LicenceScopeCriterion.all),
+    portals: list[str] | None = fastapi.Depends(dependencies.get_portals),
 ) -> models.Licences:
     """Endpoint to get all registered licences."""
-    results = query_licences(session, scope)
+    results = query_licences(session, scope, portals)
     return models.Licences(
         licences=[
             models.Licence(

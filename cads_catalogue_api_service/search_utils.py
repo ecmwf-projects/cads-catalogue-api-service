@@ -35,7 +35,13 @@ def split_by_category(keywords: list) -> list:
     return list(categories.values())
 
 
-def apply_filters(session: sa.orm.Session, search: sa.orm.Query, q: str, kw: list):
+def apply_filters(
+    session: sa.orm.Session,
+    search: sa.orm.Query,
+    q: str,
+    kw: list,
+    portals: list[str] | None = None,
+):
     """Apply allowed search filters to the running query.
 
     Args
@@ -44,6 +50,15 @@ def apply_filters(session: sa.orm.Session, search: sa.orm.Query, q: str, kw: lis
         q (str): search query (full text search)
         kw (list): list of keywords query
     """
+    # Always filter out hidden datasets
+    search = search.filter(
+        cads_catalogue.database.Resource.hidden == False  # noqa E712
+    )
+    # Filter by category (portal)
+    if portals:
+        search = search.filter(cads_catalogue.database.Resource.portal.in_(portals))
+
+    # FT search
     if q:
         # TODO: apply weigths according to some configuration
         weight_title = 1.0
@@ -60,6 +75,7 @@ def apply_filters(session: sa.orm.Session, search: sa.orm.Query, q: str, kw: lis
             ).desc()
         )
 
+    # Faceted search
     if kw:
         # Facetes search criteria is to run on OR in the same category, and AND between categories
         # To make this working be perform subqueryes joint with the INTERSECT operator
