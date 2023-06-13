@@ -24,29 +24,38 @@ from cads_catalogue_api_service.main import app
 client = fastapi.testclient.TestClient(app)
 
 
+TEST_DATA = [
+    cads_catalogue.database.Licence(
+        licence_id=1,
+        licence_uid="cc-by-4.0",
+        title="CC-BY-4.0",
+        revision=1,
+        md_filename="cc-by-4.0-1.md",
+        download_filename="cc-by-4.0-1.pdf",
+        scope="dataset",
+    ),
+    cads_catalogue.database.Licence(
+        licence_id=3,
+        licence_uid="cc-by-sa-4.0",
+        title="CC-BY-SA-4.0",
+        revision=2,
+        md_filename="cc-by-4.0-2.md",
+        download_filename="cc-by-4.0-2.pdf",
+        scope="dataset",
+    ),
+]
+
+
 def static_licences_query(
     _foo: Any, scope: str = "dataset"
 ) -> list[cads_catalogue.database.Licence]:
-    return [
-        cads_catalogue.database.Licence(
-            licence_id=1,
-            licence_uid="cc-by-4.0",
-            title="CC-BY-4.0",
-            revision=1,
-            md_filename="cc-by-4.0-1.md",
-            download_filename="cc-by-4.0-1.pdf",
-            scope="dataset",
-        ),
-        cads_catalogue.database.Licence(
-            licence_id=3,
-            licence_uid="cc-by-sa-4.0",
-            title="CC-BY-SA-4.0",
-            revision=2,
-            md_filename="cc-by-4.0-2.md",
-            download_filename="cc-by-4.0-2.pdf",
-            scope="dataset",
-        ),
-    ]
+    return TEST_DATA
+
+
+def static_licence_query(
+    _foo: Any, licence_uid: str
+) -> cads_catalogue.database.Licence:
+    return TEST_DATA[0]
 
 
 KEYWORDS = [
@@ -106,6 +115,27 @@ def test_vocabularies_license(monkeypatch) -> None:
                 "scope": "dataset",
             },
         ],
+    }
+
+
+def test_vocabulary_license(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.vocabularies.query_licence",
+        static_licence_query,
+    )
+    """Test list of licences."""
+    response = client.get(
+        "/vocabularies/licences/cc-by-4.0",
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "id": "cc-by-4.0",
+        "label": "CC-BY-4.0",
+        "revision": 1,
+        "attachment_url": "/document-storage/cc-by-4.0-1.pdf",
+        "contents_url": "/document-storage/cc-by-4.0-1.md",
+        "scope": "dataset",
     }
 
 

@@ -34,7 +34,6 @@ class Message:
         severity: str,
         content: str,
         live: bool,
-        status: str,
     ):
         self.message_uid = message_uid
         self.date = date
@@ -43,7 +42,6 @@ class Message:
         self.severity = severity
         self.content = content
         self.live = live
-        self.status = status
 
 
 def static_messages_query(
@@ -61,7 +59,6 @@ def static_messages_query(
             severity="info",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=True,
-            status="ongoing",
         ),
         Message(
             message_uid="1-yyy-zzzz.md",
@@ -71,7 +68,6 @@ def static_messages_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=True,
-            status="ongoing",
         ),
     ]
 
@@ -91,7 +87,6 @@ def static_changelog_query(
             severity="info",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
-            status="ongoing",
         ),
         Message(
             message_uid="1-yyy-zzzz.md",
@@ -101,7 +96,6 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
-            status="ongoing",
         ),
         Message(
             message_uid="2-yyy-zzzz.md",
@@ -111,7 +105,6 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
-            status="ongoing",
         ),
         Message(
             message_uid="3-yyy-zzzz.md",
@@ -121,7 +114,6 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
-            status="ongoing",
         ),
         Message(
             message_uid="4-yyy-zzzz.md",
@@ -131,7 +123,6 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
-            status="ongoing",
         ),
         Message(
             message_uid="5-yyy-zzzz.md",
@@ -141,7 +132,6 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
-            status="ongoing",
         ),
         Message(
             message_uid="6-yyy-zzzz.md",
@@ -151,7 +141,6 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
-            status="ongoing",
         ),
     ]
 
@@ -187,7 +176,6 @@ def test_messages(monkeypatch) -> None:
                 "severity": "info",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": True,
-                "status": "ongoing",
             },
             {
                 "id": "1-yyy-zzzz.md",
@@ -197,7 +185,6 @@ def test_messages(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": True,
-                "status": "ongoing",
             },
         ],
     }
@@ -224,7 +211,6 @@ def test_messages_all(monkeypatch) -> None:
                 "severity": "info",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": True,
-                "status": "ongoing",
             },
             {
                 "id": "1-yyy-zzzz.md",
@@ -234,7 +220,6 @@ def test_messages_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": True,
-                "status": "ongoing",
             },
         ],
     }
@@ -261,7 +246,6 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "info",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "1-yyy-zzzz.md",
@@ -271,7 +255,6 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "2-yyy-zzzz.md",
@@ -281,7 +264,6 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "3-yyy-zzzz.md",
@@ -291,7 +273,6 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "4-yyy-zzzz.md",
@@ -301,7 +282,6 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "5-yyy-zzzz.md",
@@ -311,7 +291,6 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "6-yyy-zzzz.md",
@@ -321,7 +300,6 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
         ],
     }
@@ -348,7 +326,6 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "info",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "1-yyy-zzzz.md",
@@ -358,7 +335,6 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "2-yyy-zzzz.md",
@@ -368,7 +344,6 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "3-yyy-zzzz.md",
@@ -378,7 +353,6 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "4-yyy-zzzz.md",
@@ -388,7 +362,6 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "5-yyy-zzzz.md",
@@ -398,7 +371,6 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
             {
                 "id": "6-yyy-zzzz.md",
@@ -408,7 +380,6 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
-                "status": "ongoing",
             },
         ],
     }
