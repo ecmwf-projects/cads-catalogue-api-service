@@ -40,6 +40,7 @@ router = fastapi.APIRouter(
 def query_licences(
     session: sa.orm.Session,
     scope: LicenceScopeCriterion,
+    portals: list[str] | None = None,
 ) -> list[cads_catalogue.database.Licence]:
     """Query licences."""
     # NOTE: possible issue here if the title of a licence change from a revision to another
@@ -53,6 +54,13 @@ def query_licences(
     )
     if scope and scope != LicenceScopeCriterion.all:
         query = query.filter(cads_catalogue.database.Licence.scope == scope)
+    if portals:
+        query = query.filter(
+            sa.or_(
+                cads_catalogue.database.Licence.portal.in_(portals),
+                cads_catalogue.database.Licence.portal.is_(None),
+            )
+        )
     results = (
         query.group_by(
             cads_catalogue.database.Licence.licence_uid,
@@ -63,6 +71,34 @@ def query_licences(
         )
         .order_by(cads_catalogue.database.Licence.title)
         .all()
+    )
+    return results
+
+
+def query_licence(
+    session: sa.orm.Session,
+    licence_uid: str,
+) -> list[cads_catalogue.database.Licence]:
+    """Query a single licence data."""
+    query = session.query(
+        cads_catalogue.database.Licence.licence_uid,
+        cads_catalogue.database.Licence.title,
+        cads_catalogue.database.Licence.md_filename,
+        cads_catalogue.database.Licence.download_filename,
+        sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
+        cads_catalogue.database.Licence.scope,
+    )
+    query = query.filter(cads_catalogue.database.Licence.licence_uid == licence_uid)
+    results = (
+        query.group_by(
+            cads_catalogue.database.Licence.licence_uid,
+            cads_catalogue.database.Licence.title,
+            cads_catalogue.database.Licence.md_filename,
+            cads_catalogue.database.Licence.download_filename,
+            cads_catalogue.database.Licence.scope,
+        )
+        .order_by(cads_catalogue.database.Licence.title)
+        .one()
     )
     return results
 
@@ -83,9 +119,10 @@ def query_keywords(
 async def list_licences(
     session=fastapi.Depends(dependencies.get_session),
     scope: LicenceScopeCriterion = fastapi.Query(default=LicenceScopeCriterion.all),
+    portals: list[str] | None = fastapi.Depends(dependencies.get_portals),
 ) -> models.Licences:
     """Endpoint to get all registered licences."""
-    results = query_licences(session, scope)
+    results = query_licences(session, scope, portals)
     return models.Licences(
         licences=[
             models.Licence(
@@ -102,6 +139,27 @@ async def list_licences(
             )
             for licence in results
         ]
+    )
+
+
+@router.get("/licences/{licence_uid}", response_model=models.Licence)
+async def list_licence(
+    session=fastapi.Depends(dependencies.get_session),
+    licence_uid: str = fastapi.Path(..., title="Licence UID"),
+) -> models.Licences:
+    """Endpoint to get all registered licences."""
+    licence = query_licence(session, licence_uid)
+    return models.Licence(
+        id=licence.licence_uid,
+        label=licence.title,
+        revision=licence.revision,
+        contents_url=urllib.parse.urljoin(
+            config.settings.document_storage_url, licence.md_filename
+        ),
+        attachment_url=urllib.parse.urljoin(
+            config.settings.document_storage_url, licence.download_filename
+        ),
+        scope=licence.scope,
     )
 
 

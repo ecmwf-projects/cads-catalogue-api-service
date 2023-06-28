@@ -33,6 +33,7 @@ def query_messages(
     live: bool = True,
     is_global: bool = True,
     collection_id: str | None = None,
+    portals: list[str] | None = None,
 ) -> list[cads_catalogue.database.Message]:
     """Query messages."""
     results = (
@@ -44,7 +45,6 @@ def query_messages(
             cads_catalogue.database.Message.severity,
             cads_catalogue.database.Message.content,
             cads_catalogue.database.Message.live,
-            cads_catalogue.database.Message.status,
         )
         .join(
             cads_catalogue.database.ResourceMessage,
@@ -59,6 +59,13 @@ def query_messages(
             cads_catalogue.database.Message.is_global.is_(is_global),
         )
     )
+    if portals and is_global:
+        results = results.where(
+            sa.or_(
+                cads_catalogue.database.Message.portal.in_(portals),
+                cads_catalogue.database.Message.portal.is_(None),
+            ),
+        )
     if collection_id:
         results = results.where(
             cads_catalogue.database.Resource.resource_uid == collection_id
@@ -74,7 +81,10 @@ def list_messages_by_id(
 ) -> models.Message:
     """Endpoint to get all messages of a specific collection."""
     results = query_messages(
-        session=session, live=True, is_global=False, collection_id=collection_id
+        session=session,
+        live=True,
+        is_global=False,
+        collection_id=collection_id,
     )
     return models.Messages(
         messages=[
@@ -86,7 +96,6 @@ def list_messages_by_id(
                 severity=message.severity,
                 content=message.content,
                 live=message.live,
-                status=message.status,
             )
             for message in results
         ]
@@ -115,7 +124,6 @@ def list_changelog_by_id(
                 severity=message.severity,
                 content=message.content,
                 live=message.live,
-                status=message.status,
             )
             for message in results
         ]
@@ -125,9 +133,12 @@ def list_changelog_by_id(
 @router.get("/messages", response_model=models.Messages)
 def list_messages(
     session=fastapi.Depends(dependencies.get_session),
+    portals: list[str] | None = fastapi.Depends(dependencies.get_portals),
 ) -> models.Message:
     """Endpoint to get all messages."""
-    results = query_messages(session=session, live=True, is_global=True)
+    results = query_messages(
+        session=session, live=True, is_global=True, portals=portals
+    )
     return models.Messages(
         messages=[
             models.Message(
@@ -138,7 +149,6 @@ def list_messages(
                 severity=message.severity,
                 content=message.content,
                 live=message.live,
-                status=message.status,
             )
             for message in results
         ]
@@ -148,9 +158,12 @@ def list_messages(
 @router.get("/messages/changelog", response_model=models.Changelog)
 def list_changelog(
     session=fastapi.Depends(dependencies.get_session),
+    portals: list[str] | None = fastapi.Depends(dependencies.get_portals),
 ) -> models.Changelog:
     """Endpoint to get all changelog."""
-    results = query_messages(session=session, live=False, is_global=True)
+    results = query_messages(
+        session=session, live=False, is_global=True, portals=portals
+    )
     return models.Changelog(
         changelog=[
             models.Message(
@@ -161,7 +174,6 @@ def list_changelog(
                 severity=message.severity,
                 content=message.content,
                 live=message.live,
-                status=message.status,
             )
             for message in results
         ]
