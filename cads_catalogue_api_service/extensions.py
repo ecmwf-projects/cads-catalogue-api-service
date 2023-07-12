@@ -47,7 +47,7 @@ async def datasets_search(
         description="Deprecated, use sortby instead.",
     ),
     cursor: str = fastapi.Query(default=None, include_in_schema=False),
-    limit: int = fastapi.Query(default=config.MAX_LIMIT, ge=1, le=config.MAX_LIMIT),
+    limit: int = fastapi.Query(default=30, ge=1, le=config.MAX_LIMIT),
     back: bool = fastapi.Query(default=False, include_in_schema=False),
 ) -> dict[str, Any]:
     """Filter datasets based on search parameters."""
