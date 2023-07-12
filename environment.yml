@@ -10,16 +10,17 @@ channels:
 dependencies:
 - attrs
 - brotli-asgi
-- fastapi>=0.93.0
+- fastapi>=0.100.0
 - httpx
+- jsonschema
 - pip
+- pydantic>=2
 - python-dateutil
 - requests
 - rfc3339-validator
 - sqlalchemy>=2.0.9
 - structlog
 - uvicorn
-- jsonschema
 - pip:
   - stac_fastapi.api==2.4.1
   - stac_fastapi.extensions==2.4.1
