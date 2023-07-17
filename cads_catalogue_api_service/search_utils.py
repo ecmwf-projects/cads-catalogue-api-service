@@ -16,30 +16,9 @@
 
 from typing import Any
 
+import cads_catalogue.database
 import sqlalchemy as sa
 import stac_fastapi.types
-import cads_catalogue.database
-from . import database
-
-import time
-from functools import wraps
-
-import structlog
-
-logger = structlog.getLogger(__name__)
-logger.info("foo bar baz")
-
-
-def timed(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        retval = func(*args, **kwargs)
-        end = time.time()
-        logger.info("{} ran in {}s".format(func.__name__, round(end - start, 5)))
-        return retval
-
-    return wrapper
 
 
 def split_by_category(keywords: list) -> list:
@@ -72,10 +51,12 @@ def apply_filters(
         kw (list): list of keywords query
     """
     # Always filter out hidden datasets
-    search = search.filter(database.STACResource.hidden == False)  # noqa E712
+    search = search.filter(
+        cads_catalogue.database.Resource.hidden == False  # noqa E712
+    )
     # Filter by category (portal)
     if portals:
-        search = search.filter(database.STACResource.portal.in_(portals))
+        search = search.filter(cads_catalogue.database.Resource.portal.in_(portals))
 
     # FT search
     if q:
@@ -85,11 +66,11 @@ def apply_filters(
         weight_fulltext = 0.2
         tsquery = sa.func.to_tsquery("english", "|".join(q.split()))
         search = search.filter(
-            database.STACResource.search_field.bool_op("@@")(tsquery)
+            cads_catalogue.database.Resource.search_field.bool_op("@@")(tsquery)
         ).order_by(
             sa.func.ts_rank(
                 "{0.1,%s,%s,%s}" % (weight_fulltext, weight_description, weight_title),
-                database.STACResource.search_field,
+                cads_catalogue.database.Resource.search_field,
                 tsquery,
             ).desc()
         )
@@ -117,8 +98,8 @@ def apply_filters(
                 .scalar_subquery()
             )
             # 3. Perform partial query
-            subquery = session.query(database.STACResource).filter(
-                database.STACResource.resource_id.in_(subquery_mtm)
+            subquery = session.query(cads_catalogue.database.Resource).filter(
+                cads_catalogue.database.Resource.resource_id.in_(subquery_mtm)
             )
             subqueries.append(subquery)
 
@@ -146,7 +127,6 @@ def generate_keywords_structure(keywords: list[str]) -> dict[str, Any]:
     return keywords_structure
 
 
-@timed
 def count_facets(
     kw_struct: dict, key: str, values: list[str], to_ignore: list[str], result: dict
 ) -> bool:
@@ -181,7 +161,6 @@ def elaborate_facets(
     return to_remove
 
 
-@timed
 def count_all(collections: list, result: dict) -> None:
     for collection in collections:
         kw_struct = generate_keywords_structure(collection["keywords"])
@@ -197,7 +176,6 @@ def clean_result(to_ignore: list[str], result: dict) -> None:
             result[key] = {}
 
 
-@timed
 def populate_facets(
     all_collections: list,
     collections: stac_fastapi.types.stac.Collections,

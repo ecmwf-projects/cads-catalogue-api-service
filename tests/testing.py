@@ -83,7 +83,7 @@ def generate_expected(
         "stac_version": "1.0.0",
         "title": "ERA5",
         "description": "Lorem ipsum dolor",
-        "keywords": [],
+        "keywords": ["kw1"],
         "license": "proprietary",
         "extent": {
             "spatial": {"bbox": [[-0.5, 45.0, 50.0, 15.0]]},
