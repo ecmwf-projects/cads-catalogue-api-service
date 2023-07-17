@@ -83,7 +83,7 @@ def generate_expected(
         "stac_version": "1.0.0",
         "title": "ERA5",
         "description": "Lorem ipsum dolor",
-        "keywords": ["kw1"],
+        "keywords": [],
         "license": "proprietary",
         "extent": {
             "spatial": {"bbox": [[-0.5, 45.0, 50.0, 15.0]]},
@@ -105,19 +105,19 @@ def generate_expected(
                 "type": "application/json",
                 "href": base_url,
             },
-            {
-                "rel": "license",
-                "href": urllib.parse.urljoin(
-                    base_url,
-                    f"{document_storage_url}licences/license.docx",
-                ),
-                "title": "Creative Commons Attribution 4.0 International",
-            },
         ]
         + (
             []
             if preview
             else [
+                {
+                    "rel": "license",
+                    "href": urllib.parse.urljoin(
+                        base_url,
+                        f"{document_storage_url}licences/license.docx",
+                    ),
+                    "title": "Creative Commons Attribution 4.0 International",
+                },
                 {
                     "rel": "describedby",
                     "href": "https://rtd.org/foo-bar",
@@ -176,5 +176,6 @@ def generate_expected(
     if not preview:
         expected = {
             **expected,
+            "keywords": ["kw1"],
         }
     return expected

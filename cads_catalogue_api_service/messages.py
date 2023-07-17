@@ -19,7 +19,7 @@ import cads_catalogue
 import fastapi
 import sqlalchemy as sa
 
-from . import dependencies, models
+from . import dependencies, models, database
 
 router = fastapi.APIRouter(
     prefix="",
@@ -51,7 +51,7 @@ def query_messages(
             isouter=True,
         )
         .join(
-            cads_catalogue.database.Resource,
+            database.STACResource,
             full=True,
         )
         .where(
@@ -67,9 +67,7 @@ def query_messages(
             ),
         )
     if collection_id:
-        results = results.where(
-            cads_catalogue.database.Resource.resource_uid == collection_id
-        )
+        results = results.where(database.STACResource.resource_uid == collection_id)
     results = results.order_by(sa.desc(cads_catalogue.database.Message.date)).all()
     return results
 
