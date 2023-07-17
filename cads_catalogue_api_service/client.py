@@ -16,7 +16,6 @@
 
 import base64
 import datetime
-import time
 import urllib
 from typing import Any, Type
 
@@ -36,10 +35,6 @@ from . import config, dependencies, exceptions, search_utils, database
 logger = structlog.getLogger(__name__)
 
 from .search_utils import timed
-
-
-CACHE_CATALOGUE = {}
-CACHE_TIMEOUT = 60 * 5  # 5 minutes
 
 
 def decode_base64(encoded: str) -> str:
@@ -396,9 +391,8 @@ def collection_serializer(
         stac_version="1.0.0",
         title=db_model.title,
         description=db_model.abstract,
-        keywords=[keyword.keyword_name for keyword in db_model.keywords]
-        if not preview
-        else [],
+        # this is triggering a deep level of subqeuries
+        keywords=[keyword.keyword_name for keyword in db_model.keywords],
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         # note that this small check, evenif correct, is triggering a lot of subrequests
         license="various"
@@ -467,11 +461,6 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         self, session: sqlalchemy.orm.Session, request, q, portals
     ) -> None:
         """Return the whole catalogue as a serialized structure."""
-        now = time.time()
-        if (q, portals) in CACHE_CATALOGUE:
-            timestamp, catalogue = CACHE_CATALOGUE[(q, portals)]
-            if now - timestamp < CACHE_TIMEOUT:
-                return catalogue
         query = session.query(self.collection_table)
         query_results = search_utils.apply_filters(
             session, query, q, None, portals=portals
@@ -480,7 +469,6 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             collection_serializer(collection, request=request, preview=True)
             for collection in query_results
         ]
-        CACHE_CATALOGUE[(q, portals)] = (now, all_collections)
         return all_collections
 
     @timed
