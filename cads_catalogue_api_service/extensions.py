@@ -34,7 +34,10 @@ class CatalogueSortCriterion(str, enum.Enum):
     id_asc: str = "id"
 
 
-async def datasets_search(
+from .search_utils import timed
+
+@timed
+def datasets_search(
     request: fastapi.Request,
     q: str = fastapi.Query(default=None, description="Full-text search query"),
     kw: list[str] | None = fastapi.Query(default=[]),
