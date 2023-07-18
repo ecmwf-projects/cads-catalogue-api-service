@@ -16,7 +16,7 @@
 
 from typing import Any
 
-import cads_catalogue.faceted_search
+import cads_catalogue.database
 import sqlalchemy as sa
 import stac_fastapi.types
 
@@ -144,6 +144,7 @@ def count_facets(
                 for el in v:
                     result.setdefault(k, {}).setdefault(el, 0)
                     result[k][el] += 1
+
     return True
 
 

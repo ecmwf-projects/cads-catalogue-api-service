@@ -50,6 +50,7 @@ def query_messages(
             cads_catalogue.database.ResourceMessage,
             isouter=True,
         )
+        # FIXEME: this can be slow. Please do not load the full dataset.
         .join(
             cads_catalogue.database.Resource,
             full=True,
