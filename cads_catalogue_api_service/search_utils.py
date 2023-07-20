@@ -128,35 +128,28 @@ def generate_keywords_structure(keywords: list[str]) -> dict[str, Any]:
 
 
 def count_facets(
-    kw_struct: dict, key: str, values: list[str], to_ignore: list[str], result: dict
-) -> bool:
+    key: str, values: list[str], kw_struct: dict, result: dict, id: str, to_remove: list
+) -> None:
     for k, v in kw_struct.items():
-        if k in to_ignore:
-            continue
-        elif k == key:
+        if k == key or any(item in kw_struct[key] for item in values):
             for el in v:
                 result.setdefault(k, {}).setdefault(el, 0)
                 result[k][el] += 1
-            if not any(item in v for item in values):
-                return False
-        else:
-            if any(item in kw_struct[key] for item in values):
-                for el in v:
-                    result.setdefault(k, {}).setdefault(el, 0)
-                    result[k][el] += 1
-
-    return True
+            if not any(item in kw_struct[key] for item in values):
+                to_remove.append(id)
+        if k == key and not any(item in kw_struct[key] for item in values):
+            to_remove.append(id)
 
 
-def elaborate_facets(
-    collections: list, k: str, v: list[str], to_ignore: list[str], result: dict
+def count_collection_facets(
+    collections: list, k: str, v: list[str], result: dict
 ) -> list[str]:
     to_remove = []
     for collection in collections:
         kw_struct = generate_keywords_structure(collection["keywords"])
-        if k in kw_struct and not count_facets(kw_struct, k, v, to_ignore, result):
-            to_remove.append(collection["id"])
-        elif k not in kw_struct:
+        if k in kw_struct:
+            count_facets(k, v, kw_struct, result, collection["id"], to_remove)
+        else:
             to_remove.append(collection["id"])
     return to_remove
 
@@ -170,39 +163,36 @@ def count_all(collections: list, result: dict) -> None:
                 result[k][v] += 1
 
 
-def clean_result(to_ignore: list[str], result: dict) -> None:
-    for key, value in result.items():
-        if key not in to_ignore:
-            result[key] = {}
-
-
 def populate_facets(
     all_collections: list,
     collections: stac_fastapi.types.stac.Collections,
     keywords: list[str],
 ) -> CollectionsWithStats:
     """Populate the collections entity with facets."""
-    to_ignore = []
     result = {}
+    # generate keywords structure ES. from ["Cat1 : Kw1 "] to {'Cat1':['Kw1']}
     keywords_structure = generate_keywords_structure(keywords)
     if keywords_structure:
-        for k, v in keywords_structure.items():
-            to_remove = elaborate_facets(all_collections, k, v, to_ignore, result)
-            to_ignore.append(k)
+        for index, (k, v) in enumerate(keywords_structure.items()):
+            to_remove = count_collection_facets(all_collections, k, v, result)
             all_collections = list(
                 filter(
                     lambda collection: collection["id"] not in to_remove,
                     all_collections,
                 )
             )
-            if len(to_ignore) < len(keywords_structure):
-                clean_result(to_ignore, result)
+            if index + 1 < len(keywords_structure.items()):
+                result.clear()
     else:
         count_all(all_collections, result)
     result = {key: val for key, val in result.items() if val != {}}
     sorted_result = {
         k: {x: y for x, y in sorted(v.items())} for k, v in sorted(result.items())
     }
+    """
+    Make the result formatted as expected
+    ES. from {'Cat1':{'Kw1':1}} to {'kw':[{'category':'Cat1','groups':{'Kw1':1}}]}
+    """
     collections["search"] = {
         "kw": [
             {"category": cat, "groups": {kw: count for kw, count in kws.items()}}
