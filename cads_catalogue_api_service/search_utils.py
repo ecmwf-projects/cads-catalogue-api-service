@@ -141,7 +141,7 @@ def count_facets(
             to_remove.append(id)
 
 
-def elaborate_facets(
+def count_collection_facets(
     collections: list, k: str, v: list[str], result: dict
 ) -> list[str]:
     to_remove = []
@@ -174,7 +174,7 @@ def populate_facets(
     keywords_structure = generate_keywords_structure(keywords)
     if keywords_structure:
         for index, (k, v) in enumerate(keywords_structure.items()):
-            to_remove = elaborate_facets(all_collections, k, v, result)
+            to_remove = count_collection_facets(all_collections, k, v, result)
             all_collections = list(
                 filter(
                     lambda collection: collection["id"] not in to_remove,
