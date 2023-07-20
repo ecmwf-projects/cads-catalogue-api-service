@@ -504,7 +504,6 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             ).filter(
                 cads_catalogue.database.Resource.hidden == False  # noqa E712
             )
-
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
