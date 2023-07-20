@@ -89,17 +89,23 @@ def query_licence(
         cads_catalogue.database.Licence.scope,
     )
     query = query.filter(cads_catalogue.database.Licence.licence_uid == licence_uid)
-    results = (
-        query.group_by(
-            cads_catalogue.database.Licence.licence_uid,
-            cads_catalogue.database.Licence.title,
-            cads_catalogue.database.Licence.md_filename,
-            cads_catalogue.database.Licence.download_filename,
-            cads_catalogue.database.Licence.scope,
+    try:
+        results = (
+            query.group_by(
+                cads_catalogue.database.Licence.licence_uid,
+                cads_catalogue.database.Licence.title,
+                cads_catalogue.database.Licence.md_filename,
+                cads_catalogue.database.Licence.download_filename,
+                cads_catalogue.database.Licence.scope,
+            )
+            .order_by(cads_catalogue.database.Licence.title)
+            .one()
         )
-        .order_by(cads_catalogue.database.Licence.title)
-        .one()
-    )
+    except sa.exc.NoResultFound:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"licence {licence_uid} not found",
+        )
     return results
 
 

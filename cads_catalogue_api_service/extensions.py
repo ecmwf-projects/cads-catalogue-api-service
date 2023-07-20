@@ -28,6 +28,7 @@ CONFORMANCE_CLASS = "https://api.cads.copernicus.eu/v1.0.0-rc.1/datasets-search#
 
 
 class CatalogueSortCriterion(str, enum.Enum):
+    relevance_desc: str = "relevance"
     update_desc: str = "update"
     title_asc: str = "title"
     id_asc: str = "id"

@@ -118,10 +118,10 @@ def apply_sorting(
         cads_catalogue.database.Resource, sortby, inverse
     )
     sort_by, sort_order_fn = sorting_clause
-    search = search.order_by(sort_order_fn(sort_by))
 
+    if sortby != "relevance":
+        search = search.order_by(sort_order_fn(sort_by))
     get_cursor_direction = get_cursor_compare_criteria(sortby, inverse)
-
     # cursor meaning is based on the sorting criteria
     if cursor:
         sort_expr = getattr(sort_by, get_cursor_direction)(
@@ -480,7 +480,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         request: fastapi.Request,
         q: str | None = None,
         kw: list = [],
-        sortby: str = "update",
+        sortby: str = "relevance",
         cursor: str = None,
         limit: int = 999,
         back: bool = False,
@@ -499,7 +499,11 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             search = session.query(self.collection_table).options(
                 *database.deferred_columns
             )
-            search = search_utils.apply_filters(session, search, q, kw, portals=portals)
+            search = search_utils.apply_filters(
+                session, search, q, kw, portals=portals
+            ).filter(
+                cads_catalogue.database.Resource.hidden == False  # noqa E712
+            )
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
