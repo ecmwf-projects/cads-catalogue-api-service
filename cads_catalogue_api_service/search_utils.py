@@ -16,7 +16,7 @@
 
 from typing import Any
 
-import cads_catalogue.faceted_search
+import cads_catalogue.database
 import sqlalchemy as sa
 import stac_fastapi.types
 

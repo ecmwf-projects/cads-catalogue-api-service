@@ -20,7 +20,7 @@ import urllib
 from typing import Any, Type
 
 import attrs
-import cads_catalogue.database
+import cads_catalogue
 import dateutil
 import fastapi
 import pydantic
@@ -29,11 +29,8 @@ import sqlalchemy.orm
 import stac_fastapi.types
 import stac_fastapi.types.core
 import stac_pydantic
-import structlog
 
-from . import config, dependencies, exceptions, search_utils
-
-logger = structlog.getLogger(__name__)
+from . import config, database, dependencies, exceptions, search_utils
 
 
 def decode_base64(encoded: str) -> str:
@@ -121,10 +118,10 @@ def apply_sorting(
         cads_catalogue.database.Resource, sortby, inverse
     )
     sort_by, sort_order_fn = sorting_clause
-    search = search.order_by(sort_order_fn(sort_by))
 
+    if sortby != "relevance":
+        search = search.order_by(sort_order_fn(sort_by))
     get_cursor_direction = get_cursor_compare_criteria(sortby, inverse)
-
     # cursor meaning is based on the sorting criteria
     if cursor:
         sort_expr = getattr(sort_by, get_cursor_direction)(
@@ -233,19 +230,22 @@ def generate_collection_links(
     # We don't implement items. Let's remove the rel="items" entry
     collection_links = [link for link in collection_links if link["rel"] != "items"]
 
-    # Licenses
-    additional_links = [
-        {
-            "rel": "license",
-            "href": urllib.parse.urljoin(
-                config.settings.document_storage_url, license.download_filename
-            ),
-            "title": license.title,
-        }
-        for license in model.licences
-    ]
+    url_ref = request.url_for("Get Collections")
+
+    additional_links = []
 
     if not preview:
+        # Licenses
+        additional_links = [
+            {
+                "rel": "license",
+                "href": urllib.parse.urljoin(
+                    config.settings.document_storage_url, license.download_filename
+                ),
+                "title": license.title,
+            }
+            for license in model.licences
+        ]
         # Documentation
         additional_links += [
             {
@@ -304,7 +304,7 @@ def generate_collection_links(
         additional_links += [
             {
                 "rel": "related",
-                "href": f"{request.url_for('Get Collections')}/{related.resource_uid}",
+                "href": f"{url_ref}/{related.resource_uid}",
                 "title": related.title,
             }
             for related in model.related_resources
@@ -314,7 +314,7 @@ def generate_collection_links(
         additional_links += [
             {
                 "rel": "messages",
-                "href": f"{request.url_for('Get Collections')}/{model.resource_uid}/messages",
+                "href": f"{url_ref}/{model.resource_uid}/messages",
                 "title": "All messages related to the selected dataset",
             }
         ]
@@ -323,7 +323,7 @@ def generate_collection_links(
         additional_links += [
             {
                 "rel": "changelog",
-                "href": f"{request.url_for('Get Collections')}/{model.resource_uid}/messages/changelog",
+                "href": f"{url_ref}/{model.resource_uid}/messages/changelog",
                 "title": "All archived messages related to the selected dataset",
             }
         ]
@@ -342,7 +342,11 @@ def lookup_id(
 ) -> cads_catalogue.database.Resource:
     """Lookup row by id."""
     try:
-        search = session.query(record).filter(record.resource_uid == id)
+        search = (
+            session.query(record)
+            .options(*database.deferred_columns)
+            .filter(record.resource_uid == id)
+        )
         if portals:
             # avoid loading datasets from other portals, to block URL manipulation/pollution
             search = search.filter(record.portal.in_(portals))
@@ -391,9 +395,13 @@ def collection_serializer(
         stac_version="1.0.0",
         title=db_model.title,
         description=db_model.abstract,
+        # FIXME: this is triggering a long list of subqueries
         keywords=[keyword.keyword_name for keyword in db_model.keywords],
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
-        license="various" if len(db_model.licences) > 1 else "proprietary",
+        # note that this small check, evenif correct, is triggering a lot of subrequests
+        license="various"
+        if not preview and len(db_model.licences) > 1
+        else "proprietary",
         extent=get_extent(db_model),
         links=collection_links,
         **additional_properties,
@@ -453,14 +461,28 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         return list(set(base_conformance_classes))
 
+    def load_catalogue(
+        self, session: sqlalchemy.orm.Session, request, q, portals
+    ) -> None:
+        """Return the whole catalogue as a serialized structure."""
+        query = session.query(self.collection_table).options(*database.deferred_columns)
+        query_results = search_utils.apply_filters(
+            session, query, q, None, portals=portals
+        ).all()
+        all_collections = [
+            collection_serializer(collection, request=request, preview=True)
+            for collection in query_results
+        ]
+        return all_collections
+
     def all_datasets(
         self,
         request: fastapi.Request,
         q: str | None = None,
         kw: list = [],
-        sortby: str = "update",
+        sortby: str = "relevance",
         cursor: str = None,
-        limit: int = 20,
+        limit: int = 999,
         back: bool = False,
         route_name="Get Collections",
         search_stats: bool = False,
@@ -469,10 +491,19 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         portals = dependencies.get_portals_values(
             request.headers.get(config.PORTAL_HEADER_NAME)
         )
+
+        route_ref = str(request.url_for(route_name))
+
         base_url = str(request.base_url)
         with self.reader.context_session() as session:
-            search = session.query(self.collection_table)
-            search = search_utils.apply_filters(session, search, q, kw, portals=portals)
+            search = session.query(self.collection_table).options(
+                *database.deferred_columns
+            )
+            search = search_utils.apply_filters(
+                session, search, q, kw, portals=portals
+            ).filter(
+                cads_catalogue.database.Resource.hidden == False  # noqa E712
+            )
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
@@ -509,7 +540,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 {
                     "rel": stac_pydantic.links.Relations.self.value,
                     "type": stac_pydantic.shared.MimeTypes.json,
-                    "href": str(request.url_for(route_name)),
+                    "href": route_ref,
                 },
             ]
 
@@ -534,7 +565,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 links.append(
                     {
                         "rel": "next",
-                        "href": f"{request.url_for(route_name)}?{qs}",
+                        "href": f"{route_ref}?{qs}",
                         "type": stac_pydantic.shared.MimeTypes.json,
                     }
                 )
@@ -549,7 +580,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 links.append(
                     {
                         "rel": "prev",
-                        "href": f"{request.url_for(route_name)}?{qs}",
+                        "href": f"{route_ref}?{qs}",
                         "type": stac_pydantic.shared.MimeTypes.json,
                     }
                 )
@@ -560,16 +591,10 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         if search_stats:
             with self.reader.context_session() as session:
-                all_collections = session.query(self.collection_table)
-                all_collections = search_utils.apply_filters(
-                    session, all_collections, q, None, portals=portals
-                ).all()
+                all_collections = self.load_catalogue(session, request, q, portals)
 
                 search_utils.populate_facets(
-                    all_collections=[
-                        collection_serializer(collection, request=request, preview=True)
-                        for collection in all_collections
-                    ],
+                    all_collections=all_collections,
                     collections=collections,
                     keywords=kw,
                 )
