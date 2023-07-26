@@ -7,7 +7,7 @@ API_ROOT_PATH = API_ROOT_PATH if API_ROOT_PATH.endswith("/") else f"{API_ROOT_PA
 
 
 def test_collections_links() -> None:
-    r = requests.get(f"{API_ROOT_PATH}datasets")
+    r = requests.get(f"{API_ROOT_PATH}collections")
 
     assert r.status_code == 200
 
@@ -17,5 +17,4 @@ def test_collections_links() -> None:
         for link in collection["links"]:
             if link["rel"] not in ["self", "parent"]:
                 link_req = requests.head(link["href"])
-                if link_req.status_code != 200:
-                    assert False
+                assert link_req.status_code == 200
