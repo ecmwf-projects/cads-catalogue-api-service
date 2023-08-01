@@ -49,10 +49,6 @@ from . import (
 async def lifespan(application: fastapi.FastAPI):
     cads_common.logging.structlog_configure()
     cads_common.logging.logging_configure()
-    import logging
-
-    logging.basicConfig()
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
     yield
 
 
