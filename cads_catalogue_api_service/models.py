@@ -18,6 +18,8 @@ import datetime
 import enum
 from typing import TypedDict
 
+import pydantic
+
 
 class LicenceCategories(str, enum.Enum):
     dataset: str = "dataset"
@@ -77,3 +79,56 @@ class Changelog(TypedDict):
     """Changelog vocabulary."""
 
     changelog: list[Message]
+
+
+class SchemaOrgContactPoint(pydantic.BaseModel):
+    type: str = pydantic.Field("ContactPoint", const=True, alias="@type")
+    contact_type: str = pydantic.Field(alias="contactType")
+    email: str
+    url: str
+
+
+class SchemaOrgOrganization(pydantic.BaseModel):
+    type: str = pydantic.Field("Organization", const=True, alias="@type")
+    url: str
+    name: str
+    logo: str
+    contact_point: SchemaOrgContactPoint | None = None
+
+
+class SchemaOrgDataDownload(pydantic.BaseModel):
+    type: str = pydantic.Field("DataDownload", const=True, alias="@type")
+    encoding_format: str = pydantic.Field(alias="encodingFormat")
+    content_url: str = pydantic.Field(alias="contentUrl")
+
+
+class SchemaOrgGeoShape(pydantic.BaseModel):
+    type: str = pydantic.Field("GeoShape", const=True, alias="@type")
+    box: list[float]
+
+
+class SchemaOrgPlace(pydantic.BaseModel):
+    type: str = pydantic.Field("Place", const=True, alias="@type")
+    geo: SchemaOrgGeoShape
+
+
+class SchemaOrgDataset(pydantic.BaseModel):
+    context: str = pydantic.Field("https://schema.org/", const=True, alias="@context")
+    type: str = pydantic.Field("Dataset", const=True, alias="@type")
+
+    name: str
+    description: str
+    url: str
+
+    same_as: str | None = pydantic.Field(alias="sameAs")
+    identifier: list[str]
+    keywords: list[str]
+    license: str
+    is_accessible_for_free: bool = True
+    creator: SchemaOrgOrganization
+    funder: SchemaOrgOrganization
+    distribution: list[SchemaOrgDataDownload]
+    temporal_coverage: str
+    spatialCoverage: SchemaOrgPlace
+    dateModified: str
+    thumbnailUrl: str | None = None
