@@ -362,7 +362,6 @@ def collection_serializer(
     db_model: cads_catalogue.database.Resource,
     request: fastapi.Request,
     preview: bool = False,
-    get_all: bool = True,
 ) -> stac_fastapi.types.stac.Collection:
     """Transform database model to stac collection."""
     collection_links = generate_collection_links(
@@ -374,7 +373,7 @@ def collection_serializer(
     )
 
     additional_properties = {
-        **({"variables": db_model.variables} if not get_all else {}),
+        **({"variables": db_model.variables} if not preview else {}),
         **({"assets": assets} if assets else {}),
         **(
             {"published": db_model.publication_date.isoformat() + "T00:00:00Z"}
@@ -620,9 +619,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             collection = lookup_id(
                 collection_id, self.collection_table, session, portals=portals
             )
-            return collection_serializer(
-                collection, request=request, preview=False, get_all=False
-            )
+            return collection_serializer(collection, request=request, preview=False)
 
     def get_item(self, **kwargs: dict[str, Any]) -> None:
         """Access to STAC items: explicitly not implemented."""
