@@ -15,7 +15,10 @@
 # limitations under the License.
 
 
+import cads_catalogue
 import fastapi
+
+from cads_catalogue_api_service.client import collection_serializer
 
 from . import dependencies, models
 
@@ -23,7 +26,8 @@ TEMPLATE = {
     "@context": "https://schema.org/",
     "@type": "Dataset",
     "name": "NCDC Storm Events Database",
-    "description": "Storm Data is provided by the National Weather Service (NWS) and contain statistics on...",
+    "description": """Storm Data is provided by the National Weather
+    Service (NWS) and contain statistics on...""",
     "url": "https://catalog.data.gov/dataset/ncdc-storm-events-database",
     "sameAs": "https://gis.ncdc.noaa.gov/geoportal/catalog/search/resource/details.page?id=gov.noaa.ncdc:C00510",
     "identifier": [
@@ -36,7 +40,8 @@ TEMPLATE = {
         "ATMOSPHERE > ATMOSPHERIC PHENOMENA > FOG",
         "ATMOSPHERE > ATMOSPHERIC PHENOMENA > FREEZE",
     ],
-    # For some datasets we have multiple licences, so we'll use the STAC way of reportimg them (AKA: "various")
+    # For some datasets we have multiple licences, so we'll use the
+    #  STAC way of reportimg them (AKA: "various")
     "license": "https://creativecommons.org/publicdomain/zero/1.0/",
     "isAccessibleForFree": True,
     "creator": {
@@ -87,10 +92,19 @@ ECMWF_TEMPLATE = {
     "@context": "http://schema.org/",
     "@type": "Dataset",
     "name": "Fire danger indices historical data from the Copernicus Emergency Management Service",
-    "description": """This data set provides complete historical reconstruction of meteorological conditions favourable to the start, spread and sustainability of fires. The fire danger metrics  provided are part of a vast dataset produced by the Copernicus Emergency Management Service for the European Forest Fire Information System (EFFIS). The European Forest Fire Information System incorporates the fire danger indices for three different models developed in Canada, United States and Australia. In this dataset the fire danger indices are calculated using weather forecast from historical simulations provided by ECMWF ERA5 reanalysis.
-ERA5 by combining  model data and  a vast set of quality controlled observations provides a  globally complete and consistent data-set and is regarded as a good proxy for observed atmospheric conditions.
-The selected data records in this data set are regularly extended with time as ERA5 forcing data become available.
-This dataset is produced by ECMWF in its role of the computational centre for fire danger forecast of the CEMS,  on behalf of the Joint Research Centre which is the managing entity of the service.""",
+    "description": """This data set provides complete historical reconstruction of meteorological
+    conditions favourable to the start, spread and sustainability of fires. The fire danger metrics
+    provided are part of a vast dataset produced by the Copernicus Emergency Management Service for
+    the European Forest Fire Information System (EFFIS). The European Forest Fire Information System
+    incorporates the fire danger indices for three different models developed in Canada, United States
+    and Australia. In this dataset the fire danger indices are calculated using weather forecast from
+    historical simulations provided by ECMWF ERA5 reanalysis.
+    ERA5 by combining  model data and  a vast set of quality controlled observations provides a  globally
+    complete and consistent data-set and is regarded as a good proxy for observed atmospheric conditions.
+    The selected data records in this data set are regularly extended with time as ERA5 forcing data become
+     available.
+    This dataset is produced by ECMWF in its role of the computational centre for fire danger forecast of
+    the CEMS,  on behalf of the Joint Research Centre which is the managing entity of the service.""",
     "url": "https://cds.climate.copernicus.eu/cdsapp#!/dataset/cems-fire-historical-v1",
     "sameAs": "https://cds.climate.copernicus.eu/dataset/cems-fire-historical-v1",
     "license": "licence-to-use-copernicus-products",
@@ -127,14 +141,61 @@ router = fastapi.APIRouter(
 
 @router.get(
     "/collections/{collection_id}/schema.org",
-    response_model=models.Changelog,
+    response_model=models.SchemaOrgDataset,
 )
 def schema_org_jsonld(
     collection_id: str,
+    request: fastapi.Request,
     session=fastapi.Depends(dependencies.get_session),
-) -> models.Changelog:
+) -> models.SchemaOrgDataset:
     """Endpoint to get the proper schema.org compatible definition for the dataset.
 
     See https://developers.google.com/search/docs/appearance/structured-data/dataset
     """
-    return models.SchemaOrgDataset()
+    collection = collection_serializer(
+        session.query(cads_catalogue.database.Resource)
+        .filter(cads_catalogue.database.Resource.resource_uid == collection_id)
+        .one(),
+        request=request,
+    )
+    url = [link for link in collection["links"] if link["rel"] == "self"][0]["href"]
+    return models.SchemaOrgDataset(
+        context="http://schema.org/",
+        type="Dataset",
+        name=collection["title"],
+        description=collection["description"],
+        url=url,
+        sameAs=url,
+        identifier=[f"https://doi.org/{collection['sci:doi']}"],
+        license=collection["license"],
+        keywords=collection["keywords"],
+        is_accessible_for_free=True,
+        creator=models.SchemaOrgOrganization(
+            type="",
+            url="",
+            name="",
+            logo="",
+            contact_point=models.SchemaOrgContactPoint(
+                type="", contactType="", email="", url=""
+            ),
+        ),
+        funder=models.SchemaOrgOrganization(
+            type="",
+            url="",
+            name="",
+            logo="",
+            contact_point=models.SchemaOrgContactPoint(
+                type="", contactType="", email="", url=""
+            ),
+        ),
+        distribution=[],
+        temporal_coverage="",
+        spatialCoverage=models.SchemaOrgPlace(
+            type="",
+            geo=models.SchemaOrgGeoShape(
+                type="", box=collection["extent"]["spatial"]["bbox"][0]
+            ),
+        ),
+        dateModified=collection["updated"],
+        thumbnailUrl=collection["assets"]["thumbnail"]["href"],
+    )
