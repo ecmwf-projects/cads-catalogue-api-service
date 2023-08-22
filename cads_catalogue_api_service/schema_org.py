@@ -144,8 +144,8 @@ router = fastapi.APIRouter(
 
 def query_collection(
     session: sa.orm.Session,
+    collection_id: str,
     request: fastapi.Request,
-    collection_id: str | None = None,
 ) -> stac_fastapi.types.stac.Collection:
     return collection_serializer(
         session.query(cads_catalogue.database.Resource)
@@ -169,17 +169,24 @@ def schema_org_jsonId(
     See https://developers.google.com/search/docs/appearance/structured-data/dataset
     """
     collection = query_collection(session, collection_id, request)
-    url = [link for link in collection["links"] if link["rel"] == "self"][0]["href"]
+    url = (
+        ([link for link in collection["links"] if link["rel"] == "self"][0]["href"])
+        if "links" in collection
+        else None
+    )
+
     return models.SchemaOrgDataset(
         context="http://schema.org/",
         type="Dataset",
-        name=collection["title"],
-        description=collection["description"],
+        name=collection["title"] if "title" in collection else None,
+        description=collection["description"] if "description" in collection else None,
         url=url,
         sameAs=url,
-        identifier=[f"https://doi.org/{collection['sci:doi']}"],
-        license=collection["license"],
-        keywords=collection["keywords"],
+        identifier=[f"https://doi.org/{collection['sci:doi']}"]
+        if "sci:doi" in collection
+        else None,
+        license=collection["license"] if "license" in collection else None,
+        keywords=collection["keywords"] if "keywords" in collection else None,
         is_accessible_for_free=True,
         creator=models.SchemaOrgOrganization(
             type="",
@@ -204,9 +211,18 @@ def schema_org_jsonId(
         spatialCoverage=models.SchemaOrgPlace(
             type="",
             geo=models.SchemaOrgGeoShape(
-                type="", box=collection["extent"]["spatial"]["bbox"][0]
+                type="",
+                box=collection["extent"]["spatial"]["bbox"][0]
+                if "extent" in collection
+                and "spatial" in collection["extent"]
+                and "bbox" in collection["extent"]["spatial"]
+                else None,
             ),
         ),
-        dateModified=collection["updated"],
-        thumbnailUrl=collection["assets"]["thumbnail"]["href"],
+        dateModified=collection["updated"] if "updated" in collection else None,
+        thumbnailUrl=collection["assets"]["thumbnail"]["href"]
+        if "assets" in collection
+        and "thumbnail" in collection["assets"]
+        and "href" in collection["assets"]["thumbnail"]
+        else None,
     )
