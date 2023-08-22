@@ -17,6 +17,9 @@
 
 import cads_catalogue
 import fastapi
+import sqlalchemy as sa
+import stac_fastapi.types
+import stac_fastapi.types.core
 
 from cads_catalogue_api_service.client import collection_serializer
 
@@ -139,11 +142,24 @@ router = fastapi.APIRouter(
 )
 
 
+def query_collection(
+    session: sa.orm.Session,
+    request: fastapi.Request,
+    collection_id: str | None = None,
+) -> stac_fastapi.types.stac.Collection:
+    return collection_serializer(
+        session.query(cads_catalogue.database.Resource)
+        .filter(cads_catalogue.database.Resource.resource_uid == collection_id)
+        .one(),
+        request=request,
+    )
+
+
 @router.get(
     "/collections/{collection_id}/schema.org",
     response_model=models.SchemaOrgDataset,
 )
-def schema_org_jsonld(
+def schema_org_jsonId(
     collection_id: str,
     request: fastapi.Request,
     session=fastapi.Depends(dependencies.get_session),
@@ -152,12 +168,7 @@ def schema_org_jsonld(
 
     See https://developers.google.com/search/docs/appearance/structured-data/dataset
     """
-    collection = collection_serializer(
-        session.query(cads_catalogue.database.Resource)
-        .filter(cads_catalogue.database.Resource.resource_uid == collection_id)
-        .one(),
-        request=request,
-    )
+    collection = query_collection(session, collection_id, request)
     url = [link for link in collection["links"] if link["rel"] == "self"][0]["href"]
     return models.SchemaOrgDataset(
         context="http://schema.org/",
