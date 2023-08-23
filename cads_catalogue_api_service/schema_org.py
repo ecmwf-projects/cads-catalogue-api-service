@@ -169,8 +169,14 @@ def schema_org_jsonId(
     See https://developers.google.com/search/docs/appearance/structured-data/dataset
     """
     collection = query_collection(session, collection_id, request)
+
     url = (
         ([link for link in collection["links"] if link["rel"] == "self"][0]["href"])
+        if "links" in collection
+        else None
+    )
+    license = (
+        ([link for link in collection["links"] if link["rel"] == "license"][0]["href"])
         if "links" in collection
         else None
     )
@@ -179,12 +185,14 @@ def schema_org_jsonId(
     return models.SchemaOrgDataset(
         context="http://schema.org/",
         type="Dataset",
-        name=collection.get("title", ""),
-        description=collection.get("description", ""),
+        name=collection["title"],
+        description=collection.get("description", None),
         url=url,
         sameAs=url,
-        identifier=[f"https://doi.org/{collection.get('sci:doi', '')}"],
-        license=collection.get("license", ""),
+        identifier=[f"https://doi.org/{collection['sci:doi']}"]
+        if "sci:doi" in collection
+        else [],
+        license=license,
         keywords=collection.get("keywords", []),
         is_accessible_for_free=True,
         creator=models.SchemaOrgOrganization(
@@ -214,6 +222,8 @@ def schema_org_jsonId(
                 box=box[0] if box else [],
             ),
         ),
-        dateModified=collection.get("updated", ""),
-        thumbnailUrl=collection.get("assets", {}).get("thumbnail", {}).get("href", ""),
+        dateModified=collection.get("updated", None),
+        thumbnailUrl=collection.get("assets", {})
+        .get("thumbnail", {})
+        .get("href", None),
     )

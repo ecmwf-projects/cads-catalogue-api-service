@@ -117,18 +117,17 @@ class SchemaOrgDataset(pydantic.BaseModel):
     type: str = pydantic.Field("Dataset", const=True, alias="@type")
 
     name: str
-    description: str
-    url: str
-
+    description: str | None
+    url: str | None
     same_as: str | None = pydantic.Field(alias="sameAs")
     identifier: list[str]
     keywords: list[str]
-    license: str
+    license: str | None
     is_accessible_for_free: bool = True
     creator: SchemaOrgOrganization
     funder: SchemaOrgOrganization
     distribution: list[SchemaOrgDataDownload]
     temporal_coverage: str
     spatialCoverage: SchemaOrgPlace
-    dateModified: str
+    dateModified: str | None
     thumbnailUrl: str | None = None
