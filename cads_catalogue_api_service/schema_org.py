@@ -152,6 +152,15 @@ def query_collection(
         .filter(cads_catalogue.database.Resource.resource_uid == collection_id)
         .one(),
         request=request,
+        schema_org=True,
+    )
+
+
+def get_url_link(collection: stac_fastapi.types.stac.Collection, type: str) -> str:
+    return (
+        ([link for link in collection["links"] if link["rel"] == type][0]["href"])
+        if any(link["rel"] == type for link in collection["links"])
+        else None
     )
 
 
@@ -169,15 +178,20 @@ def schema_org_jsonId(
     See https://developers.google.com/search/docs/appearance/structured-data/dataset
     """
     collection = query_collection(session, collection_id, request)
-
-    url = (
-        ([link for link in collection["links"] if link["rel"] == "self"][0]["href"])
-        if "links" in collection
-        else None
-    )
-    license = (
-        ([link for link in collection["links"] if link["rel"] == "license"][0]["href"])
-        if "links" in collection
+    url, license, distribution = None, None, None
+    if "links" in collection and collection["links"]:
+        url = get_url_link(collection, "self")
+        license = get_url_link(collection, "license")
+        distribution = get_url_link(collection, "layout")
+    temporal_coverage = (
+        (
+            [
+                temp
+                for temp in collection["temporal_coverage"]
+                if temp["id"] == "temporal-coverage"
+            ][0]["value"]
+        )
+        if collection["temporal_coverage"]
         else None
     )
     box = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
@@ -196,25 +210,25 @@ def schema_org_jsonId(
         keywords=collection.get("keywords", []),
         is_accessible_for_free=True,
         creator=models.SchemaOrgOrganization(
-            type="",
-            url="",
-            name="",
+            type=collection.get("creator_role", None),
+            url=collection.get("creator_url", None),
+            name=collection["creator_name"],
             logo="",
             contact_point=models.SchemaOrgContactPoint(
-                type="", contactType="", email="", url=""
+                type="",
+                contactType="",
+                email=collection.get("creator_contact_email", None),
+                url="",
             ),
         ),
-        funder=models.SchemaOrgOrganization(
-            type="",
-            url="",
-            name="",
-            logo="",
-            contact_point=models.SchemaOrgContactPoint(
-                type="", contactType="", email="", url=""
-            ),
-        ),
-        distribution=[],
-        temporal_coverage="",
+        distribution=[
+            models.SchemaOrgDataDownload(
+                encodingFormat="", contentUrl=f"{distribution}/download"
+            )
+            if distribution
+            else ""
+        ],
+        temporal_coverage=temporal_coverage,
         spatialCoverage=models.SchemaOrgPlace(
             type="",
             geo=models.SchemaOrgGeoShape(

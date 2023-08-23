@@ -362,6 +362,7 @@ def collection_serializer(
     db_model: cads_catalogue.database.Resource,
     request: fastapi.Request,
     preview: bool = False,
+    schema_org: bool = False,
 ) -> stac_fastapi.types.stac.Collection:
     """Transform database model to stac collection."""
     collection_links = generate_collection_links(
@@ -371,6 +372,15 @@ def collection_serializer(
     assets = generate_assets(
         model=db_model, base_url=config.settings.document_storage_url
     )
+
+    schema_org_properties = {
+        "creator_name": db_model.responsible_organisation,
+        "creator_url": db_model.responsible_organisation_website,
+        "creator_type": db_model.responsible_organisation_role,
+        "creator_contact_email": db_model.contactemail,
+        "file_format": db_model.file_format,
+        "temporal_coverage": db_model.description if db_model.description else None,
+    }
 
     additional_properties = {
         **({"assets": assets} if assets else {}),
@@ -388,6 +398,9 @@ def collection_serializer(
         # One of the sci:xxx should be there, but CAMS dataset are not doing this
         **({"sci:doi": db_model.doi} if db_model.doi else {}),
     }
+
+    if schema_org:
+        additional_properties.update(schema_org_properties)
 
     return stac_fastapi.types.stac.Collection(
         type="Collection",
