@@ -1,0 +1,81 @@
+{
+  "$id": "/schemas/schema_org",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CADS schema.org",
+  "type": "object",
+  "properties": {
+        "type":"object",
+        "properties":{
+          "context":{
+            "type":"string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "name":{
+            "type":["string","null"]
+          },
+          "description":{
+            "type":["string","null"]
+          },
+          "url":{
+            "type":["string","null"]
+          },
+          "sameAs": {
+            "type": ["string","null"]
+          },
+          "identifier": {
+            "type": ["string","null"]
+          },
+          "license": {
+            "type": ["string","null"]
+          },
+          "keywords": {
+            "type": ["string","null"]
+          },
+          "is_accessible_for_free": {
+            "type": "boolean"
+          },
+          "creator": {
+            "type": "object"
+          },
+          "funder": {
+            "type": "object"
+          },
+          "distribution":{
+            "type":"array"
+          },
+          "temporal_coverage": {
+            "type": ["string","null"]
+          },
+          "spatialCoverage": {
+            "type": "object"
+          },
+          "dateModified": {
+            "type": ["string","null"]
+          },
+          "thumbnailUrl": {
+            "type": ["string","null"]
+          }
+        },
+        "required": [
+          "context",
+          "type",
+          "name",
+          "description",
+          "url",
+          "sameAs",
+          "identifier",
+          "license",
+          "keywords",
+          "is_accessible_for_free",
+          "creator",
+          "funder",
+          "distribution",
+          "temporal_coverage",
+          "spatialCoverage",
+          "dateModified",
+          "thumbnailUrl"
+        ]
+  }
+}

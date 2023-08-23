@@ -41,6 +41,7 @@ from . import (
     extensions,
     messages,
     middlewares,
+    schema_org,
     vocabularies,
 )
 
@@ -77,6 +78,7 @@ app.router.lifespan_context = lifespan
 app.add_route("/metrics", handle_metrics)
 app.include_router(vocabularies.router)
 app.include_router(messages.router)
+app.include_router(schema_org.router)
 
 
 def catalogue_openapi() -> dict[str, Any]:

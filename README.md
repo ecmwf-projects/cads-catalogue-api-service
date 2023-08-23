@@ -2,6 +2,13 @@
 
 STAC based API service for the Climate & Atmosphere Data Store
 
+## Running the API
+
+```bash
+catalogue_db_password=… \
+    uvicorn cads_catalogue_api_service.main:app --host 0.0.0.0 --proxy-headers --forwarded-allow-ips "*" --log-level info --reload
+```
+
 ## REST API description
 
 Let say that WSGI service root is configured to serve the API at `http://localhost:8080/api/catalogue`.
