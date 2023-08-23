@@ -174,19 +174,18 @@ def schema_org_jsonId(
         if "links" in collection
         else None
     )
+    box = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
 
     return models.SchemaOrgDataset(
         context="http://schema.org/",
         type="Dataset",
-        name=collection["title"] if "title" in collection else None,
-        description=collection["description"] if "description" in collection else None,
+        name=collection.get("title", ""),
+        description=collection.get("description", ""),
         url=url,
         sameAs=url,
-        identifier=[f"https://doi.org/{collection['sci:doi']}"]
-        if "sci:doi" in collection
-        else None,
-        license=collection["license"] if "license" in collection else None,
-        keywords=collection["keywords"] if "keywords" in collection else None,
+        identifier=[f"https://doi.org/{collection.get('sci:doi', '')}"],
+        license=collection.get("license", ""),
+        keywords=collection.get("keywords", []),
         is_accessible_for_free=True,
         creator=models.SchemaOrgOrganization(
             type="",
@@ -212,17 +211,9 @@ def schema_org_jsonId(
             type="",
             geo=models.SchemaOrgGeoShape(
                 type="",
-                box=collection["extent"]["spatial"]["bbox"][0]
-                if "extent" in collection
-                and "spatial" in collection["extent"]
-                and "bbox" in collection["extent"]["spatial"]
-                else None,
+                box=box[0] if box else [],
             ),
         ),
-        dateModified=collection["updated"] if "updated" in collection else None,
-        thumbnailUrl=collection["assets"]["thumbnail"]["href"]
-        if "assets" in collection
-        and "thumbnail" in collection["assets"]
-        and "href" in collection["assets"]["thumbnail"]
-        else None,
+        dateModified=collection.get("updated", ""),
+        thumbnailUrl=collection.get("assets", {}).get("thumbnail", {}).get("href", ""),
     )
