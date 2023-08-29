@@ -373,15 +373,6 @@ def collection_serializer(
         model=db_model, base_url=config.settings.document_storage_url
     )
 
-    schema_org_properties = {
-        "creator_name": db_model.responsible_organisation,
-        "creator_url": db_model.responsible_organisation_website,
-        "creator_type": db_model.responsible_organisation_role,
-        "creator_contact_email": db_model.contactemail,
-        "file_format": db_model.file_format,
-        "temporal_coverage": db_model.description if db_model.description else None,
-    }
-
     additional_properties = {
         **({"assets": assets} if assets else {}),
         **(
@@ -400,6 +391,14 @@ def collection_serializer(
     }
 
     if schema_org:
+        schema_org_properties = {
+            "creator_name": db_model.responsible_organisation,
+            "creator_url": db_model.responsible_organisation_website,
+            "creator_type": db_model.responsible_organisation_role,
+            "creator_contact_email": db_model.contactemail,
+            "file_format": db_model.file_format,
+            "temporal_coverage": db_model.description if db_model.description else None,
+        }
         additional_properties.update(schema_org_properties)
 
     return stac_fastapi.types.stac.Collection(

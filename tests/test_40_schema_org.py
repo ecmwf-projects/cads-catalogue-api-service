@@ -76,14 +76,25 @@ def static_collection_query(
                 "href": "http://localhost:8080/api/catalogue/v1/collections/era5-something/messages/changelog",
                 "title": "All archived messages related to the selected dataset",
             },
+            {
+                "rel": "layout",
+                "href": "http://localhost:8080/api/catalogue/v1/collections/era5-something/layout",
+                "title": "Distribution",
+            },
         ],
         "assets": {
             "thumbnail": {
-                "href": "https://s3.cds.ecmwf.int/swift/v1/AUTH_3e237111c3a144df8e0e0980577062b4/cds2-dev-catalogue/resources/era5-something/overview_36fc7b601512e3619bc5ba70ae0488b911d9d74e203400f9a321f5745768f6a5.png",
+                "href": "https://s3.cds.org.int/swift/v1/AUTH_3e237111c3a144df8e0e0980577062b4/cds2-dev-catalogue/resources/era5-something/overview_36fc7b601512e3619bc5ba70ae0488b911d9d74e203400f9a321f5745768f6a5.png",
                 "type": "image/jpg",
                 "roles": ["thumbnail"],
             }
         },
+        "creator_name": "Org",
+        "creator_url": "https://www.org.it/",
+        "creator_type": "Organization",
+        "creator_contact_email": "https://support.org.it",
+        "file_format": "",
+        "temporal_coverage": None,
         "published": "2020-05-19T00:00:00Z",
         "updated": "2023-06-22T00:00:00Z",
         "sci:doi": "10.24381/cds.ff2aef70",
@@ -112,38 +123,32 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         "keywords": [
             "Temporal coverage: Past",
         ],
-        "license": "proprietary",
+        "license": None,
         "is_accessible_for_free": True,
         "creator": {
             "@type": "Organization",
-            "url": "",
-            "name": "",
+            "url": "https://www.org.it/",
+            "name": "Org",
             "logo": "",
             "contact_point": {
                 "@type": "ContactPoint",
                 "contactType": "",
-                "email": "",
+                "email": "https://support.org.it",
                 "url": "",
             },
         },
-        "funder": {
-            "@type": "Organization",
-            "url": "",
-            "name": "",
-            "logo": "",
-            "contact_point": {
-                "@type": "ContactPoint",
-                "contactType": "",
-                "email": "",
-                "url": "",
-            },
-        },
-        "distribution": [],
-        "temporal_coverage": "",
+        "distribution": [
+            {
+                "@type": "DataDownload",
+                "encodingFormat": "",
+                "contentUrl": "http://localhost:8080/api/catalogue/v1/collections/era5-something/layout/download",
+            }
+        ],
+        "temporal_coverage": None,
         "spatialCoverage": {
             "@type": "Place",
-            "geo": {"@type": "GeoShape", "box": [0, -70, 70, 360]},
+            "geo": {"@type": "GeoShape", "box": [0.0, -70.0, 70.0, 360.0]},
         },
         "dateModified": "2023-06-22T00:00:00Z",
-        "thumbnailUrl": "https://s3.cds.ecmwf.int/swift/v1/AUTH_3e237111c3a144df8e0e0980577062b4/cds2-dev-catalogue/resources/era5-something/overview_36fc7b601512e3619bc5ba70ae0488b911d9d74e203400f9a321f5745768f6a5.png",
+        "thumbnailUrl": "https://s3.cds.org.int/swift/v1/AUTH_3e237111c3a144df8e0e0980577062b4/cds2-dev-catalogue/resources/era5-something/overview_36fc7b601512e3619bc5ba70ae0488b911d9d74e203400f9a321f5745768f6a5.png",
     }

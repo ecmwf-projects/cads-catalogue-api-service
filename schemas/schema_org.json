@@ -43,7 +43,38 @@
             "type": "object"
           },
           "distribution":{
-            "type":"array"
+            "type":"array",
+            "items": {
+              "type": "object",
+              "properties":{
+                "encodingFormat":{
+                  "type":"string"
+                },
+                "contentUrl": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "encodingFormat",
+                "contentUrl"
+              ]
+            }
+
+          },
+          "creator_name":{
+            "type":"string"
+          },
+          "creator_url":{
+            "type":"string"
+          },
+          "creator_type":{
+            "type":"string"
+          },
+          "creator_contact_email":{
+            "type":"string"
+          },
+          "file_format":{
+            "type":"string"
           },
           "temporal_coverage": {
             "type": ["string","null"]
