@@ -76,7 +76,7 @@
           "file_format":{
             "type":"string"
           },
-          "temporal_coverage": {
+          "temporalCoverage": {
             "type": ["string","null"]
           },
           "spatialCoverage": {
@@ -103,7 +103,7 @@
           "creator",
           "funder",
           "distribution",
-          "temporal_coverage",
+          "temporalCoverage",
           "spatialCoverage",
           "dateModified",
           "thumbnailUrl"

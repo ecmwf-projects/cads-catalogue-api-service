@@ -94,7 +94,6 @@ def static_collection_query(
         "creator_type": "Organization",
         "creator_contact_email": "https://support.org.it",
         "file_format": "",
-        "temporal_coverage": None,
         "published": "2020-05-19T00:00:00Z",
         "updated": "2023-06-22T00:00:00Z",
         "sci:doi": "10.24381/cds.ff2aef70",
@@ -144,7 +143,7 @@ def test_schema_org_jsonId(monkeypatch) -> None:
                 "contentUrl": "http://localhost:8080/api/catalogue/v1/collections/era5-something/layout/download",
             }
         ],
-        "temporal_coverage": None,
+        "temporalCoverage": "2019-11-05T00:00:00Z/2023-06-22T00:00:00Z",
         "spatialCoverage": {
             "@type": "Place",
             "geo": {"@type": "GeoShape", "box": [0.0, -70.0, 70.0, 360.0]},

@@ -183,18 +183,13 @@ def schema_org_jsonId(
         url = get_url_link(collection, "self")
         license = get_url_link(collection, "license")
         distribution = get_url_link(collection, "layout")
-    if "temporal_coverage" in collection:
-        temporal_coverage = (
-            (
-                [
-                    temp
-                    for temp in collection["temporal_coverage"]
-                    if temp["id"] == "temporal-coverage"
-                ][0]["value"]
-            )
-            if collection["temporal_coverage"]
-            else None
-        )
+    temporal_coverage = (
+        collection.get("extent", {}).get("temporal", {}).get("interval", [])
+    )
+    temporal_coverage = (
+        list(filter(None, temporal_coverage[0])) if temporal_coverage else []
+    )
+
     box = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
 
     return models.SchemaOrgDataset(
@@ -229,7 +224,7 @@ def schema_org_jsonId(
             if distribution
             else ""
         ],
-        temporal_coverage=temporal_coverage,
+        temporalCoverage="/".join(temporal_coverage) if temporal_coverage else None,
         spatialCoverage=models.SchemaOrgPlace(
             type="",
             geo=models.SchemaOrgGeoShape(

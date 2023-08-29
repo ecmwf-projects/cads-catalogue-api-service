@@ -397,7 +397,6 @@ def collection_serializer(
             "creator_type": db_model.responsible_organisation_role,
             "creator_contact_email": db_model.contactemail,
             "file_format": db_model.file_format,
-            "temporal_coverage": db_model.description if db_model.description else None,
         }
         additional_properties.update(schema_org_properties)
 
