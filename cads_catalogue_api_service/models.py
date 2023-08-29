@@ -126,7 +126,7 @@ class SchemaOrgDataset(pydantic.BaseModel):
     is_accessible_for_free: bool = True
     creator: SchemaOrgOrganization
     distribution: list[SchemaOrgDataDownload]
-    temporal_coverage: str | None
+    temporalCoverage: str | None
     spatialCoverage: SchemaOrgPlace
     dateModified: str | None
     thumbnailUrl: str | None = None

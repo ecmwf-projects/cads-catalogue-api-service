@@ -43,9 +43,40 @@
             "type": "object"
           },
           "distribution":{
-            "type":"array"
+            "type":"array",
+            "items": {
+              "type": "object",
+              "properties":{
+                "encodingFormat":{
+                  "type":"string"
+                },
+                "contentUrl": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "encodingFormat",
+                "contentUrl"
+              ]
+            }
+
           },
-          "temporal_coverage": {
+          "creator_name":{
+            "type":"string"
+          },
+          "creator_url":{
+            "type":"string"
+          },
+          "creator_type":{
+            "type":"string"
+          },
+          "creator_contact_email":{
+            "type":"string"
+          },
+          "file_format":{
+            "type":"string"
+          },
+          "temporalCoverage": {
             "type": ["string","null"]
           },
           "spatialCoverage": {
@@ -72,7 +103,7 @@
           "creator",
           "funder",
           "distribution",
-          "temporal_coverage",
+          "temporalCoverage",
           "spatialCoverage",
           "dateModified",
           "thumbnailUrl"
