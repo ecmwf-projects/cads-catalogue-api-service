@@ -450,6 +450,8 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         landing_page["links"] = [
             link for link in landing_page["links"] if link["rel"] != "search"
         ]
+        # FIXME: this must be different from site to site
+        landing_page["id"] = "cds-stac-api"
         return landing_page
 
     def conformance_classes(self) -> list[str]:
