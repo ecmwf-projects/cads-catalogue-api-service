@@ -512,11 +512,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             search = session.query(self.collection_table).options(
                 *database.deferred_columns
             )
-            search = search_utils.apply_filters(
-                session, search, q, kw, portals=portals
-            ).filter(
-                cads_catalogue.database.Resource.hidden == False  # noqa E712
-            )
+            search = search_utils.apply_filters(session, search, q, kw, portals=portals)
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
