@@ -92,8 +92,10 @@ class SchemaOrgOrganization(pydantic.BaseModel):
     type: str = pydantic.Field("Organization", const=True, alias="@type")
     url: str
     name: str
-    logo: str
-    contact_point: SchemaOrgContactPoint | None = None
+    logo: str | None = None
+    contact_point: SchemaOrgContactPoint | None = pydantic.Field(
+        ..., serialization_alias="contactPoint"
+    )
 
 
 class SchemaOrgDataDownload(pydantic.BaseModel):
@@ -119,11 +121,13 @@ class SchemaOrgDataset(pydantic.BaseModel):
     name: str
     description: str | None
     url: str | None
-    same_as: str | None = pydantic.Field(alias="sameAs")
+    # same_as: str | None = pydantic.Field(alias="sameAs")
     identifier: list[str]
     keywords: list[str]
     license: str | None
-    is_accessible_for_free: bool = True
+    is_accessible_for_free: bool = pydantic.Field(
+        alias="asAccessibleForFree", default=True
+    )
     creator: SchemaOrgOrganization
     distribution: list[SchemaOrgDataDownload]
     temporalCoverage: str | None

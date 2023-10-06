@@ -198,7 +198,6 @@ def schema_org_jsonId(
         name=collection["title"],
         description=collection.get("description", None),
         url=url,
-        sameAs=url,
         identifier=[f"https://doi.org/{collection['sci:doi']}"]
         if "sci:doi" in collection
         else [],
@@ -206,20 +205,19 @@ def schema_org_jsonId(
         keywords=collection.get("keywords", []),
         is_accessible_for_free=True,
         creator=models.SchemaOrgOrganization(
-            type=collection.get("creator_role", None),
             url=collection.get("creator_url", None),
             name=collection["creator_name"],
-            logo="",
             contact_point=models.SchemaOrgContactPoint(
-                type="",
-                contactType="",
+                contactType="User support",
+                # FIXME: This is a problem with input data
                 email=collection.get("creator_contact_email", None),
-                url="",
+                url=collection.get("creator_contact_email", None),
             ),
         ),
         distribution=[
             models.SchemaOrgDataDownload(
-                encodingFormat="", contentUrl=f"{distribution}/download"
+                encodingFormat=collection.get("file_format"),
+                contentUrl=f"{url}?tab=download",
             )
             if distribution
             else ""
