@@ -58,6 +58,7 @@ def get_url_link(collection: stac_fastapi.types.stac.Collection, type: str) -> s
     "/collections/{collection_id}/schema.org",
     response_model=models.schema_org.Dataset,
     response_model_by_alias=True,
+    response_model_exclude_none=True,
 )
 def schema_org_json_ld(
     collection_id: str,
@@ -94,12 +95,12 @@ def schema_org_json_ld(
         else [],
         license=license,
         keywords=collection.get("keywords", []),
-        is_accessible_for_free=True,
+        isAccessibleForFree=True,
         creator=models.schema_org.Organization(
             url=collection.get("creator_url", None),
             name=collection["creator_name"],
-            contact_point=models.schema_org.ContactPoint(
-                contact_type="User support",
+            contactPoint=models.schema_org.ContactPoint(
+                contactType="User support",
                 # FIXME: This is a problem with input data
                 email=collection.get("creator_contact_email", None),
                 url=collection.get("creator_contact_email", None),
@@ -107,22 +108,23 @@ def schema_org_json_ld(
         ),
         distribution=[
             models.schema_org.DataDownload(
-                encoding_format=collection.get("file_format"),
-                content_url=f"{url}?tab=download",
+                encodingFormat=collection.get("file_format"),
+                contentUrl=f"{url}?tab=download",
             )
             if distribution
             else ""
         ],
-        temporal_coverage="/".join(temporal_coverage) if temporal_coverage else None,
-        spatial_coverage=models.schema_org.Place(
+        temporalCoverage="/".join(temporal_coverage) if temporal_coverage else None,
+        spatialCoverage=models.schema_org.Place(
             type="",
             geo=models.schema_org.GeoShape(
                 type="",
                 box=box[0] if box else [],
             ),
         ),
-        date_modified=collection.get("updated", None),
-        thumbnail_url=collection.get("assets", {})
+        datePublished=collection.get("published", None),
+        dateModified=collection.get("updated", None),
+        thumbnailUrl=collection.get("assets", {})
         .get("thumbnail", {})
         .get("href", None),
     )
