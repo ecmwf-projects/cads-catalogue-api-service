@@ -57,8 +57,9 @@ def get_url_link(collection: stac_fastapi.types.stac.Collection, type: str) -> s
 @router.get(
     "/collections/{collection_id}/schema.org",
     response_model=models.schema_org.Dataset,
+    response_model_by_alias=True,
 )
-def schema_org_jsonId(
+def schema_org_json_ld(
     collection_id: str,
     request: fastapi.Request,
     session=fastapi.Depends(dependencies.get_session),
@@ -98,7 +99,7 @@ def schema_org_jsonId(
             url=collection.get("creator_url", None),
             name=collection["creator_name"],
             contact_point=models.schema_org.ContactPoint(
-                contactType="User support",
+                contact_type="User support",
                 # FIXME: This is a problem with input data
                 email=collection.get("creator_contact_email", None),
                 url=collection.get("creator_contact_email", None),
@@ -106,22 +107,22 @@ def schema_org_jsonId(
         ),
         distribution=[
             models.schema_org.DataDownload(
-                encodingFormat=collection.get("file_format"),
-                contentUrl=f"{url}?tab=download",
+                encoding_format=collection.get("file_format"),
+                content_url=f"{url}?tab=download",
             )
             if distribution
             else ""
         ],
-        temporalCoverage="/".join(temporal_coverage) if temporal_coverage else None,
-        spatialCoverage=models.schema_org.Place(
+        temporal_coverage="/".join(temporal_coverage) if temporal_coverage else None,
+        spatial_coverage=models.schema_org.Place(
             type="",
             geo=models.schema_org.GeoShape(
                 type="",
                 box=box[0] if box else [],
             ),
         ),
-        dateModified=collection.get("updated", None),
-        thumbnailUrl=collection.get("assets", {})
+        date_modified=collection.get("updated", None),
+        thumbnail_url=collection.get("assets", {})
         .get("thumbnail", {})
         .get("href", None),
     )

@@ -19,7 +19,7 @@ import pydantic
 
 class ContactPoint(pydantic.BaseModel):
     type: str = pydantic.Field("ContactPoint", const=True, alias="@type")
-    contact_type: str = pydantic.Field(alias="contactType")
+    contact_type: str = pydantic.Field(serialization_alias="contactType")
     email: str
     url: str
 
@@ -36,8 +36,8 @@ class Organization(pydantic.BaseModel):
 
 class DataDownload(pydantic.BaseModel):
     type: str = pydantic.Field("DataDownload", const=True, alias="@type")
-    encoding_format: str = pydantic.Field(alias="encodingFormat")
-    content_url: str = pydantic.Field(alias="contentUrl")
+    encoding_format: str = pydantic.Field(serialization_alias="encodingFormat")
+    content_url: str = pydantic.Field(serialization_alias="contentUrl")
 
 
 class GeoShape(pydantic.BaseModel):
@@ -62,11 +62,11 @@ class Dataset(pydantic.BaseModel):
     keywords: list[str]
     license: str | None
     is_accessible_for_free: bool = pydantic.Field(
-        alias="asAccessibleForFree", default=True
+        serialization_alias="isAccessibleForFree", default=True
     )
     creator: Organization
     distribution: list[DataDownload]
-    temporalCoverage: str | None
-    spatialCoverage: Place
-    dateModified: str | None
-    thumbnailUrl: str | None = None
+    temporal_coverage: str | None
+    spatial_coverage: Place = pydantic.Field(..., serialization_alias="spatialCoverage")
+    date_modified: str | None
+    thumbnail_url: str | None = None
