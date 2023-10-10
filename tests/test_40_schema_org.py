@@ -117,30 +117,27 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         "name": "Era5 name",
         "description": "This dataset provides a modelled time series of gridded river discharge.",
         "url": "http://localhost:8080/api/catalogue/v1/collections/era5-something",
-        "sameAs": "http://localhost:8080/api/catalogue/v1/collections/era5-something",
         "identifier": ["https://doi.org/10.24381/cds.ff2aef70"],
         "keywords": [
             "Temporal coverage: Past",
         ],
-        "license": None,
-        "is_accessible_for_free": True,
+        "isAccessibleForFree": True,
         "creator": {
             "@type": "Organization",
             "url": "https://www.org.it/",
             "name": "Org",
-            "logo": "",
-            "contact_point": {
+            "contactPoint": {
                 "@type": "ContactPoint",
-                "contactType": "",
+                "contactType": "User support",
                 "email": "https://support.org.it",
-                "url": "",
+                "url": "https://support.org.it",
             },
         },
         "distribution": [
             {
                 "@type": "DataDownload",
                 "encodingFormat": "",
-                "contentUrl": "http://localhost:8080/api/catalogue/v1/collections/era5-something/layout/download",
+                "contentUrl": "http://localhost:8080/api/catalogue/v1/collections/era5-something?tab=download",
             }
         ],
         "temporalCoverage": "2019-11-05T00:00:00Z/2023-06-22T00:00:00Z",
@@ -149,5 +146,6 @@ def test_schema_org_jsonId(monkeypatch) -> None:
             "geo": {"@type": "GeoShape", "box": [0.0, -70.0, 70.0, 360.0]},
         },
         "dateModified": "2023-06-22T00:00:00Z",
+        "datePublished": "2020-05-19T00:00:00Z",
         "thumbnailUrl": "https://s3.cds.org.int/swift/v1/AUTH_3e237111c3a144df8e0e0980577062b4/cds2-dev-catalogue/resources/era5-something/overview_36fc7b601512e3619bc5ba70ae0488b911d9d74e203400f9a321f5745768f6a5.png",
     }
