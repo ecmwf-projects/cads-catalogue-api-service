@@ -434,7 +434,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
     @property
     def reader(self) -> sqlalchemy.orm.Session:
         """Return the reader session on the catalogue database."""
-        session_maker = dependencies.get_sessionmaker()
+        session_maker = dependencies.get_sessionmaker(read_only=True)
         return session_maker
 
     def _landing_page(

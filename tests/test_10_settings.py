@@ -19,10 +19,12 @@ import cads_catalogue_api_service.config
 
 def test_sqlsettings_env() -> None:
     """Test that the default SQL settings can be taken from env vars."""
-    os.environ["CATALOGUE_DB_NAME"] = "bar"
+    os.environ["CATALOGUE_DB_HOST"] = "host1"
+    os.environ["CATALOGUE_DB_HOST_READ"] = "host2"
     settings = cads_catalogue_api_service.config.SqlalchemySettings()
 
-    assert "/bar" in settings.connection_string
+    assert "host1" in settings.connection_string
+    assert "host2" in settings.connection_string_read
 
 
 def test_settings_env() -> None:

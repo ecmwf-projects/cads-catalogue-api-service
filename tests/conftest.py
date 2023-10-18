@@ -8,7 +8,11 @@ import pytest
 def temp_environ() -> Any:
     """Create a modifiable environment that affect only the test scope."""
     old_environ = dict(os.environ)
+    os.environ["CATALOGUE_DB_HOST"] = "dbhost"
+    os.environ["CATALOGUE_DB_HOST_READ"] = "dbhostread"
+    os.environ["CATALOGUE_DB_USER"] = "dbuser"
     os.environ["CATALOGUE_DB_PASSWORD"] = "password"
+    os.environ["CATALOGUE_DB_NAME"] = "dbname"
 
     yield
 

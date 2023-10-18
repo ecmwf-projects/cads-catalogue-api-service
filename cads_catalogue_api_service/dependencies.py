@@ -24,15 +24,23 @@ from . import config, fastapisessionmaker
 
 
 @functools.lru_cache()
-def get_sessionmaker() -> fastapisessionmaker.FastAPISessionMaker:
+def get_sessionmaker(read_only=True) -> fastapisessionmaker.FastAPISessionMaker:
     """Generate a DB session using fastapi_utils."""
-    connection_string = config.dbsettings.connection_string
+    if read_only:
+        connection_string = config.dbsettings.connection_string_read
+    else:
+        connection_string = config.dbsettings.connection_string
     return fastapisessionmaker.FastAPISessionMaker(connection_string)
 
 
 def get_session() -> Iterator[sqlalchemy.orm.Session]:
-    """Fastapi dependency that provides a sqlalchemy session."""
-    yield from get_sessionmaker().get_db()
+    """Fastapi dependency that provides a sqlalchemy read-only session."""
+    yield from get_sessionmaker(read_only=True).get_db()
+
+
+def get_session_rw() -> Iterator[sqlalchemy.orm.Session]:
+    """Fastapi dependency that provides a sqlalchemy read&write session."""
+    yield from get_sessionmaker(read_only=False).get_db()
 
 
 def get_portals_values(portal: str) -> list[str]:
