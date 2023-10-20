@@ -40,6 +40,11 @@ class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
         """Create reader psql connection string."""
         return cads_catalogue.config.ensure_settings().connection_string
 
+    @property
+    def connection_string_read(self) -> str:
+        """Create reader psql connection string."""
+        return cads_catalogue.config.ensure_settings().connection_string_read
+
 
 class Settings(pydantic.BaseSettings):
     """Other general settings.
