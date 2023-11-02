@@ -13,9 +13,13 @@ dependencies:
 - sphinx
 - sphinx-autoapi
 # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
+- pip
 - jsonschema
 - sqlalchemy[mypy]
 - tabulate  # for test notebooks
 - types-jsonschema
 - types-python-dateutil
 - types-requests
+- pip:
+  - git+https://github.com/ecmwf-projects/cads-catalogue.git
+  - git+https://github.com/ecmwf-projects/cads-common.git

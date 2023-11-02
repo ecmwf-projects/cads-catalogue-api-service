@@ -15,8 +15,8 @@ classifiers = [
 ]
 dependencies = [
   "attrs",
-  "cads-catalogue",
-  "cads-common",
+  "cads-catalogue@git+https://github.com/ecmwf-projects/cads-catalogue.git",
+  "cads-common@git+https://github.com/ecmwf-projects/cads-common.git",
   "fastapi",
   "python-dateutil",
   "sqlalchemy>=2.0.9",
