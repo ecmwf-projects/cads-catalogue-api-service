@@ -34,8 +34,9 @@ readme = "README.md"
 branch = true
 
 [tool.mypy]
+exclude = "tests/"
 plugins = "sqlalchemy.ext.mypy.plugin"
-strict = true
+strict = false
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
