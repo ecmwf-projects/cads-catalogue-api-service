@@ -20,8 +20,8 @@ import pydantic
 class ContactPoint(pydantic.BaseModel):
     type: str = pydantic.Field("ContactPoint", const=True, alias="@type")
     contactType: str
-    email: str
-    url: str
+    email: str | None = None
+    url: str | None = None
 
 
 class Organization(pydantic.BaseModel):
