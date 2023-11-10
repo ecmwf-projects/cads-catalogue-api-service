@@ -2,8 +2,6 @@ import cads_catalogue.database
 import sqlalchemy.orm
 
 OMITTABLE_COLUMNS = [
-    cads_catalogue.database.Resource.constraints_data,
-    cads_catalogue.database.Resource.form_data,
     cads_catalogue.database.Resource.description,
     cads_catalogue.database.Resource.variables,
     cads_catalogue.database.Resource.lineage,
@@ -24,9 +22,7 @@ OMITTABLE_COLUMNS = [
     cads_catalogue.database.Resource.file_format,
     cads_catalogue.database.Resource.format_version,
     cads_catalogue.database.Resource.adaptor,
-    cads_catalogue.database.Resource.adaptor_configuration,
     cads_catalogue.database.Resource.sources_hash,
-    cads_catalogue.database.Resource.mapping,
     cads_catalogue.database.Resource.related_resources_keywords,
 ]
 
