@@ -58,23 +58,6 @@ def apply_filters(
     if portals:
         search = search.filter(cads_catalogue.database.Resource.portal.in_(portals))
 
-    # FT search
-    if q:
-        # TODO: apply weigths according to some configuration
-        weight_title = 1.0
-        weight_description = 0.4
-        weight_fulltext = 0.2
-        tsquery = sa.func.to_tsquery("english", "|".join(q.split()))
-        search = search.filter(
-            cads_catalogue.database.Resource.search_field.bool_op("@@")(tsquery)
-        ).order_by(
-            sa.func.ts_rank(
-                "{0.1,%s,%s,%s}" % (weight_fulltext, weight_description, weight_title),
-                cads_catalogue.database.Resource.search_field,
-                tsquery,
-            ).desc()
-        )
-
     # Faceted search
     if kw:
         # Facetes search criteria is to run on OR in the same category, and AND between categories
@@ -102,9 +85,25 @@ def apply_filters(
                 cads_catalogue.database.Resource.resource_id.in_(subquery_mtm)
             )
             subqueries.append(subquery)
-
         # 4. Join all subqueries with INTERSECT
         search = search.intersect(*subqueries)
+
+    # FT search
+    if q:
+        # TODO: apply weigths according to some configuration
+        weight_title = 1.0
+        weight_description = 0.4
+        weight_fulltext = 0.2
+        tsquery = sa.func.to_tsquery("english", "|".join(q.split()))
+        search = search.filter(
+            cads_catalogue.database.Resource.search_field.bool_op("@@")(tsquery)
+        ).order_by(
+            sa.func.ts_rank(
+                "{0.1,%s,%s,%s}" % (weight_fulltext, weight_description, weight_title),
+                cads_catalogue.database.Resource.search_field,
+                tsquery,
+            ).desc()
+        )
 
     return search
 
