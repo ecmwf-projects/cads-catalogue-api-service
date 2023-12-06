@@ -49,10 +49,10 @@ Only title and URL are provided for now.
 
 ## Workflow for developers/contributors
 
-For best experience create a new conda environment (e.g. DEVELOP) with Python 3.10:
+For best experience create a new conda environment (e.g. DEVELOP) with Python 3.11:
 
 ```bash
-conda create -n DEVELOP -c conda-forge python=3.10
+conda create -n DEVELOP -c conda-forge python=3.11
 conda activate DEVELOP
 ```
 
