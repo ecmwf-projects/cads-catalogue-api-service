@@ -21,7 +21,6 @@ from typing import Any, Type
 
 import attrs
 import cads_catalogue
-import dateutil
 import fastapi
 import pydantic
 import sqlalchemy.dialects
@@ -29,8 +28,10 @@ import sqlalchemy.orm
 import stac_fastapi.types
 import stac_fastapi.types.core
 import stac_pydantic
+from dateutil import parser
 
 from . import config, database, dependencies, exceptions, search_utils
+from .fastapisessionmaker import FastAPISessionMaker
 
 
 def decode_base64(encoded: str) -> str:
@@ -66,7 +67,7 @@ def decode_cursor(encoded_cursor: str, sortby: str) -> Any:
     decoded = None
     match sortby:
         case "update":
-            decoded = dateutil.parser.parse(decode_base64(encoded_cursor))
+            decoded = parser.parse(decode_base64(encoded_cursor))
         case _:
             decoded = decode_base64(encoded_cursor)
     return decoded
@@ -74,7 +75,7 @@ def decode_cursor(encoded_cursor: str, sortby: str) -> Any:
 
 def get_sorting_clause(
     model: cads_catalogue.database.Resource, sort: str, inverse: bool
-) -> dict:
+) -> dict | tuple:
     """Get the sorting clause."""
     supported_sorts = {
         "update": (
@@ -105,7 +106,7 @@ def get_cursor_compare_criteria(sortby: str, back: bool = False) -> str:
 def apply_sorting(
     search: sqlalchemy.orm.Query,
     sortby: str,
-    cursor: str,
+    cursor: str | None,
     limit: int,
     inverse: bool = False,
 ):
@@ -138,7 +139,7 @@ def apply_sorting(
 def get_next_prev_links(
     collections: list,
     sort_by,
-    cursor: str,
+    cursor: str | None,
     limit: int,
     back: bool = False,
 ) -> dict[str, Any]:
@@ -173,7 +174,7 @@ def get_next_prev_links(
 
 def get_extent(
     model: cads_catalogue.database.Resource,
-) -> stac_pydantic.collection.Extent:
+) -> dict:
     """Get extent from model."""
     spatial = model.geo_extent or {}
     try:
@@ -432,7 +433,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
     )
 
     @property
-    def reader(self) -> sqlalchemy.orm.Session:
+    def reader(self) -> FastAPISessionMaker:
         """Return the reader session on the catalogue database."""
         session_maker = dependencies.get_sessionmaker(read_only=True)
         return session_maker
@@ -476,7 +477,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
     def load_catalogue(
         self, session: sqlalchemy.orm.Session, request, q, portals
-    ) -> None:
+    ) -> list:
         """Return the whole catalogue as a serialized structure."""
         query = session.query(self.collection_table).options(*database.deferred_columns)
         query_results = search_utils.apply_filters(
@@ -492,9 +493,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         self,
         request: fastapi.Request,
         q: str | None = None,
-        kw: list = [],
+        kw: list[str] | None = [],
         sortby: str = "relevance",
-        cursor: str = None,
+        cursor: str | None = None,
         limit: int = 999,
         back: bool = False,
         route_name="Get Collections",

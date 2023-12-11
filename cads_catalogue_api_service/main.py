@@ -31,7 +31,7 @@ import stac_fastapi.types
 import stac_fastapi.types.conformance
 import stac_fastapi.types.links
 import starlette
-from brotli_asgi import BrotliMiddleware
+from brotli_asgi import BrotliMiddleware  # type: ignore
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from . import (
@@ -53,7 +53,7 @@ async def lifespan(application: fastapi.FastAPI):
     yield
 
 
-extensions = [
+exts: list[Any] = [
     # This extenstion is required, seems for a bad implementation
     stac_fastapi.extensions.core.TokenPaginationExtension(),
     extensions.DatasetsSearchExtension(),
@@ -61,7 +61,7 @@ extensions = [
 
 api = stac_fastapi.api.app.StacApi(
     settings=config.dbsettings,
-    extensions=extensions,
+    extensions=exts,
     client=client.cads_client,
     middlewares=[
         BrotliMiddleware,

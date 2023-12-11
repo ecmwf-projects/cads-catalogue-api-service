@@ -26,7 +26,7 @@ def split_by_category(keywords: list) -> list:
 
     Splitting is based on the category.
     """
-    categories = {}
+    categories: dict = {}
     for keyword in keywords:
         category, value = keyword.split(":", 1)
         if category not in categories:
@@ -38,8 +38,8 @@ def split_by_category(keywords: list) -> list:
 def apply_filters(
     session: sa.orm.Session,
     search: sa.orm.Query,
-    q: str,
-    kw: list,
+    q: str | None,
+    kw: list | None,
     portals: list[str] | None = None,
 ):
     """Apply allowed search filters to the running query.
@@ -114,15 +114,16 @@ class CollectionsWithStats(stac_fastapi.types.stac.Collections):
     search: dict[str, Any]
 
 
-def generate_keywords_structure(keywords: list[str]) -> dict[str, Any]:
+def generate_keywords_structure(keywords: list[str] | None) -> dict[str, Any]:
     """Generate a structure with the categories and keywords.
 
     Structure in build upon given a list of keywords (semicolon separated).
     """
-    keywords_structure = {}
-    for kw in keywords:
-        category, keyword = [x.strip() for x in kw.split(":")]
-        keywords_structure.setdefault(category, []).append(keyword)
+    keywords_structure: dict = {}
+    if keywords:
+        for kw in keywords:
+            category, keyword = [x.strip() for x in kw.split(":")]
+            keywords_structure.setdefault(category, []).append(keyword)
     return keywords_structure
 
 
@@ -143,7 +144,7 @@ def count_facets(
 def count_collection_facets(
     collections: list, k: str, v: list[str], result: dict
 ) -> list[str]:
-    to_remove = []
+    to_remove: list = []
     for collection in collections:
         kw_struct = generate_keywords_structure(collection["keywords"])
         if k in kw_struct:
@@ -165,10 +166,10 @@ def count_all(collections: list, result: dict) -> None:
 def populate_facets(
     all_collections: list,
     collections: stac_fastapi.types.stac.Collections,
-    keywords: list[str],
+    keywords: list[str] | None,
 ) -> CollectionsWithStats:
     """Populate the collections entity with facets."""
-    result = {}
+    result: dict = {}
     # generate keywords structure ES. from ["Cat1 : Kw1 "] to {'Cat1':['Kw1']}
     keywords_structure = generate_keywords_structure(keywords)
     if keywords_structure:

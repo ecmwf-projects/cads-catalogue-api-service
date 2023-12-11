@@ -43,14 +43,14 @@ def get_session_rw() -> Iterator[sqlalchemy.orm.Session]:
     yield from get_sessionmaker(read_only=False).get_db()
 
 
-def get_portals_values(portal: str) -> list[str]:
+def get_portals_values(portal: str | None) -> list[str] | None:
     portals = [p.strip() for p in portal.split(",")] if portal else None
     return portals
 
 
 def get_portals(
     portal=fastapi.Header(default=None, alias=config.PORTAL_HEADER_NAME)
-) -> str | None:
+) -> list[str] | None:
     """Fastapi dependency that provides the CADS portal profile."""
     portals = get_portals_values(portal)
     return portals
