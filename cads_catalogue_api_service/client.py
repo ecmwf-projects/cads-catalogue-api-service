@@ -381,13 +381,14 @@ def get_active_message(
     if messages:
         return models.Message(
             id=messages[0].message_uid,
-            # date=messages[0].date,
+            date=None,
             summary=messages[0].summary,
             url=messages[0].url,
             severity=messages[0].severity,
             content=messages[0].content,
             live=messages[0].live,
         )
+    return None
 
 
 def collection_serializer(
