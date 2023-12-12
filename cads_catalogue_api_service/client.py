@@ -64,7 +64,7 @@ def encode_cursor(plain_cursor: Any) -> str:
 
 def decode_cursor(encoded_cursor: str, sortby: str) -> Any:
     """Decode the cursor to the original entity."""
-    decoded = None
+    decoded: str | datetime.datetime | None = None
     match sortby:
         case "update":
             decoded = parser.parse(decode_base64(encoded_cursor))
@@ -74,7 +74,7 @@ def decode_cursor(encoded_cursor: str, sortby: str) -> Any:
 
 
 def get_sorting_clause(
-    model: cads_catalogue.database.Resource, sort: str, inverse: bool
+    model: type[cads_catalogue.database.Resource], sort: str, inverse: bool
 ) -> dict | tuple:
     """Get the sorting clause."""
     supported_sorts = {
@@ -399,7 +399,7 @@ def collection_serializer(
             "creator_contact_email": db_model.contactemail,
             "file_format": db_model.file_format,
         }
-        additional_properties.update(schema_org_properties)
+        additional_properties.update(schema_org_properties)  # type: ignore
 
     return stac_fastapi.types.stac.Collection(
         type="Collection",
