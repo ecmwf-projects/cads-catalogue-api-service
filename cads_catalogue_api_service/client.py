@@ -235,9 +235,20 @@ def generate_collection_links(
 
     additional_links = []
 
+    if model.qa_flag:
+        additional_links.append(
+            {
+                "rel": "qa",
+                # FIXME: a knowledge of webportal structure follows. Not optimal
+                "href": f"/datasets/{model.resource_uid}?tab=quality_assurance_tab",
+                "title": "Quality assessment of the dataset",
+                "type": "text/html",
+            }
+        )
+
     if not preview:
         # Licenses
-        additional_links = [
+        additional_links += [
             {
                 "rel": "license",
                 "href": urllib.parse.urljoin(
@@ -317,15 +328,6 @@ def generate_collection_links(
                 "rel": "messages",
                 "href": f"{url_ref}/{model.resource_uid}/messages",
                 "title": "All messages related to the selected dataset",
-            }
-        ]
-
-        # Changelog related to dataset
-        additional_links += [
-            {
-                "rel": "changelog",
-                "href": f"{url_ref}/{model.resource_uid}/messages/changelog",
-                "title": "All archived messages related to the selected dataset",
             }
         ]
 
