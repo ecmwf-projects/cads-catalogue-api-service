@@ -514,13 +514,14 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 *database.deferred_columns
             )
             search = search_utils.apply_filters(session, search, q, kw, portals=portals)
+            count = search.count()
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
             collections = search.all()
 
             # Filter function always returns an item more than the limit to know if there is a next/prev page
-            # But response is build or effective page size
+            # But response is build on effective page size
             if len(collections) <= limit:
                 results = collections
             else:
@@ -598,6 +599,11 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             collections = stac_fastapi.types.stac.Collections(
                 collections=serialized_collections or [], links=links
             )
+
+            # Injecting elements count (waiting for STAC API to support this officially)
+            # See https://github.com/radiantearth/stac-api-spec/issues/442
+            collections["numberMatched"] = count
+            collections["numberReturned"] = len(serialized_collections)
 
         if search_stats:
             with self.reader.context_session() as session:

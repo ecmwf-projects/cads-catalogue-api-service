@@ -24,8 +24,6 @@ import stac_fastapi.types.extension
 
 from . import client, config
 
-CONFORMANCE_CLASS = "https://api.cads.copernicus.eu/v1.0.0-rc.1/datasets-search#filter"
-
 
 class CatalogueSortCriterion(str, enum.Enum):
     relevance_desc: str = "relevance"
@@ -50,7 +48,7 @@ def datasets_search(
     cursor: str = fastapi.Query(default=None, include_in_schema=False),
     limit: int = fastapi.Query(default=config.MAX_LIMIT, ge=1, le=config.MAX_LIMIT),
     back: bool = fastapi.Query(default=False, include_in_schema=False),
-    search_stats: bool = True,
+    search_stats: bool = fastapi.Query(default=True),
 ) -> dict[str, Any]:
     """Filter datasets based on search parameters."""
     return client.cads_client.all_datasets(
@@ -74,7 +72,11 @@ class DatasetsSearchExtension(stac_fastapi.types.extension.ApiExtension):
     (can't be "/search" because STAC reserves it for search on items).
     """
 
-    conformance_classes: list[str] = attr.ib(default=[CONFORMANCE_CLASS])
+    conformance_classes: list[str] = attr.ib(
+        default=[
+            "https://github.com/ecmwf-projects/cads-catalogue-api-service/stac-extentions/datasets-search"
+        ]
+    )
     router: fastapi.APIRouter = attr.ib(factory=fastapi.APIRouter)
     # response_class: Type[starlette.responses.Response] = attr.ib(
     #     default=starlette.responses.JSONResponse
@@ -105,3 +107,31 @@ class DatasetsSearchExtension(stac_fastapi.types.extension.ApiExtension):
             endpoint=datasets_search,
         )
         app.include_router(self.router, tags=["Datasets Search Extension"])
+
+
+@attr.s
+class CADSDatasetExtension(stac_fastapi.types.extension.ApiExtension):
+    """Datasets extentions for CADS catalogue."""
+
+    conformance_classes: list[str] = attr.ib(
+        default=[
+            "https://github.com/ecmwf-projects/cads-catalogue-api-service/stac-extentions/cads-dataset"
+        ]
+    )
+    router: fastapi.APIRouter = attr.ib(factory=fastapi.APIRouter)
+    # response_class: Type[starlette.responses.Response] = attr.ib(
+    #     default=starlette.responses.JSONResponse
+    # )
+
+    def register(self, app: fastapi.FastAPI) -> None:
+        """Register the extension with a FastAPI application.
+
+        Args
+        ----
+            app: target FastAPI application.
+
+        Returns
+        -------
+            None
+        """
+        pass
