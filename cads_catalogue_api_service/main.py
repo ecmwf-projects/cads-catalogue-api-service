@@ -57,6 +57,7 @@ exts: list[Any] = [
     # This extenstion is required, seems for a bad implementation
     stac_fastapi.extensions.core.TokenPaginationExtension(),
     extensions.DatasetsSearchExtension(),
+    extensions.CADSDatasetExtension(),
 ]
 
 api = stac_fastapi.api.app.StacApi(

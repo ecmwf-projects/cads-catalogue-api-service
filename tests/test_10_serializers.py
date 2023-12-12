@@ -17,18 +17,26 @@ from testing import Request, generate_expected, get_record
 import cads_catalogue_api_service.client
 
 
-def test_collection_serializer() -> None:
+def empty_get_active_message(*args, **kwargs) -> None:
+    return None
+
+
+def test_collection_serializer(monkeypatch) -> None:
     """Test serialization from db record to STAC."""
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.client.get_active_message",
+        empty_get_active_message,
+    )
     request = Request("https://mycatalogue.org/")  # note the final slash!
     record = get_record("era5-something")
     stac_record = cads_catalogue_api_service.client.collection_serializer(
-        record, request=request
+        record, session=object(), request=request
     )
 
     assert stac_record == generate_expected(request.base_url)
 
     stac_record = cads_catalogue_api_service.client.collection_serializer(
-        record, request=request, preview=True
+        record, session=object(), request=request, preview=True
     )
 
     assert stac_record == generate_expected(request.base_url, preview=True)

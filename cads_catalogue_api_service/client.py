@@ -361,8 +361,38 @@ def lookup_id(
     return row
 
 
+def get_active_message(
+    db_model: cads_catalogue.database.Resource,
+    session: sqlalchemy.orm.Session,
+    filter_types=["warning", "critical"],
+) -> models.Message | None:
+    """Return the latest active message for a dataset."""
+    messages = (
+        session.query(cads_catalogue.database.Message)
+        .join(cads_catalogue.database.Message.resources)
+        .where(
+            cads_catalogue.database.Resource.resource_uid == db_model.resource_uid,
+            cads_catalogue.database.Message.live.is_(True),
+            cads_catalogue.database.Message.severity.in_(filter_types),
+        )
+        .order_by(cads_catalogue.database.Message.date.desc())
+        .all()
+    )
+    if messages:
+        return models.Message(
+            id=messages[0].message_uid,
+            # date=messages[0].date,
+            summary=messages[0].summary,
+            url=messages[0].url,
+            severity=messages[0].severity,
+            content=messages[0].content,
+            live=messages[0].live,
+        )
+
+
 def collection_serializer(
     db_model: cads_catalogue.database.Resource,
+    session: sqlalchemy.orm.Session,
     request: fastapi.Request,
     preview: bool = False,
     schema_org: bool = False,
@@ -375,6 +405,8 @@ def collection_serializer(
     assets = generate_assets(
         model=db_model, base_url=config.settings.document_storage_url
     )
+
+    active_message = get_active_message(db_model, session)
 
     additional_properties = {
         **({"assets": assets} if assets else {}),
@@ -391,6 +423,8 @@ def collection_serializer(
         # FIXME: this is not a 100% correct implementation of the STAC scientific extension.
         # One of the sci:xxx should be there, but CAMS dataset are not doing this
         **({"sci:doi": db_model.doi} if db_model.doi else {}),
+        # *** CADS specific extension properties ***
+        **({"cads:message": active_message} if active_message else {}),
     }
 
     if schema_org:
@@ -486,7 +520,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             session, query, q, None, portals=portals
         ).all()
         all_collections = [
-            collection_serializer(collection, request=request, preview=True)
+            collection_serializer(
+                collection, session=session, request=request, preview=True
+            )
             for collection in query_results
         ]
         return all_collections
@@ -535,7 +571,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 )
 
             serialized_collections = [
-                collection_serializer(collection, request=request, preview=True)
+                collection_serializer(
+                    collection, session=session, request=request, preview=True
+                )
                 for collection in (results if not back else reversed(results))
             ]
 
@@ -632,7 +670,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             collection = lookup_id(
                 collection_id, self.collection_table, session, portals=portals
             )
-            return collection_serializer(collection, request=request, preview=False)
+            return collection_serializer(
+                collection, session=session, request=request, preview=False
+            )
 
     def get_item(self, **kwargs: dict[str, Any]) -> None:
         """Access to STAC items: explicitly not implemented."""

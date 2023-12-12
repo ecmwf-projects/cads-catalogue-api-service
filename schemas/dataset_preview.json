@@ -18,6 +18,30 @@
   "properties": {
     "license": {
       "enum": ["various", "proprietary"]
+    },
+    "cads:message": {
+      "type": "object",
+      "title": "Latest message related to this dataset",
+      "description": "The latest and still active message (of type warning or error) related to this dataset",
+      "properties": {
+        "message": {
+          "type": "string",
+          "title": "Message",
+          "description": "The message text"
+        },
+        "type": {
+          "type": "string",
+          "title": "Type",
+          "description": "The message type",
+          "enum": ["warning", "error"]
+        },
+        "date": {
+          "type": "string",
+          "title": "Date",
+          "description": "The date of the message",
+          "format": "date-time"
+        }
+      }
     }
   },
   "required": ["published", "updated"]
