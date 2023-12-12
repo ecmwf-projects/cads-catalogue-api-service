@@ -30,7 +30,7 @@ import stac_fastapi.types.core
 import stac_pydantic
 from dateutil import parser
 
-from . import config, database, dependencies, exceptions, search_utils
+from . import config, database, dependencies, exceptions, models, search_utils
 from .fastapisessionmaker import FastAPISessionMaker
 
 
@@ -502,7 +502,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         back: bool = False,
         route_name="Get Collections",
         search_stats: bool = False,
-    ) -> stac_fastapi.types.stac.Collections:
+    ) -> models.CADSCollections:
         """Read datasets from the catalogue."""
         portals = dependencies.get_portals_values(
             request.headers.get(config.PORTAL_HEADER_NAME)
@@ -516,13 +516,14 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 *database.deferred_columns
             )
             search = search_utils.apply_filters(session, search, q, kw, portals=portals)
+            count = search.count()
             search, sort_by = apply_sorting(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
             collections = search.all()
 
             # Filter function always returns an item more than the limit to know if there is a next/prev page
-            # But response is build or effective page size
+            # But response is build on effective page size
             if len(collections) <= limit:
                 results = collections
             else:
@@ -597,8 +598,11 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                     }
                 )
 
-            collections = stac_fastapi.types.stac.Collections(
-                collections=serialized_collections or [], links=links
+            collections = models.CADSCollections(
+                collections=serialized_collections or [],
+                links=links,
+                numberMatched=count,
+                numberReturned=len(serialized_collections),
             )
 
         if search_stats:
@@ -613,9 +617,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         return collections
 
-    def all_collections(
-        self, request: fastapi.Request
-    ) -> stac_fastapi.types.stac.Collections:
+    def all_collections(self, request: fastapi.Request) -> models.CADSCollections:
         """Read all collections from the catalogue."""
         return self.all_datasets(request=request)
 
