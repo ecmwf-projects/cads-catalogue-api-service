@@ -233,7 +233,8 @@ def generate_collection_links(
 
     url_ref = request.url_for("Get Collections")
 
-    additional_links = []
+    # forced to typecheck here, due to https://github.com/python/mypy/issues/5382
+    additional_links: list[dict[str, Any]] = []
 
     if model.qa_flag:
         additional_links.append(
