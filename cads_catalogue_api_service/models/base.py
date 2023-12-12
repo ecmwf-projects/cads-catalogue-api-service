@@ -28,12 +28,12 @@ class Licence(TypedDict):
     """Licence definition."""
 
     # id here is the licence slug
-    id: str
-    label: str
-    revision: int
+    id: str | None
+    label: str | None
+    revision: int | None
     contents_url: str
     attachment_url: str
-    scope: LicenceCategories
+    scope: LicenceCategories | str | None
 
 
 class Licences(TypedDict):
@@ -45,8 +45,8 @@ class Licences(TypedDict):
 class Keyword(TypedDict):
     """Keyword definition."""
 
-    id: str
-    label: str
+    id: str | None
+    label: str | None
 
 
 class Keywords(TypedDict):
@@ -58,13 +58,13 @@ class Keywords(TypedDict):
 class Message(TypedDict):
     """Message definition."""
 
-    id: str
-    date: datetime.datetime
+    id: str | None
+    date: datetime.datetime | None
     summary: str | None
     url: str | None
-    severity: str
-    content: str
-    live: bool
+    severity: str | None
+    content: str | None
+    live: bool | None
 
 
 class Messages(TypedDict):

@@ -78,7 +78,7 @@ def query_licences(
 def query_licence(
     session: sa.orm.Session,
     licence_uid: str,
-) -> list[cads_catalogue.database.Licence]:
+) -> cads_catalogue.database.Licence:
     """Query a single licence data."""
     query = session.query(
         cads_catalogue.database.Licence.licence_uid,
@@ -111,7 +111,7 @@ def query_licence(
 
 def query_keywords(
     session: sa.orm.Session,
-) -> list[str]:
+) -> list[cads_catalogue.database.Keyword]:
     """Query keywords."""
     results = (
         session.query(cads_catalogue.database.Keyword)
@@ -152,9 +152,9 @@ async def list_licences(
 async def list_licence(
     session=fastapi.Depends(dependencies.get_session),
     licence_uid: str = fastapi.Path(..., title="Licence UID"),
-) -> models.Licences:
+) -> models.Licence:
     """Endpoint to get all registered licences."""
-    licence = query_licence(session, licence_uid)
+    licence: cads_catalogue.database.Licence = query_licence(session, licence_uid)
     return models.Licence(
         id=licence.licence_uid,
         label=licence.title,

@@ -71,15 +71,15 @@ def query_messages(
         results = results.where(
             cads_catalogue.database.Resource.resource_uid == collection_id
         )
-    results = results.order_by(sa.desc(cads_catalogue.database.Message.date)).all()
-    return results
+    results = results.order_by(sa.desc(cads_catalogue.database.Message.date)).all()  # type: ignore
+    return results  # type: ignore
 
 
 @router.get("/collections/{collection_id}/messages", response_model=models.Messages)
 def list_messages_by_id(
     collection_id: str,
     session=fastapi.Depends(dependencies.get_session),
-) -> models.Message:
+) -> models.Messages:
     """Endpoint to get all messages of a specific collection."""
     results = query_messages(
         session=session,
@@ -135,7 +135,7 @@ def list_changelog_by_id(
 def list_messages(
     session=fastapi.Depends(dependencies.get_session),
     portals: list[str] | None = fastapi.Depends(dependencies.get_portals),
-) -> models.Message:
+) -> models.Messages:
     """Endpoint to get all messages."""
     results = query_messages(
         session=session, live=True, is_global=True, portals=portals
