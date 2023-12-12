@@ -21,7 +21,7 @@ import cads_catalogue.config
 import pydantic
 import stac_fastapi.types.config
 
-MAX_LIMIT = 999
+MAX_LIMIT = 50
 
 PORTAL_HEADER_NAME = "X-CADS-Portal"
 

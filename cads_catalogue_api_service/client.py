@@ -30,7 +30,7 @@ import stac_fastapi.types.core
 import stac_pydantic
 from dateutil import parser
 
-from . import config, database, dependencies, exceptions, search_utils
+from . import config, database, dependencies, exceptions, models, search_utils
 from .fastapisessionmaker import FastAPISessionMaker
 
 
@@ -500,7 +500,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         back: bool = False,
         route_name="Get Collections",
         search_stats: bool = False,
-    ) -> stac_fastapi.types.stac.Collections:
+    ) -> models.CADSCollections:
         """Read datasets from the catalogue."""
         portals = dependencies.get_portals_values(
             request.headers.get(config.PORTAL_HEADER_NAME)
@@ -596,14 +596,12 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                     }
                 )
 
-            collections = stac_fastapi.types.stac.Collections(
-                collections=serialized_collections or [], links=links
+            collections = models.CADSCollections(
+                collections=serialized_collections or [],
+                links=links,
+                numberMatched=count,
+                numberReturned=len(serialized_collections),
             )
-
-            # Injecting elements count (waiting for STAC API to support this officially)
-            # See https://github.com/radiantearth/stac-api-spec/issues/442
-            collections["numberMatched"] = count
-            collections["numberReturned"] = len(serialized_collections)
 
         if search_stats:
             with self.reader.context_session() as session:
@@ -617,9 +615,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         return collections
 
-    def all_collections(
-        self, request: fastapi.Request
-    ) -> stac_fastapi.types.stac.Collections:
+    def all_collections(self, request: fastapi.Request) -> models.CADSCollections:
         """Read all collections from the catalogue."""
         return self.all_datasets(request=request)
 

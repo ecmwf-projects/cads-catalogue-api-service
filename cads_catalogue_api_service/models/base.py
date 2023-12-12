@@ -18,6 +18,8 @@ import datetime
 import enum
 from typing import TypedDict
 
+import stac_fastapi.types
+
 
 class LicenceCategories(str, enum.Enum):
     dataset: str = "dataset"
@@ -77,3 +79,12 @@ class Changelog(TypedDict):
     """Changelog vocabulary."""
 
     changelog: list[Message]
+
+
+class CADSCollections(stac_fastapi.types.stac.Collections):
+    """STAC collections entitiy with additional fields not (yet) in the STAC spec."""
+
+    # Injecting elements count (waiting for STAC API to support this officially)
+    # See https://github.com/radiantearth/stac-api-spec/issues/442
+    numberMatched: int | None
+    numberReturned: int | None

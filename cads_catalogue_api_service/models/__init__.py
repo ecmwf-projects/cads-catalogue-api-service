@@ -1,5 +1,6 @@
 from . import schema_org
 from .base import (
+    CADSCollections,
     Changelog,
     Keyword,
     Keywords,
@@ -11,13 +12,14 @@ from .base import (
 )
 
 __all__ = [
-    "LicenceCategories",
-    "Licence",
-    "Licences",
+    "CADSCollections",
+    "Changelog",
     "Keyword",
     "Keywords",
+    "Licence",
+    "LicenceCategories",
+    "Licences",
     "Message",
     "Messages",
-    "Changelog",
     "schema_org",
 ]
