@@ -71,6 +71,7 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
                 resource_uid="another-dataset", title="Yet another dataset"
             )
         ],
+        qa_flag=True,
     )
 
 
@@ -104,6 +105,14 @@ def generate_expected(
                 "rel": "root",
                 "type": "application/json",
                 "href": base_url,
+            },
+            {
+                "rel": "qa",
+                "type": "text/html",
+                "title": "Quality assessment of the dataset",
+                "href": urllib.parse.urljoin(
+                    base_url, "datasets/era5-something?tab=quality_assurance_tab"
+                ),
             },
         ]
         + (
@@ -159,13 +168,6 @@ def generate_expected(
                         base_url, "collections/era5-something/messages"
                     ),
                     "title": "All messages related to the selected dataset",
-                },
-                {
-                    "rel": "changelog",
-                    "href": urllib.parse.urljoin(
-                        base_url, "collections/era5-something/messages/changelog"
-                    ),
-                    "title": "All archived messages related to the selected dataset",
                 },
             ]
         ),

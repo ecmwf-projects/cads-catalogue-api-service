@@ -41,6 +41,7 @@ def query_collection(
         session.query(cads_catalogue.database.Resource)
         .filter(cads_catalogue.database.Resource.resource_uid == collection_id)
         .one(),
+        session=session,
         request=request,
         schema_org=True,
     )
