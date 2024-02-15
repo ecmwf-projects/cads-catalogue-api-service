@@ -72,7 +72,7 @@ def query_licences(
         .order_by(cads_catalogue.database.Licence.title)
         .all()
     )
-    return results
+    return results  # type: ignore
 
 
 def query_licence(
@@ -101,12 +101,12 @@ def query_licence(
             .order_by(cads_catalogue.database.Licence.title)
             .one()
         )
-    except sa.exc.NoResultFound:
+    except sa.exc.NoResultFound as exc:
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail=f"licence {licence_uid} not found",
-        )
-    return results
+        ) from exc
+    return results  # type: ignore
 
 
 def query_keywords(
