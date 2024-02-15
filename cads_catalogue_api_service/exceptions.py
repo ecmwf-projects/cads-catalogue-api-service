@@ -64,7 +64,7 @@ def add_exception_handlers(
         app.add_exception_handler(exc, exception_handler_factory(code))
 
     def request_validation_exception_handler(
-        request: fastapi.Request, exc: fastapi.exceptions.RequestValidationError
+        request: fastapi.Request, exc: Exception
     ) -> fastapi.responses.JSONResponse:
         return generate_exception_response(
             title="submitted data is not valid",
@@ -94,7 +94,8 @@ class FeatureNotImplemented(NotImplementedError):
 
 def generate_exception_response(
     title, detail=None, status_code=starlette.status.HTTP_500_INTERNAL_SERVER_ERROR
-):
+) -> fastapi.responses.JSONResponse:
+    """Build standard JSON error response."""
     return fastapi.responses.JSONResponse(
         status_code=status_code,
         content={
