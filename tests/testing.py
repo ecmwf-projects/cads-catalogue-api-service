@@ -72,6 +72,7 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
             )
         ],
         qa_flag=True,
+        disabled_reason="Disabled because of a reason",
     )
 
 
@@ -174,6 +175,7 @@ def generate_expected(
         "published": "2020-01-01T00:00:00Z",
         "updated": "2020-02-05T00:00:00Z",
         "sci:doi": "11.2222/cads.12345",
+        "cads:disabled_reason": "Disabled because of a reason",
     }
     if not preview:
         expected = {
