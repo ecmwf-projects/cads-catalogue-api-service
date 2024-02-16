@@ -425,8 +425,11 @@ def collection_serializer(
         # FIXME: this is not a 100% correct implementation of the STAC scientific extension.
         # One of the sci:xxx should be there, but CAMS dataset are not doing this
         **({"sci:doi": db_model.doi} if db_model.doi else {}),
+        # *****************************************
         # *** CADS specific extension properties ***
+        # *****************************************
         **({"cads:message": active_message} if active_message else {}),
+        "cads:disabled_reason": db_model.disabled_reason,
     }
 
     if schema_org:
@@ -449,9 +452,9 @@ def collection_serializer(
         keywords=[keyword.keyword_name for keyword in db_model.keywords],
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         # note that this small check, evenif correct, is triggering a lot of subrequests
-        license="various"
-        if not preview and len(db_model.licences) > 1
-        else "proprietary",
+        license=(
+            "various" if not preview and len(db_model.licences) > 1 else "proprietary"
+        ),
         extent=get_extent(db_model),
         links=collection_links,
         **additional_properties,

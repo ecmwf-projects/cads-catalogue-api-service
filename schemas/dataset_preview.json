@@ -19,6 +19,11 @@
     "license": {
       "enum": ["various", "proprietary"]
     },
+    "cads:disabled_reason": {
+      "type": ["string", "null"],
+      "title": "Reason why download is disabled",
+      "description": "The reason why the download form on this this dataset will not be enabled to standard users"
+    },
     "cads:message": {
       "type": "object",
       "title": "Latest message related to this dataset",
