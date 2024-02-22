@@ -90,16 +90,18 @@ def apply_filters(
 
     # FT search
     if q:
-        # TODO: apply weigths according to some configuration
-        weight_title = 1.0
-        weight_description = 0.4
-        weight_fulltext = 0.2
+        weight_high_priority_terms = 1.0
+        weight_title = 0.8
+        weight_description = 0.5
+        weight_fulltext = 0.3
         tsquery = sa.func.to_tsquery("english", "|".join(q.split()))
         search = search.filter(
             cads_catalogue.database.Resource.search_field.bool_op("@@")(tsquery)
         ).order_by(
             sa.func.ts_rank(
-                "{0.1,%s,%s,%s}" % (weight_fulltext, weight_description, weight_title),
+                "{%s,%s,%s,%s}" % (
+                    # NOTE: order of weights follows {D,C,B,A} labelling of 'search_field' of table resources
+                    weight_high_priority_terms, weight_fulltext, weight_description, weight_title),
                 cads_catalogue.database.Resource.search_field,
                 tsquery,
             ).desc()
