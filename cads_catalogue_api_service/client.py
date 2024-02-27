@@ -48,28 +48,31 @@ def encode_base64(decoded: str) -> str:
     return encoded_str
 
 
-def encode_cursor(plain_cursor: Any) -> str:
+def encode_cursor(plain_cursors: list[Any]) -> str:
     """Encode the cursor.
 
     Encoding is based on the type of the plain cursor value
     """
-    encoded = None
-    match type(plain_cursor):  # noqa: E999
-        case datetime.datetime:
-            encoded = encode_base64(plain_cursor.astimezone().isoformat())
-        case _:
-            encoded = encode_base64(str(plain_cursor))
-    return encoded
+    encoded = []
+    for plain_cursor in plain_cursors:
+        match type(plain_cursor):  # noqa: E999
+            case datetime.datetime:
+                encoded.append(encode_base64(plain_cursor.astimezone().isoformat()))
+            case _:
+                encoded.append(encode_base64(str(plain_cursor)))
+    return ",".join(encoded)
 
 
-def decode_cursor(encoded_cursor: str, sortby: str) -> Any:
+def decode_cursor(encoded_cursors: str, sortby: str) -> list[str | datetime.datetime]:
     """Decode the cursor to the original entity."""
-    decoded: str | datetime.datetime | None = None
-    match sortby:
-        case "update":
-            decoded = parser.parse(decode_base64(encoded_cursor))
-        case _:
-            decoded = decode_base64(encoded_cursor)
+    cursors = encoded_cursors.split(",")
+    decoded: list[str | datetime.datetime] = []
+    for encoded_cursor in cursors:
+        match sortby:
+            case "update":
+                decoded.append(parser.parse(decode_base64(encoded_cursor)))
+            case _:
+                decoded.append(decode_base64(encoded_cursor))
     return decoded
 
 
@@ -79,11 +82,17 @@ def get_sorting_clause(
     """Get the sorting clause."""
     supported_sorts = {
         "update": (
-            model.resource_update,
+            [model.resource_update, model.record_update],
             sqlalchemy.desc if not inverse else sqlalchemy.asc,
         ),
-        "title": (model.title, sqlalchemy.asc if not inverse else sqlalchemy.desc),
-        "id": (model.resource_uid, sqlalchemy.asc if not inverse else sqlalchemy.desc),
+        "title": (
+            [model.title, model.resource_uid],
+            sqlalchemy.asc if not inverse else sqlalchemy.desc,
+        ),
+        "id": (
+            [model.resource_uid],
+            sqlalchemy.asc if not inverse else sqlalchemy.desc,
+        ),
     }
     return supported_sorts.get(sort) or supported_sorts["update"]
 
@@ -103,7 +112,7 @@ def get_cursor_compare_criteria(sortby: str, back: bool = False) -> str:
     return compare_criteria[0 if not back else 1]
 
 
-def apply_sorting(
+def apply_sorting_and_limit(
     search: sqlalchemy.orm.Query,
     sortby: str,
     cursor: str | None,
@@ -118,27 +127,30 @@ def apply_sorting(
     sorting_clause = get_sorting_clause(
         cads_catalogue.database.Resource, sortby, inverse
     )
-    sort_by, sort_order_fn = sorting_clause
+    sort_bys, sort_order_fn = sorting_clause
 
     if sortby != "relevance":
-        search = search.order_by(sort_order_fn(sort_by))
+        search = search.order_by(*[sort_order_fn(sort_by) for sort_by in sort_bys])
     get_cursor_direction = get_cursor_compare_criteria(sortby, inverse)
     # cursor meaning is based on the sorting criteria
     if cursor:
-        sort_expr = getattr(sort_by, get_cursor_direction)(
-            decode_cursor(cursor, sortby)
-        )
-        search = search.filter(*(sort_expr,))
+        sort_expressions = []
+        for i, sort_by in enumerate(sort_bys):
+            cursor_value = decode_cursor(cursor, sortby)
+            sort_expressions.append(
+                getattr(sort_by, get_cursor_direction)(cursor_value[i])
+            )
+        search = search.filter(*sort_expressions)
 
-    # limit is +1 for getting the next page
+    # limit applied is +1 for getting in advance data for the next page
     search = search.limit(limit + 1)
 
-    return search, sort_by
+    return search, sort_bys
 
 
 def get_next_prev_links(
     collections: list,
-    sort_by,
+    sort_bys: list,
     cursor: str | None,
     limit: int,
     back: bool = False,
@@ -157,14 +169,17 @@ def get_next_prev_links(
     # Next
     if len(collections) > limit or back:
         # We need a next link, as we have more records to explore
-        next_cursor = cursor if back else getattr(collections[-1], sort_by.key)
-        links["next"] = {"cursor": encode_cursor(next_cursor)}
+        next_cursor = [getattr(collections[-1], sort_by.key) for sort_by in sort_bys]
+        links["next"] = {"cursor": cursor if back else encode_cursor(next_cursor)}
     # Prev
     if cursor:
         # We have a cursor, so we provide a back link
         # NOTE: this is not perfect
         # The back link is always present because we don't know anything about the previous page
-        back_cursor = getattr((results[0] if not back else results[-1]), sort_by.key)
+        back_cursor = [
+            getattr(results[0] if not back else results[-1], sort_by.key)
+            for sort_by in sort_bys
+        ]
         links["prev"] = {
             "cursor": encode_cursor(back_cursor),
             "back": "true",
@@ -368,7 +383,7 @@ def get_active_message(
     filter_types=["warning", "critical"],
 ) -> models.Message | None:
     """Return the latest active message for a dataset."""
-    messages = (
+    message = (
         session.query(cads_catalogue.database.Message)
         .join(cads_catalogue.database.Message.resources)
         .where(
@@ -377,17 +392,17 @@ def get_active_message(
             cads_catalogue.database.Message.severity.in_(filter_types),
         )
         .order_by(cads_catalogue.database.Message.date.desc())
-        .all()
+        .first()
     )
-    if messages:
+    if message:
         return models.Message(
-            id=messages[0].message_uid,
+            id=message.message_uid,
             date=None,
-            summary=messages[0].summary,
-            url=messages[0].url,
-            severity=messages[0].severity,
-            content=messages[0].content,
-            live=messages[0].live,
+            summary=message.summary,
+            url=message.url,
+            severity=message.severity,
+            content=message.content,
+            live=message.live,
         )
     return None
 
@@ -398,6 +413,7 @@ def collection_serializer(
     request: fastapi.Request,
     preview: bool = False,
     schema_org: bool = False,
+    with_message: bool = True,
 ) -> stac_fastapi.types.stac.Collection:
     """Transform database model to stac collection."""
     collection_links = generate_collection_links(
@@ -408,7 +424,7 @@ def collection_serializer(
         model=db_model, base_url=config.settings.document_storage_url
     )
 
-    active_message = get_active_message(db_model, session)
+    active_message = get_active_message(db_model, session) if with_message else None
 
     additional_properties = {
         **({"assets": assets} if assets else {}),
@@ -550,27 +566,27 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         )
 
         route_ref = str(request.url_for(route_name))
-
         base_url = str(request.base_url)
+
         with self.reader.context_session() as session:
             search = session.query(self.collection_table).options(
                 *database.deferred_columns
             )
             search = search_utils.apply_filters(session, search, q, kw, portals=portals)
             count = search.count()
-            search, sort_by = apply_sorting(
+            search, sort_bys = apply_sorting_and_limit(
                 search=search, sortby=sortby, cursor=cursor, limit=limit, inverse=back
             )
             collections = search.all()
 
-            # Filter function always returns an item more than the limit to know if there is a next/prev page
+            # Filter function above returns an item more than the limit to know if there is a next/prev page
             # But response is build on effective page size
             if len(collections) <= limit:
                 results = collections
             else:
                 results = collections[:-1]
 
-            if len(results) == 0:
+            if len(results) == 0 and route_name != "Get Collections":
                 raise stac_fastapi.types.errors.NotFoundError(
                     "Search does not match any dataset"
                 )
@@ -602,11 +618,27 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
             next_prev_links = get_next_prev_links(
                 collections=collections,
-                sort_by=sort_by,
+                sort_bys=sort_bys,
                 cursor=cursor,
                 limit=limit,
                 back=back,
             )
+
+            if next_prev_links.get("prev"):
+                qs = urllib.parse.urlencode(
+                    {
+                        **{k: v for (k, v) in request.query_params.items()},
+                        "cursor": next_prev_links["prev"]["cursor"],
+                        "back": "true",
+                    }
+                )
+                links.append(
+                    {
+                        "rel": "prev",
+                        "href": f"{route_ref}?{qs}",
+                        "type": stac_pydantic.shared.MimeTypes.json,
+                    }
+                )
             if next_prev_links.get("next"):
                 qs = urllib.parse.urlencode(
                     {
@@ -621,21 +653,6 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 links.append(
                     {
                         "rel": "next",
-                        "href": f"{route_ref}?{qs}",
-                        "type": stac_pydantic.shared.MimeTypes.json,
-                    }
-                )
-            if next_prev_links.get("prev"):
-                qs = urllib.parse.urlencode(
-                    {
-                        **{k: v for (k, v) in request.query_params.items()},
-                        "cursor": next_prev_links["prev"]["cursor"],
-                        "back": "true",
-                    }
-                )
-                links.append(
-                    {
-                        "rel": "prev",
                         "href": f"{route_ref}?{qs}",
                         "type": stac_pydantic.shared.MimeTypes.json,
                     }
