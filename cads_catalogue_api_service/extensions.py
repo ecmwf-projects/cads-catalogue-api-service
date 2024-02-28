@@ -39,15 +39,8 @@ def datasets_search(
     sortby: CatalogueSortCriterion = fastapi.Query(
         default=CatalogueSortCriterion.update_desc
     ),
-    # FIXME: remove this deprecated parameter
-    sorting: CatalogueSortCriterion = fastapi.Query(
-        default=None,
-        deprecated=True,
-        description="Deprecated, use sortby instead.",
-    ),
-    cursor: str = fastapi.Query(default=None, include_in_schema=False),
+    page: int = fastapi.Query(default=0, ge=0),
     limit: int = fastapi.Query(default=config.MAX_LIMIT, ge=1, le=config.MAX_LIMIT),
-    back: bool = fastapi.Query(default=False, include_in_schema=False),
     search_stats: bool = fastapi.Query(default=True),
 ) -> dict[str, Any]:
     """Filter datasets based on search parameters."""
@@ -55,10 +48,9 @@ def datasets_search(
         request=request,
         q=q,
         kw=kw,
-        sortby=sorting or sortby,
-        cursor=cursor,
+        sortby=sortby,
+        page=page,
         limit=limit,
-        back=back,
         route_name="Datasets Search",
         search_stats=search_stats,
     )

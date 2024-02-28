@@ -92,7 +92,7 @@ def test_get_cursor_compare_criteria() -> None:
 def test_apply_sorting() -> None:
     query = FakeQuery()
 
-    search, sort_by = cads_catalogue_api_service.client.apply_sorting(
+    search, sort_by = cads_catalogue_api_service.client.apply_sorting_and_limit(
         query, sortby="id", cursor=None, limit=10
     )
     assert sort_by.key == "resource_uid"
