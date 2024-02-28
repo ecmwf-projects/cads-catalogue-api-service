@@ -99,9 +99,14 @@ def apply_filters(
             cads_catalogue.database.Resource.search_field.bool_op("@@")(tsquery)
         ).order_by(
             sa.func.ts_rank(
-                "{%s,%s,%s,%s}" % (
+                "{%s,%s,%s,%s}"
+                % (
                     # NOTE: order of weights follows {D,C,B,A} labelling of 'search_field' of table resources
-                    weight_high_priority_terms, weight_fulltext, weight_description, weight_title),
+                    weight_high_priority_terms,
+                    weight_fulltext,
+                    weight_description,
+                    weight_title,
+                ),
                 cads_catalogue.database.Resource.search_field,
                 tsquery,
             ).desc()
