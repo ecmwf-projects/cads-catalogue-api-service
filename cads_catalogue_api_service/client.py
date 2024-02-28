@@ -414,6 +414,7 @@ def collection_serializer(
     preview: bool = False,
     schema_org: bool = False,
     with_message: bool = True,
+    with_keywords: bool = True,
 ) -> stac_fastapi.types.stac.Collection:
     """Transform database model to stac collection."""
     collection_links = generate_collection_links(
@@ -465,7 +466,11 @@ def collection_serializer(
         title=db_model.title,
         description=db_model.abstract,
         # FIXME: this is triggering a long list of subqueries
-        keywords=[keyword.keyword_name for keyword in db_model.keywords],
+        keywords=(
+            [keyword.keyword_name for keyword in db_model.keywords]
+            if with_keywords
+            else []
+        ),
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         # note that this small check, evenif correct, is triggering a lot of subrequests
         license=(
