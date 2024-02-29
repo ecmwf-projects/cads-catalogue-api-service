@@ -20,6 +20,12 @@ import cads_catalogue.database
 import sqlalchemy as sa
 import stac_fastapi.types
 
+# TODO: this should be placed in a configuration file
+WEIGHT_HIGH_PRIORITY_TERMS = 1.0
+WEIGHT_TITLE = 0.8
+WEIGHT_DESCRIPTION = 0.5
+WEIGHT_FULLTEXT = 0.3
+
 
 def split_by_category(keywords: list) -> list:
     """Given a list of keywords composed by a "category: value", split them in multiple lists.
@@ -33,6 +39,39 @@ def split_by_category(keywords: list) -> list:
             categories[category] = []
         categories[category].append(":".join([category, value]))
     return list(categories.values())
+
+
+def generate_ts_query(q: str = ""):
+    """Generate the string tokenizer from query string.
+
+    Parameters
+    ----------
+    q : str, optional
+        query string, as read from the API request
+
+    Returns
+    -------
+    SQL Function expression
+        Tokenized expression used for the full text search or sorting
+    """
+    return sa.func.to_tsquery("english", "|".join(q.split()))
+
+
+def fulltext_order_by(q: str):
+    """Generate the full text search order by clause."""
+    tsquery = generate_ts_query(q)
+    return sa.func.ts_rank(
+        "{%s,%s,%s,%s}"
+        % (
+            # NOTE: order of weights follows {D,C,B,A} labelling of 'search_field' of table resources
+            WEIGHT_HIGH_PRIORITY_TERMS,
+            WEIGHT_FULLTEXT,
+            WEIGHT_DESCRIPTION,
+            WEIGHT_TITLE,
+        ),
+        cads_catalogue.database.Resource.search_field,
+        tsquery,
+    ).desc()
 
 
 def apply_filters(
@@ -90,28 +129,10 @@ def apply_filters(
 
     # FT search
     if q:
-        weight_high_priority_terms = 1.0
-        weight_title = 0.8
-        weight_description = 0.5
-        weight_fulltext = 0.3
-        tsquery = sa.func.to_tsquery("english", "|".join(q.split()))
+        tsquery = generate_ts_query(q)
         search = search.filter(
             cads_catalogue.database.Resource.search_field.bool_op("@@")(tsquery)
-        ).order_by(
-            sa.func.ts_rank(
-                "{%s,%s,%s,%s}"
-                % (
-                    # NOTE: order of weights follows {D,C,B,A} labelling of 'search_field' of table resources
-                    weight_high_priority_terms,
-                    weight_fulltext,
-                    weight_description,
-                    weight_title,
-                ),
-                cads_catalogue.database.Resource.search_field,
-                tsquery,
-            ).desc()
         )
-
     return search
 
 

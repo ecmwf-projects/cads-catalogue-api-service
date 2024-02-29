@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-import datetime
 import urllib
 from typing import Any, Type
 
@@ -28,28 +26,17 @@ import sqlalchemy.orm
 import stac_fastapi.types
 import stac_fastapi.types.core
 import stac_pydantic
-from dateutil import parser
 
-from . import config, database, dependencies, exceptions, models, search_utils
+from . import (
+    config,
+    database,
+    dependencies,
+    exceptions,
+    extensions,
+    models,
+    search_utils,
+)
 from .fastapisessionmaker import FastAPISessionMaker
-
-
-def decode_base64(encoded: str) -> str:
-    encoded_bytes = encoded.encode("ascii")
-    decoded_bytes = base64.b64decode(encoded_bytes)
-    decoded_str = decoded_bytes.decode("ascii")
-    return decoded_str
-
-
-def decode_cursor(encoded_cursor: str, sortby: str) -> Any:
-    """Decode the cursor to the original entity."""
-    decoded: str | datetime.datetime | None = None
-    match sortby:
-        case "update":
-            decoded = parser.parse(decode_base64(encoded_cursor))
-        case _:
-            decoded = decode_base64(encoded_cursor)
-    return decoded
 
 
 def get_sorting_clause(
@@ -69,6 +56,7 @@ def get_sorting_clause(
 
 def apply_sorting_and_limit(
     search: sqlalchemy.orm.Query,
+    q: str,
     sortby: str,
     page: int,
     limit: int,
@@ -77,12 +65,15 @@ def apply_sorting_and_limit(
     sorting_clause = get_sorting_clause(cads_catalogue.database.Resource, sortby)
     sort_by, sort_order_fn = sorting_clause
 
-    if sortby != "relevance":
+    if sortby == "relevance" and q:
+        # generate sorting by relevance based on input
+        search = search.order_by(search_utils.fulltext_order_by(q))
+    else:
         search = search.order_by(sort_order_fn(sort_by))
 
     search = search.offset(page * limit).limit(limit)
 
-    return search, sort_by
+    return search
 
 
 def get_next_prev_links(
@@ -95,7 +86,6 @@ def get_next_prev_links(
 
     # See https://github.com/radiantearth/stac-api-spec/tree/main/item-search#pagination
     """
-    print(page, limit, count, sortby)
     links = {}
 
     # Next
@@ -479,7 +469,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         request: fastapi.Request,
         q: str | None = None,
         kw: list[str] | None = [],
-        sortby: str = "relevance",
+        sortby: str = extensions.CatalogueSortCriterion.update_desc,
         page: int = 0,
         limit: int = 999,
         route_name="Get Collections",
@@ -499,10 +489,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             )
             search = search_utils.apply_filters(session, search, q, kw, portals=portals)
             count = search.count()
-            search, sort_by = apply_sorting_and_limit(
-                search=search, sortby=sortby, page=page, limit=limit
+            search = apply_sorting_and_limit(
+                search=search, q=q, sortby=sortby, page=page, limit=limit
             )
-            print(sort_by)
             collections = search.all()
 
             if len(collections) == 0 and route_name != "Get Collections":
@@ -542,7 +531,6 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 limit=limit,
                 count=count,
             )
-            print(next_prev_links)
 
             if next_prev_links.get("prev"):
                 qs = urllib.parse.urlencode(
