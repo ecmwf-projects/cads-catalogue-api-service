@@ -56,10 +56,10 @@ def get_sorting_clause(
 
 def apply_sorting_and_limit(
     search: sqlalchemy.orm.Query,
-    q: str,
     sortby: str,
     page: int,
     limit: int,
+    q: str | None = "",
 ):
     """Apply sortby and limit to the running query."""
     sorting_clause = get_sorting_clause(cads_catalogue.database.Resource, sortby)
@@ -77,7 +77,7 @@ def apply_sorting_and_limit(
 
 
 def get_next_prev_links(
-    sortby: extensions.CatalogueSortCriterion,
+    sortby: str,
     page: int,
     limit: int,
     count: int,
@@ -91,10 +91,10 @@ def get_next_prev_links(
     # Next
     if page * limit + limit < count:
         # We need a next link, as we have more records to explore
-        links["next"] = dict(page=page + 1, limit=limit, sortby=sortby.value)
+        links["next"] = dict(page=page + 1, limit=limit, sortby=sortby)
     # Prev
     if page > 0:
-        links["prev"] = dict(page=page - 1, limit=limit, sortby=sortby.value)
+        links["prev"] = dict(page=page - 1, limit=limit, sortby=sortby)
     return links
 
 
