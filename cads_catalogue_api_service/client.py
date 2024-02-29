@@ -469,7 +469,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         request: fastapi.Request,
         q: str | None = None,
         kw: list[str] | None = [],
-        sortby: str = extensions.CatalogueSortCriterion.update_desc,
+        sortby: extensions.CatalogueSortCriterion = extensions.CatalogueSortCriterion.update_desc,
         page: int = 0,
         limit: int = 999,
         route_name="Get Collections",
