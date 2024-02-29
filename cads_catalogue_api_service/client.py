@@ -104,7 +104,7 @@ def get_next_prev_links(
         links["next"] = dict(page=page + 1, limit=limit, sortby=sortby.value)
     # Prev
     if page > 0:
-        links["next"] = dict(page=page - 1, limit=limit, sortby=sortby.value)
+        links["prev"] = dict(page=page - 1, limit=limit, sortby=sortby.value)
     return links
 
 
