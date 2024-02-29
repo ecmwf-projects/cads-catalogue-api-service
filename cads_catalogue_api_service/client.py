@@ -526,7 +526,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             ]
 
             next_prev_links = get_next_prev_links(
-                sortby=sortby,
+                sortby=sortby.value,
                 page=page,
                 limit=limit,
                 count=count,
