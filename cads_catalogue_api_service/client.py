@@ -77,7 +77,7 @@ def apply_sorting_and_limit(
 
 
 def get_next_prev_links(
-    sortby: str,
+    sortby: extensions.CatalogueSortCriterion,
     page: int,
     limit: int,
     count: int,

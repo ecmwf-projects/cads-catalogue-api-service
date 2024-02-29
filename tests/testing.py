@@ -71,13 +71,33 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
                 resource_uid="another-dataset", title="Yet another dataset"
             )
         ],
+        messages=[
+            cads_catalogue.database.Message(
+                message_uid="message-1",
+                date=datetime.datetime.now(),
+                content="Message 1",
+                severity="info",
+                live=True,
+            ),
+            cads_catalogue.database.Message(
+                message_uid="message-2",
+                date=datetime.datetime.now(),
+                content="Message 2",
+                severity="warning",
+                live=True,
+            ),
+        ],
         qa_flag=True,
         disabled_reason="Disabled because of a reason",
+        layout="resouces/reanalysis-era5-pressure-levels/layout.json",
     )
 
 
 def generate_expected(
-    base_url="http://foo.org/", document_storage_url="/document-storage/", preview=False
+    base_url="http://foo.org/",
+    document_storage_url="/document-storage/",
+    preview=False,
+    schema_org=False,
 ) -> dict:
     expected = {
         "type": "Collection",
@@ -91,6 +111,17 @@ def generate_expected(
             "spatial": {"bbox": [[-0.5, 45.0, 50.0, 15.0]]},
             "temporal": {"interval": [["1980-01-01T00:00:00Z", None]]},
         },
+        **(
+            {
+                "creator_contact_email": None,
+                "creator_name": None,
+                "creator_type": None,
+                "creator_url": None,
+                "file_format": None,
+            }
+            if schema_org
+            else {}
+        ),
         "links": [
             {
                 "rel": "self",
@@ -157,6 +188,11 @@ def generate_expected(
                     "type": "application/json",
                 },
                 {
+                    "href": "https://mycatalogue.org/document-storage/resouces/reanalysis-era5-pressure-levels/layout.json",
+                    "rel": "layout",
+                    "type": "application/json",
+                },
+                {
                     "rel": "related",
                     "href": urllib.parse.urljoin(
                         base_url, "/collections/another-dataset"
@@ -176,6 +212,13 @@ def generate_expected(
         "updated": "2020-02-05T00:00:00Z",
         "sci:doi": "11.2222/cads.12345",
         "cads:disabled_reason": "Disabled because of a reason",
+        "cads:message": {
+            "content": "Message 2",
+            "date": datetime.datetime(2024, 1, 1, 12, 15, 34),
+            "id": "message-2",
+            "live": True,
+            "severity": "warning",
+        },
     }
     if not preview:
         expected = {
