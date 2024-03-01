@@ -14,9 +14,11 @@
 
 # type: ignore
 
-from typing import Any
+import sqlalchemy as sa
+from testing import get_record
 
 import cads_catalogue_api_service.client
+import cads_catalogue_api_service.extensions
 
 
 class FakeQuery:
@@ -28,125 +30,110 @@ class FakeQuery:
         self.limit = limit
         return self
 
-
-class MockObj:
-    def __init__(self, value: int):
-        self.value = str(value)
-
-    def __getattribute__(self, __name: str) -> Any:
-        if __name != "value":
-            global called_key
-            called_key = self.value
-            return self.value
-        return super().__getattribute__(__name)
-
-
-called_key = None
-
-
-class MockSortBy:
-    def __init__(self, value: str):
-        self.value = value
-
-    @property
-    def key(self):
-        return self.value
-
-
-def test_get_cursor_compare_criteria() -> None:
-    # unknown criteria
-    assert (
-        cads_catalogue_api_service.client.get_cursor_compare_criteria(sortby="foo")
-        == "__ge__"
-    )
-    assert (
-        cads_catalogue_api_service.client.get_cursor_compare_criteria(
-            sortby="foo", back=True
-        )
-        == "__lt__"
-    )
-    # asc criteria
-    assert (
-        cads_catalogue_api_service.client.get_cursor_compare_criteria(sortby="id")
-        == "__ge__"
-    )
-    assert (
-        cads_catalogue_api_service.client.get_cursor_compare_criteria(
-            sortby="id", back=True
-        )
-        == "__lt__"
-    )
-    # desc criteria
-    assert (
-        cads_catalogue_api_service.client.get_cursor_compare_criteria(sortby="update")
-        == "__le__"
-    )
-    assert (
-        cads_catalogue_api_service.client.get_cursor_compare_criteria(
-            sortby="update", back=True
-        )
-        == "__gt__"
-    )
+    def offset(self, offset: int):
+        self.offset = offset
+        return self
 
 
 def test_apply_sorting() -> None:
     query = FakeQuery()
-
-    search, sort_by = cads_catalogue_api_service.client.apply_sorting(
-        query, sortby="id", cursor=None, limit=10
+    search = cads_catalogue_api_service.client.apply_sorting_and_limit(
+        query, q="", sortby="id", page=2, limit=10
     )
-    assert sort_by.key == "resource_uid"
-    assert search.limit == 11
+
+    assert search.limit == 10
+    assert search.offset == 20
+    assert search.order_by.element.key == "resource_uid"
+
+    query = FakeQuery()
+    search = cads_catalogue_api_service.client.apply_sorting_and_limit(
+        query, q="foo", sortby="relevance", page=0, limit=10
+    )
+
+    assert search.limit == 10
+    assert search.offset == 0
+    assert search.order_by.element.name == "ts_rank"
 
 
 def test_get_next_prev_links() -> None:
-    collections = [MockObj(v) for v in range(1, 17)]
-
     next_prev_links = cads_catalogue_api_service.client.get_next_prev_links(
-        collections=collections[0:11], sort_by=MockSortBy("id"), cursor=None, limit=10
+        sortby=cads_catalogue_api_service.extensions.CatalogueSortCriterion.id_asc,
+        page=0,
+        limit=10,
+        count=100,
     )
 
-    assert next_prev_links.get("next") == {"cursor": "MTE="}
+    assert next_prev_links.get("next") == {
+        "limit": 10,
+        "page": 1,
+        "sortby": cads_catalogue_api_service.extensions.CatalogueSortCriterion.id_asc.value,
+    }
     assert next_prev_links.get("prev") is None
-    assert called_key == "11"
 
     next_prev_links = cads_catalogue_api_service.client.get_next_prev_links(
-        collections=collections[2:13], sort_by=MockSortBy("id"), cursor="2", limit=10
-    )
-
-    assert next_prev_links.get("next") == {"cursor": "MTM="}
-    assert next_prev_links.get("prev") == {"back": "true", "cursor": "Mw=="}
-    assert called_key == "3"
-
-    next_prev_links = cads_catalogue_api_service.client.get_next_prev_links(
-        collections=collections[2:13],
-        sort_by=MockSortBy("id"),
-        cursor="2",
+        sortby=cads_catalogue_api_service.extensions.CatalogueSortCriterion.id_asc,
+        page=2,
         limit=10,
-        back=True,
+        count=100,
     )
 
-    assert next_prev_links.get("next") == {"cursor": "Mg=="}
-    assert next_prev_links.get("prev") == {"back": "true", "cursor": "MTI="}
-    assert called_key == "12"
+    assert next_prev_links.get("prev") == {
+        "limit": 10,
+        "page": 1,
+        "sortby": cads_catalogue_api_service.extensions.CatalogueSortCriterion.id_asc.value,
+    }
+    assert next_prev_links.get("next") == {
+        "limit": 10,
+        "page": 3,
+        "sortby": cads_catalogue_api_service.extensions.CatalogueSortCriterion.id_asc.value,
+    }
 
     next_prev_links = cads_catalogue_api_service.client.get_next_prev_links(
-        collections=collections[0:4],
-        sort_by=MockSortBy("id"),
-        cursor=None,
+        sortby=cads_catalogue_api_service.extensions.CatalogueSortCriterion.id_asc,
+        page=9,
         limit=10,
+        count=100,
     )
 
+    assert next_prev_links.get("prev") == {
+        "limit": 10,
+        "page": 8,
+        "sortby": cads_catalogue_api_service.extensions.CatalogueSortCriterion.id_asc.value,
+    }
     assert next_prev_links.get("next") is None
-    assert next_prev_links.get("prev") is None
 
     next_prev_links = cads_catalogue_api_service.client.get_next_prev_links(
-        collections=collections[2:6],
-        sort_by=MockSortBy("id"),
-        cursor="2",
+        sortby=cads_catalogue_api_service.extensions.CatalogueSortCriterion.id_asc,
+        page=9,
         limit=10,
-        back=True,
+        count=96,
     )
 
-    assert next_prev_links.get("next") == {"cursor": "Mg=="}
-    assert next_prev_links.get("prev") == {"back": "true", "cursor": "Ng=="}
+    assert next_prev_links.get("prev") == {
+        "limit": 10,
+        "page": 8,
+        "sortby": cads_catalogue_api_service.extensions.CatalogueSortCriterion.id_asc.value,
+    }
+    assert next_prev_links.get("next") is None
+
+
+def test_get_sorting_clause():
+    record = get_record(id="foo-bar")
+
+    assert cads_catalogue_api_service.client.get_sorting_clause(record, sort="id") == (
+        record.resource_uid,
+        sa.asc,
+    )
+    assert cads_catalogue_api_service.client.get_sorting_clause(
+        record, sort="updated"
+    ) == (
+        record.resource_update,
+        sa.desc,
+    )
+    # Default
+    assert cads_catalogue_api_service.client.get_sorting_clause(
+        record, sort="foobarbaz"
+    ) == (
+        record.resource_update,
+        sa.desc,
+    )

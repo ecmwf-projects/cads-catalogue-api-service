@@ -12,20 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
 from testing import Request, generate_expected, get_record
 
 import cads_catalogue_api_service.client
+import cads_catalogue_api_service.models
 
 
-def empty_get_active_message(*args, **kwargs) -> None:
-    return None
+def fake_get_active_message(*args, **kwargs) -> None:
+    return cads_catalogue_api_service.models.Message(
+        id="message-2",
+        date=datetime.datetime(2024, 1, 1, 12, 15, 34),
+        content="Message 2",
+        severity="warning",
+        live=True,
+    )
 
 
 def test_collection_serializer(monkeypatch) -> None:
     """Test serialization from db record to STAC."""
     monkeypatch.setattr(
         "cads_catalogue_api_service.client.get_active_message",
-        empty_get_active_message,
+        fake_get_active_message,
     )
     request = Request("https://mycatalogue.org/")  # note the final slash!
     record = get_record("era5-something")
@@ -40,3 +49,9 @@ def test_collection_serializer(monkeypatch) -> None:
     )
 
     assert stac_record == generate_expected(request.base_url, preview=True)
+
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request, schema_org=True
+    )
+
+    assert stac_record == generate_expected(request.base_url, schema_org=True)

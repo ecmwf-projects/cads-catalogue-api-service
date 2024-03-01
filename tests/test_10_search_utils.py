@@ -19,6 +19,7 @@ import fastapi.testclient
 from cads_catalogue_api_service.main import app
 from cads_catalogue_api_service.search_utils import (
     populate_facets,
+    split_by_category,
 )
 
 client = fastapi.testclient.TestClient(app)
@@ -68,3 +69,13 @@ def test_populate_facets(monkeypatch):
             {"category": "cat2", "groups": {"kw1": 2}},
         ]
     }
+
+
+def test_split_by_category():
+    assert split_by_category(["cat1: kw1", "cat1: kw2", "cat2: kw1"]) == [
+        [
+            "cat1: kw1",
+            "cat1: kw2",
+        ],
+        ["cat2: kw1"],
+    ]
