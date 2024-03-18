@@ -35,7 +35,7 @@ class Licence(TypedDict):
     revision: int | None
     contents_url: str
     attachment_url: str
-    scope: LicenceCategories
+    scope: LicenceCategories | str | None
     portal: str | None
 
 
