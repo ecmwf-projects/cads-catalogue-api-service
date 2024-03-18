@@ -101,6 +101,7 @@ def test_vocabularies_license(monkeypatch) -> None:
             {
                 "id": "cc-by-4.0",
                 "label": "CC-BY-4.0",
+                "portal": None,
                 "revision": 1,
                 "attachment_url": "/document-storage/cc-by-4.0-1.pdf",
                 "contents_url": "/document-storage/cc-by-4.0-1.md",
@@ -109,6 +110,7 @@ def test_vocabularies_license(monkeypatch) -> None:
             {
                 "id": "cc-by-sa-4.0",
                 "label": "CC-BY-SA-4.0",
+                "portal": None,
                 "revision": 2,
                 "attachment_url": "/document-storage/cc-by-4.0-2.pdf",
                 "contents_url": "/document-storage/cc-by-4.0-2.md",
@@ -133,6 +135,7 @@ def test_vocabulary_license(monkeypatch) -> None:
         "id": "cc-by-4.0",
         "label": "CC-BY-4.0",
         "revision": 1,
+        "portal": None,
         "attachment_url": "/document-storage/cc-by-4.0-1.pdf",
         "contents_url": "/document-storage/cc-by-4.0-1.md",
         "scope": "dataset",

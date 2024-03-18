@@ -51,6 +51,7 @@ def query_licences(
         cads_catalogue.database.Licence.download_filename,
         sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
         cads_catalogue.database.Licence.scope,
+        cads_catalogue.database.Licence.portal,
     )
     if scope and scope != LicenceScopeCriterion.all:
         query = query.filter(cads_catalogue.database.Licence.scope == scope)
@@ -68,6 +69,7 @@ def query_licences(
             cads_catalogue.database.Licence.md_filename,
             cads_catalogue.database.Licence.download_filename,
             cads_catalogue.database.Licence.scope,
+            cads_catalogue.database.Licence.portal,
         )
         .order_by(cads_catalogue.database.Licence.title)
         .all()
@@ -87,6 +89,7 @@ def query_licence(
         cads_catalogue.database.Licence.download_filename,
         sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
         cads_catalogue.database.Licence.scope,
+        cads_catalogue.database.Licence.portal,
     )
     query = query.filter(cads_catalogue.database.Licence.licence_uid == licence_uid)
     try:
@@ -97,6 +100,7 @@ def query_licence(
                 cads_catalogue.database.Licence.md_filename,
                 cads_catalogue.database.Licence.download_filename,
                 cads_catalogue.database.Licence.scope,
+                cads_catalogue.database.Licence.portal,
             )
             .order_by(cads_catalogue.database.Licence.title)
             .one()
@@ -142,6 +146,7 @@ async def list_licences(
                     config.settings.document_storage_url, licence.download_filename
                 ),
                 scope=licence.scope,
+                portal=licence.portal,
             )
             for licence in results
         ]
@@ -166,6 +171,7 @@ async def list_licence(
             config.settings.document_storage_url, licence.download_filename
         ),
         scope=licence.scope,
+        portal=licence.portal,
     )
 
 

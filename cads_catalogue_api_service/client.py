@@ -206,7 +206,10 @@ def generate_collection_links(
                         config.settings.document_storage_url, model.form
                     ),
                     "type": "application/json",
-                },
+                }
+            ]
+        if model.constraints:
+            additional_links += [
                 {
                     "rel": "constraints",
                     "href": urllib.parse.urljoin(
