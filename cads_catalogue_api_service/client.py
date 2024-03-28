@@ -109,8 +109,8 @@ def get_extent(
                 [
                     spatial.get("bboxW", -180),
                     spatial.get("bboxS", -90),
-                    spatial.get("bboxN", 180),
-                    spatial.get("bboxE", 90),
+                    spatial.get("bboxE", 180),
+                    spatial.get("bboxN", 90),
                 ]
             ],
         )

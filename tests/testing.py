@@ -108,7 +108,7 @@ def generate_expected(
         "keywords": ["kw1"],
         "license": "proprietary",
         "extent": {
-            "spatial": {"bbox": [[-0.5, 45.0, 50.0, 15.0]]},
+            "spatial": {"bbox": [[-0.5, 45.0, 15.0, 50.0]]},
             "temporal": {"interval": [["1980-01-01T00:00:00Z", None]]},
         },
         **(
