@@ -53,17 +53,17 @@ class Dataset(pydantic.BaseModel):
     type: str = pydantic.Field("Dataset", alias="@type")
 
     name: str
-    description: str | None = None
-    url: str | None = None
+    description: str | None
+    url: str | None
     # same_as: str | None = pydantic.Field(alias="sameAs")
     identifier: list[str]
     keywords: list[str]
-    license: str | None = None
+    license: str | None
     isAccessibleForFree: bool = True
     creator: Organization
     distribution: list[DataDownload]
-    temporalCoverage: str | None = None
+    temporalCoverage: str | None
     spatialCoverage: Place
-    datePublished: str | None = None
-    dateModified: str | None = None
+    datePublished: str | None
+    dateModified: str | None
     thumbnailUrl: str | None = None
