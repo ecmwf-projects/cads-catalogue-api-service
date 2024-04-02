@@ -1,6 +1,6 @@
 """Configuration of the service.
 
-Options are based on pydantic.BaseSettings, so they automatically get values from the environment.
+Options are based on pydantic_settings.BaseSettings, so they automatically get values from the environment.
 """
 
 # Copyright 2022, European Union.
@@ -18,7 +18,7 @@ Options are based on pydantic.BaseSettings, so they automatically get values fro
 # limitations under the License.
 
 import cads_catalogue.config
-import pydantic
+import pydantic_settings
 import stac_fastapi.types.config
 
 MAX_LIMIT = 50
@@ -46,7 +46,7 @@ class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
         return cads_catalogue.config.ensure_settings().connection_string_read
 
 
-class Settings(pydantic.BaseSettings):
+class Settings(pydantic_settings.BaseSettings):
     """Other general settings.
 
     - ``document_storage_url``: Base URI to identify the document storage

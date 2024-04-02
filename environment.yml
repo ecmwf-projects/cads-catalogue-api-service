@@ -13,7 +13,8 @@ dependencies:
 - fastapi>=0.93.0
 - httpx
 - pip
-- pydantic<2
+- pydantic>2
+- pydantic-settings>2
 - python-dateutil
 - requests
 - rfc3339-validator

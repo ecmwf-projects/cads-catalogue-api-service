@@ -18,14 +18,14 @@ import pydantic
 
 
 class ContactPoint(pydantic.BaseModel):
-    type: str = pydantic.Field("ContactPoint", const=True, alias="@type")
+    type: str = pydantic.Field("ContactPoint", alias="@type")
     contactType: str
     email: str | None = None
     url: str | None = None
 
 
 class Organization(pydantic.BaseModel):
-    type: str = pydantic.Field("Organization", const=True, alias="@type")
+    type: str = pydantic.Field("Organization", alias="@type")
     url: str
     name: str
     logo: str | None = None
@@ -33,37 +33,37 @@ class Organization(pydantic.BaseModel):
 
 
 class DataDownload(pydantic.BaseModel):
-    type: str = pydantic.Field("DataDownload", const=True, alias="@type")
+    type: str = pydantic.Field("DataDownload", alias="@type")
     encodingFormat: str
     contentUrl: str
 
 
 class GeoShape(pydantic.BaseModel):
-    type: str = pydantic.Field("GeoShape", const=True, alias="@type")
+    type: str = pydantic.Field("GeoShape", alias="@type")
     box: list[float]
 
 
 class Place(pydantic.BaseModel):
-    type: str = pydantic.Field("Place", const=True, alias="@type")
+    type: str = pydantic.Field("Place", alias="@type")
     geo: GeoShape
 
 
 class Dataset(pydantic.BaseModel):
-    context: str = pydantic.Field("https://schema.org/", const=True, alias="@context")
-    type: str = pydantic.Field("Dataset", const=True, alias="@type")
+    context: str = pydantic.Field("https://schema.org/", alias="@context")
+    type: str = pydantic.Field("Dataset", alias="@type")
 
     name: str
-    description: str | None
-    url: str | None
+    description: str | None = None
+    url: str | None = None
     # same_as: str | None = pydantic.Field(alias="sameAs")
     identifier: list[str]
     keywords: list[str]
-    license: str | None
+    license: str | None = None
     isAccessibleForFree: bool = True
     creator: Organization
     distribution: list[DataDownload]
-    temporalCoverage: str | None
+    temporalCoverage: str | None = None
     spatialCoverage: Place
-    datePublished: str | None
-    dateModified: str | None
+    datePublished: str | None = None
+    dateModified: str | None = None
     thumbnailUrl: str | None = None
