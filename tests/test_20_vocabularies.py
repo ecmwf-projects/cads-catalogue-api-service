@@ -80,9 +80,9 @@ def get_session() -> None:
     return None
 
 
-app.dependency_overrides[
-    cads_catalogue_api_service.dependencies.get_session
-] = get_session
+app.dependency_overrides[cads_catalogue_api_service.dependencies.get_session] = (
+    get_session
+)
 
 
 def test_vocabularies_license(monkeypatch) -> None:
