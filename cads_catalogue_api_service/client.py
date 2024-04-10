@@ -231,6 +231,18 @@ def generate_collection_links(
             }
         )
 
+        if "costing" in model.resource_data.adaptor_configuration:
+            additional_links.append(
+                {
+                    "rel": "costing_api",
+                    "href": urllib.parse.urljoin(
+                        config.settings.processes_base_url,
+                        f"processes/{model.resource_uid}/costing",
+                    ),
+                    "type": "application/json",
+                }
+            )
+
         if model.layout:
             additional_links.append(
                 {
