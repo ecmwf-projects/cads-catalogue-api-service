@@ -231,7 +231,10 @@ def generate_collection_links(
             }
         )
 
-        if "costing" in model.resource_data.adaptor_configuration:
+        if (
+            model.resource_data
+            and "costing" in model.resource_data.adaptor_configuration
+        ):
             additional_links.append(
                 {
                     "rel": "costing_api",
