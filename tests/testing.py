@@ -58,6 +58,10 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
             "2020-02-03T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
         ),
         resource_update=datetime.date(2020, 2, 5),
+        resource_data=cads_catalogue.database.ResourceData(
+            resource_data_id="creative-commons",
+            adaptor_configuration={"costing": []},
+        ),
         licences=[
             cads_catalogue.database.Licence(
                 licence_id="creative-commons",
@@ -184,6 +188,13 @@ def generate_expected(
                     "rel": "retrieve",
                     "href": urllib.parse.urljoin(
                         base_url, "api/processing/processes/era5-something"
+                    ),
+                    "type": "application/json",
+                },
+                {
+                    "rel": "costing_api",
+                    "href": urllib.parse.urljoin(
+                        base_url, "api/processing/processes/era5-something/costing"
                     ),
                     "type": "application/json",
                 },
