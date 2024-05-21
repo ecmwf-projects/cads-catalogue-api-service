@@ -54,7 +54,7 @@ def generate_ts_query(q: str = ""):
     SQL Function expression
         Tokenized expression used for the full text search or sorting
     """
-    return sa.func.websearch_to_tsquery("english", q)
+    return sa.func.websearch_to_tsquery("english", q.replace("'", '"'))
 
 
 def fulltext_order_by(q: str):
