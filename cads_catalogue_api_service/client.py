@@ -233,6 +233,7 @@ def generate_collection_links(
 
         if (
             model.resource_data
+            and model.resource_data.adaptor_configuration
             and "costing" in model.resource_data.adaptor_configuration
         ):
             additional_links.append(
