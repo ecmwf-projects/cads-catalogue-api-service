@@ -52,7 +52,7 @@ def test_apply_sorting() -> None:
 
     assert search.limit == 10
     assert search.offset == 0
-    assert search.order_by.element.name == "ts_rank"
+    assert search.order_by.element.name == "ts_rank2"
 
 
 def test_get_next_prev_links() -> None:
