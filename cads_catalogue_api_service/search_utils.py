@@ -24,7 +24,7 @@ import stac_fastapi.types
 WEIGHT_HIGH_PRIORITY_TERMS = 1.0
 WEIGHT_TITLE = 0.8
 WEIGHT_DESCRIPTION = 0.5
-WEIGHT_FULLTEXT = 0.3
+WEIGHT_FULLTEXT = 0.03
 
 
 def split_by_category(keywords: list) -> list:
@@ -60,7 +60,7 @@ def generate_ts_query(q: str = ""):
 def fulltext_order_by(q: str):
     """Generate the full text search order by clause."""
     tsquery = generate_ts_query(q)
-    return sa.func.ts_rank(
+    return sa.func.ts_rank2(
         "{%s,%s,%s,%s}"
         % (
             # NOTE: order of weights follows {D,C,B,A} labelling of 'search_field' of table resources
@@ -70,7 +70,9 @@ def fulltext_order_by(q: str):
             WEIGHT_TITLE,
         ),
         cads_catalogue.database.Resource.search_field,
+        cads_catalogue.database.Resource.fts,
         tsquery,
+        sa.func.coalesce(cads_catalogue.database.Resource.popularity, 1),
     ).desc()
 
 
