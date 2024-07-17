@@ -54,3 +54,10 @@ def get_portals(
     """Fastapi dependency that provides the CADS portal profile."""
     portals = get_portals_values(portal)
     return portals
+
+
+def get_site(
+    site=fastapi.Header(default=None, alias=config.SITE_HEADER_NAME),
+) -> list[str] | None:
+    """Fastapi dependency that provides the CADS portal profile."""
+    return site
