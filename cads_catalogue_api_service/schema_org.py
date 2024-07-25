@@ -27,7 +27,7 @@ from . import dependencies, models
 
 router = fastapi.APIRouter(
     prefix="",
-    tags=["messages"],
+    tags=["schema.org"],
     responses={fastapi.status.HTTP_404_NOT_FOUND: {"description": "Not found"}},
 )
 
@@ -91,9 +91,11 @@ def schema_org_json_ld(
         name=collection["title"],
         description=collection.get("description", None),
         url=url,
-        identifier=[f"https://doi.org/{collection['sci:doi']}"]
-        if "sci:doi" in collection
-        else [],
+        identifier=(
+            [f"https://doi.org/{collection['sci:doi']}"]
+            if "sci:doi" in collection
+            else []
+        ),
         license=license,
         keywords=collection.get("keywords", []),
         isAccessibleForFree=True,
@@ -108,12 +110,14 @@ def schema_org_json_ld(
             ),
         ),
         distribution=[
-            models.schema_org.DataDownload(
-                encodingFormat=collection.get("file_format"),
-                contentUrl=f"{url}?tab=download",
+            (
+                models.schema_org.DataDownload(
+                    encodingFormat=collection.get("file_format"),
+                    contentUrl=f"{url}?tab=download",
+                )
+                if distribution
+                else ""
             )
-            if distribution
-            else ""
         ],
         temporalCoverage="/".join(temporal_coverage) if temporal_coverage else None,
         spatialCoverage=models.schema_org.Place(
