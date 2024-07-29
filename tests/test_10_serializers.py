@@ -55,3 +55,25 @@ def test_collection_serializer(monkeypatch) -> None:
     )
 
     assert stac_record == generate_expected(request.base_url, schema_org=True)
+
+
+def test_hidden(monkeypatch) -> None:
+    """Test cads:hidden properly shown on STAC."""
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.client.get_active_message",
+        fake_get_active_message,
+    )
+    request = Request("https://mycatalogue.org/")  # note the final slash!
+    record = get_record("era5-something")
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+
+    assert "cads:hidden" not in stac_record
+
+    record = get_record("era5-something", hidden=True)
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+
+    assert stac_record["cads:hidden"] is True

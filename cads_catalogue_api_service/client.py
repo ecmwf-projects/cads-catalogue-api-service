@@ -377,6 +377,7 @@ def collection_serializer(
         # *****************************************
         **({"cads:message": active_message} if active_message else {}),
         "cads:disabled_reason": db_model.disabled_reason,
+        **({"cads:hidden": db_model.hidden} if db_model.hidden else {}),
     }
 
     if schema_org:
@@ -402,7 +403,7 @@ def collection_serializer(
             else []
         ),
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
-        # note that this small check, evenif correct, is triggering a lot of subrequests
+        # note that this small check, even if correct, is triggering a lot of subrequests
         license=(
             "various" if not preview and len(db_model.licences) > 1 else "proprietary"
         ),

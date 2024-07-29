@@ -26,7 +26,7 @@ class Request:
         return "/collections"
 
 
-def get_record(id: str) -> cads_catalogue.database.Resource:
+def get_record(id: str, hidden=False) -> cads_catalogue.database.Resource:
     return cads_catalogue.database.Resource(
         resource_uid=id,
         title="ERA5",
@@ -94,6 +94,7 @@ def get_record(id: str) -> cads_catalogue.database.Resource:
         qa_flag=True,
         disabled_reason="Disabled because of a reason",
         layout="resouces/reanalysis-era5-pressure-levels/layout.json",
+        hidden=hidden,
     )
 
 

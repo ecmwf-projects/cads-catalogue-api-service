@@ -47,6 +47,12 @@
           "format": "date-time"
         }
       }
+    },
+    "cads:hidden": {
+      "type": "boolean",
+      "title": "Hidden",
+      "description": "Whether this dataset is hidden from the public",
+      "default": false
     }
   },
   "required": ["published", "updated"]
