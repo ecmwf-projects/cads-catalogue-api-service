@@ -36,6 +36,7 @@ from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from . import (
     client,
+    collection_ext,
     config,
     exceptions,
     extensions,
@@ -83,6 +84,7 @@ app.add_route("/metrics", handle_metrics)
 app.include_router(vocabularies.router)
 app.include_router(messages.router)
 app.include_router(schema_org.router)
+app.include_router(collection_ext.router)
 
 
 def catalogue_openapi() -> dict[str, Any]:
