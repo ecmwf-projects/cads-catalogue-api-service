@@ -24,6 +24,7 @@ import stac_fastapi.types.config
 MAX_LIMIT = 50
 
 PORTAL_HEADER_NAME = "X-CADS-Portal"
+SITE_HEADER_NAME = "X-CADS-Site"
 
 
 class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore

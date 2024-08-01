@@ -49,7 +49,7 @@ def static_messages_query(
     live: bool = True,
     is_global: bool = True,
     collection_id: str | None = None,
-    portals: list[str] | None = None,
+    site: str | None = None,
 ) -> list[cads_catalogue.database.Message]:
     return [
         Message(
@@ -78,7 +78,7 @@ def static_changelog_query(
     live: bool = False,
     is_global: bool = True,
     collection_id: str | None = None,
-    portals: list[str] | None = None,
+    site: str | None = None,
 ) -> list[cads_catalogue.database.Message]:
     return [
         Message(

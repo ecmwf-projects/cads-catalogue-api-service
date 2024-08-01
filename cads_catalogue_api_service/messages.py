@@ -32,7 +32,7 @@ def query_messages(
     live: bool = True,
     is_global: bool = True,
     collection_id: str | None = None,
-    portals: list[str] | None = None,
+    site: str | None = None,
 ) -> list[cads_catalogue.database.Message]:
     """Query messages."""
     results = (
@@ -49,7 +49,7 @@ def query_messages(
             cads_catalogue.database.ResourceMessage,
             isouter=True,
         )
-        # FIXEME: this can be slow. Please do not load the full dataset.
+        # FIXME: this can be slow. Please do not load the full dataset.
         .join(
             cads_catalogue.database.Resource,
             full=True,
@@ -59,13 +59,8 @@ def query_messages(
             cads_catalogue.database.Message.is_global.is_(is_global),
         )
     )
-    if portals and is_global:
-        results = results.where(
-            sa.or_(
-                cads_catalogue.database.Message.portal.in_(portals),
-                cads_catalogue.database.Message.portal.is_(None),
-            ),
-        )
+    if site and is_global:
+        results = results.where(cads_catalogue.database.Message.site == site)
     if collection_id:
         results = results.where(
             cads_catalogue.database.Resource.resource_uid == collection_id
@@ -133,12 +128,10 @@ def list_changelog_by_id(
 @router.get("/messages", response_model=models.Messages)
 def list_messages(
     session=fastapi.Depends(dependencies.get_session),
-    portals: list[str] | None = fastapi.Depends(dependencies.get_portals),
+    site: str | None = fastapi.Depends(dependencies.get_site),
 ) -> models.Messages:
     """Endpoint to get all messages."""
-    results = query_messages(
-        session=session, live=True, is_global=True, portals=portals
-    )
+    results = query_messages(session=session, live=True, is_global=True, site=site)
     return models.Messages(
         messages=[
             models.Message(
@@ -158,12 +151,10 @@ def list_messages(
 @router.get("/messages/changelog", response_model=models.Changelog)
 def list_changelog(
     session=fastapi.Depends(dependencies.get_session),
-    portals: list[str] | None = fastapi.Depends(dependencies.get_portals),
+    site: str | None = fastapi.Depends(dependencies.get_site),
 ) -> models.Changelog:
     """Endpoint to get all changelog."""
-    results = query_messages(
-        session=session, live=False, is_global=True, portals=portals
-    )
+    results = query_messages(session=session, live=False, is_global=True, site=site)
     return models.Changelog(
         changelog=[
             models.Message(
