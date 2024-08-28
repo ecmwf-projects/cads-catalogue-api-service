@@ -35,13 +35,18 @@ class CatalogueSortCriterion(str, enum.Enum):
 def datasets_search(
     request: fastapi.Request,
     q: str = fastapi.Query(default=None, description="Full-text search query"),
-    kw: list[str] | None = fastapi.Query(default=[]),
+    kw: list[str] | None = fastapi.Query(
+        default=[], description="Filter by keyword(s)"
+    ),
     sortby: CatalogueSortCriterion = fastapi.Query(
         default=CatalogueSortCriterion.update_desc
     ),
     page: int = fastapi.Query(default=0, ge=0),
     limit: int = fastapi.Query(default=config.MAX_LIMIT, ge=1, le=config.MAX_LIMIT),
-    search_stats: bool = fastapi.Query(default=True),
+    search_stats: bool = fastapi.Query(
+        default=True,
+        description="Include additional search statistics in results (like: faceted data)",
+    ),
 ) -> dict[str, Any]:
     """Filter datasets based on search parameters."""
     return client.cads_client.all_datasets(
