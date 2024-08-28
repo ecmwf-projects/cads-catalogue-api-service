@@ -60,6 +60,7 @@ def get_url_link(collection: stac_fastapi.types.stac.Collection, type: str) -> s
     response_model=models.schema_org.Dataset,
     response_model_by_alias=True,
     response_model_exclude_none=True,
+    include_in_schema=False,
 )
 def schema_org_json_ld(
     collection_id: str,

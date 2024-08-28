@@ -29,6 +29,9 @@ PORTAL_HEADER_NAME = "X-CADS-Portal"
 class SqlalchemySettings(stac_fastapi.types.config.ApiSettings):  # type: ignore
     """Postgres-specific API settings."""
 
+    openapi_url: str = "/openapi.json"
+    docs_url: str = "/docs"
+
     # Fields which are defined by STAC but not included in the database model
     forbidden_fields: set[str] = {"type"}
 

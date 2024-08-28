@@ -90,7 +90,7 @@ app.include_router(collection_ext.router)
 def catalogue_openapi() -> dict[str, Any]:
     """OpenAPI, but with not implemented paths removed."""
     openapi_schema = fastapi.openapi.utils.get_openapi(
-        title="CADS Catalogue", version=api.api_version, routes=api.app.routes
+        title="CADS STAC Catalogue", version=api.api_version, routes=api.app.routes
     )
 
     del openapi_schema["paths"]["/collections/{collection_id}/items"]
@@ -103,6 +103,15 @@ def catalogue_openapi() -> dict[str, Any]:
 
 
 app.openapi = catalogue_openapi
+
+
+@app.get("/api.html", include_in_schema=False)
+async def api_html():
+    """Redirect legacy STAC fastapi route to default used by other APIs."""
+    return fastapi.responses.RedirectResponse(
+        url="/api/catalogue/v1/docs",
+        status_code=starlette.status.HTTP_301_MOVED_PERMANENTLY,
+    )
 
 
 @app.exception_handler(exceptions.FeatureNotImplemented)
