@@ -1,4 +1,4 @@
-from . import schema_org
+from . import contents, schema_org
 from .base import (
     CADSCollections,
     Changelog,
@@ -22,4 +22,5 @@ __all__ = [
     "Message",
     "Messages",
     "schema_org",
+    "contents",
 ]
