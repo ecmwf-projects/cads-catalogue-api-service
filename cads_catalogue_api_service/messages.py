@@ -70,7 +70,7 @@ def query_messages(
 
 
 @router.get("/collections/{collection_id}/messages", response_model=models.Messages)
-def list_messages_by_id(
+def list_messages_by_dataset(
     collection_id: str,
     session=fastapi.Depends(dependencies.get_session),
 ) -> models.Messages:
@@ -105,7 +105,7 @@ def list_changelog_by_id(
     collection_id: str,
     session=fastapi.Depends(dependencies.get_session),
 ) -> models.Changelog:
-    """Endpoint to get all changelog of a specific collection."""
+    """Endpoint to get historical messages of a dataset."""
     results = query_messages(
         session=session, live=False, is_global=False, collection_id=collection_id
     )
@@ -153,7 +153,7 @@ def list_changelog(
     session=fastapi.Depends(dependencies.get_session),
     site: str | None = fastapi.Depends(dependencies.get_site),
 ) -> models.Changelog:
-    """Endpoint to get all changelog."""
+    """Full changelog of site messages."""
     results = query_messages(session=session, live=False, is_global=True, site=site)
     return models.Changelog(
         changelog=[

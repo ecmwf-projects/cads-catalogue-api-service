@@ -59,7 +59,9 @@ def get_portals(
 
 
 def get_site(
-    site=fastapi.Header(default=None, alias=config.SITE_HEADER_NAME),
+    site=fastapi.Header(
+        default=None, alias=config.SITE_HEADER_NAME, include_in_schema=False
+    ),
 ) -> list[str] | None:
     """Fastapi dependency that provides the CADS portal profile."""
     return site
