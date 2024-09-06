@@ -474,7 +474,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         """Return the whole catalogue as a serialized structure."""
         query = session.query(self.collection_table).options(*database.deferred_columns)
         query_results = search_utils.apply_filters(
-            session, query, q, None, portals=portals
+            session, query, q, kw=None, idx=None, portals=portals
         ).all()
         all_collections = [
             collection_serializer(
@@ -489,6 +489,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         request: fastapi.Request,
         q: str | None = None,
         kw: list[str] | None = [],
+        idx: list[str] | None = [],
         sortby: extensions.CatalogueSortCriterion = extensions.CatalogueSortCriterion.update_desc,
         page: int = 0,
         limit: int = 999,
@@ -507,7 +508,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             search = session.query(self.collection_table).options(
                 *database.deferred_columns
             )
-            search = search_utils.apply_filters(session, search, q, kw, portals=portals)
+            search = search_utils.apply_filters(
+                session, search, q, kw, idx, portals=portals
+            )
             count = search.count()
             search = apply_sorting_and_limit(
                 search=search, q=q, sortby=sortby, page=page, limit=limit

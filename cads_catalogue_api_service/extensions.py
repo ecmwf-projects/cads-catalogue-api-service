@@ -38,6 +38,9 @@ def datasets_search(
     kw: list[str] | None = fastapi.Query(
         default=[], description="Filter by keyword(s)"
     ),
+    idx: list[str] | None = fastapi.Query(
+        default=[], description="Filter by dataset IDs"
+    ),
     sortby: CatalogueSortCriterion = fastapi.Query(
         default=CatalogueSortCriterion.update_desc
     ),
@@ -53,6 +56,7 @@ def datasets_search(
         request=request,
         q=q,
         kw=kw,
+        idx=idx,
         sortby=sortby,
         page=page,
         limit=limit,
