@@ -10,7 +10,7 @@ channels:
 dependencies:
 - attrs
 - brotli-asgi
-- fastapi>=0.93.0
+- fastapi>=0.113.0
 - httpx
 - pip
 - pydantic<2

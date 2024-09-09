@@ -15,10 +15,11 @@
 # limitations under the License.
 
 import enum
-from typing import Any
+from typing import Annotated, Any
 
 import attr
 import fastapi
+import pydantic
 import stac_fastapi.api
 import stac_fastapi.types.extension
 
@@ -65,6 +66,32 @@ def datasets_search(
     )
 
 
+class FormData(pydantic.BaseModel):
+    q: str = ""
+    kw: list[str] | None = []
+    idx: list[str] | None = []
+    sortby: CatalogueSortCriterion = CatalogueSortCriterion.update_desc
+    page: int = 0
+    limit: int = config.MAX_LIMIT
+    search_stats: bool = True
+
+
+def datasets_search_post(
+    request: fastapi.Request, data: Annotated[FormData, fastapi.Form()]
+) -> dict[str, Any]:
+    """Filter datasets based on search parameters."""
+    return datasets_search(
+        request=request,
+        q=data.q,
+        kw=data.kw,
+        idx=data.idx,
+        sortby=data.sortby,
+        page=data.page,
+        limit=data.limit,
+        search_stats=data.search_stats,
+    )
+
+
 @attr.s
 class DatasetsSearchExtension(stac_fastapi.types.extension.ApiExtension):
     """Datasets filter extension.
@@ -100,12 +127,13 @@ class DatasetsSearchExtension(stac_fastapi.types.extension.ApiExtension):
             name="Datasets Search",
             path="/datasets",
             methods=["GET"],
-            # endpoint=stac_fastapi.api.routes.create_async_endpoint(
-            #     datasets_search,
-            #     stac_fastapi.api.models.EmptyRequest,
-            #     self.response_class,
-            # ),
             endpoint=datasets_search,
+        )
+        self.router.add_api_route(
+            name="Datasets Search",
+            path="/datasets",
+            methods=["POST"],
+            endpoint=datasets_search_post,
         )
         app.include_router(self.router, tags=["Datasets Search Extension"])
 
