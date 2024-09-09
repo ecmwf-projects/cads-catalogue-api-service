@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import enum
-from typing import Annotated, Any
+from typing import Any
 
 import attr
 import fastapi
@@ -67,6 +67,8 @@ def datasets_search(
 
 
 class FormData(pydantic.BaseModel):
+    """Search datasets valid payload."""
+
     q: str = ""
     kw: list[str] | None = []
     idx: list[str] | None = []
@@ -76,9 +78,7 @@ class FormData(pydantic.BaseModel):
     search_stats: bool = True
 
 
-def datasets_search_post(
-    request: fastapi.Request, data: Annotated[FormData, fastapi.Form()]
-) -> dict[str, Any]:
+def datasets_search_post(request: fastapi.Request, data: FormData) -> dict[str, Any]:
     """Filter datasets based on search parameters."""
     return datasets_search(
         request=request,
