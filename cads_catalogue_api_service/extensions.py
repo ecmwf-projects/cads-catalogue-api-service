@@ -19,6 +19,7 @@ from typing import Any
 
 import attr
 import fastapi
+import pydantic
 import stac_fastapi.api
 import stac_fastapi.types.extension
 
@@ -38,6 +39,9 @@ def datasets_search(
     kw: list[str] | None = fastapi.Query(
         default=[], description="Filter by keyword(s)"
     ),
+    idx: list[str] | None = fastapi.Query(
+        default=[], description="Filter by dataset IDs"
+    ),
     sortby: CatalogueSortCriterion = fastapi.Query(
         default=CatalogueSortCriterion.update_desc
     ),
@@ -53,11 +57,38 @@ def datasets_search(
         request=request,
         q=q,
         kw=kw,
+        idx=idx,
         sortby=sortby,
         page=page,
         limit=limit,
         route_name="Datasets Search",
         search_stats=search_stats,
+    )
+
+
+class FormData(pydantic.BaseModel):
+    """Search datasets valid payload."""
+
+    q: str = ""
+    kw: list[str] | None = []
+    idx: list[str] | None = []
+    sortby: CatalogueSortCriterion = CatalogueSortCriterion.update_desc
+    page: int = 0
+    limit: int = config.MAX_LIMIT
+    search_stats: bool = True
+
+
+def datasets_search_post(request: fastapi.Request, data: FormData) -> dict[str, Any]:
+    """Filter datasets based on search parameters."""
+    return datasets_search(
+        request=request,
+        q=data.q,
+        kw=data.kw,
+        idx=data.idx,
+        sortby=data.sortby,
+        page=data.page,
+        limit=data.limit,
+        search_stats=data.search_stats,
     )
 
 
@@ -96,12 +127,13 @@ class DatasetsSearchExtension(stac_fastapi.types.extension.ApiExtension):
             name="Datasets Search",
             path="/datasets",
             methods=["GET"],
-            # endpoint=stac_fastapi.api.routes.create_async_endpoint(
-            #     datasets_search,
-            #     stac_fastapi.api.models.EmptyRequest,
-            #     self.response_class,
-            # ),
             endpoint=datasets_search,
+        )
+        self.router.add_api_route(
+            name="Datasets Search",
+            path="/datasets",
+            methods=["POST"],
+            endpoint=datasets_search_post,
         )
         app.include_router(self.router, tags=["Datasets Search Extension"])
 

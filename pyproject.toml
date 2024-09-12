@@ -16,7 +16,7 @@ dependencies = [
   "attrs",
   "cads-catalogue@git+https://github.com/ecmwf-projects/cads-catalogue.git",
   "cads-common@git+https://github.com/ecmwf-projects/cads-common.git",
-  "fastapi",
+  "fastapi>=0.113.0",
   "python-dateutil",
   "sqlalchemy>=2.0.9",
   "stac_fastapi.api",
