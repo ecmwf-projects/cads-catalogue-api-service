@@ -68,13 +68,14 @@ def redirect_by_doi(
             detail="Dataset not found",
         ) from exc
     except sa.orm.exc.MultipleResultsFound as exc:
-        logger.error("Search by DOI lead to multiple results", doi=doi)
+        logger.error(f"Search by DOI {doi} lead to multiple results", doi=doi)
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error while searching for this DOI",
         ) from exc
 
+    # FIXME: not optimal, we are hardcoding a web portal logic here.
     return fastapi.responses.RedirectResponse(
-        url=request.url_for("Get Collection", collection_id=collection["id"]),
+        url=f"/datasets/{collection['id']}",
         status_code=fastapi.status.HTTP_301_MOVED_PERMANENTLY,
     )
