@@ -81,6 +81,7 @@ def apply_filters(
     search: sa.orm.Query,
     q: str | None,
     kw: list | None,
+    idx: list | None,
     portals: list[str] | None = None,
 ):
     """Apply allowed search filters to the running query.
@@ -98,6 +99,9 @@ def apply_filters(
     # Filter by category (portal)
     if portals:
         search = search.filter(cads_catalogue.database.Resource.portal.in_(portals))
+
+    if idx:
+        search = search.filter(cads_catalogue.database.Resource.resource_uid.in_(idx))
 
     # Faceted search
     if kw:

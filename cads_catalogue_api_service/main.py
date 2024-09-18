@@ -39,6 +39,7 @@ from . import (
     collection_ext,
     config,
     contents,
+    doi,
     exceptions,
     extensions,
     messages,
@@ -86,13 +87,22 @@ app.include_router(vocabularies.router)
 app.include_router(messages.router)
 app.include_router(schema_org.router)
 app.include_router(collection_ext.router)
+app.include_router(doi.router)
 app.include_router(contents.router)
 
 
 def catalogue_openapi() -> dict[str, Any]:
     """OpenAPI, but with not implemented paths removed."""
     openapi_schema = fastapi.openapi.utils.get_openapi(
-        title="CADS STAC Catalogue", version=api.api_version, routes=api.app.routes
+        title="CADS STAC Catalogue",
+        version=api.api_version,
+        routes=api.app.routes,
+        description=(
+            "The CADS catalogue API is a STAC compliant API to access the CADS catalogues.\n\n"
+            "The implementation is based on [Standalone Collections]"
+            "(https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#standalone-collections) "  # noqa: E501
+            "while a custom extension is present to provide datasets search capabilities."
+        ),
     )
 
     del openapi_schema["paths"]["/collections/{collection_id}/items"]

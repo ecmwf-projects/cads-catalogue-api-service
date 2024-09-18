@@ -154,11 +154,11 @@ async def list_licences(
 
 
 @router.get("/licences/{licence_uid}", response_model=models.Licence)
-async def list_licence(
+async def licence_details(
     session=fastapi.Depends(dependencies.get_session),
     licence_uid: str = fastapi.Path(..., title="Licence UID"),
 ) -> models.Licence:
-    """Endpoint to get all registered licences."""
+    """Licence details."""
     licence: cads_catalogue.database.Licence = query_licence(session, licence_uid)
     return models.Licence(
         id=licence.licence_uid,
