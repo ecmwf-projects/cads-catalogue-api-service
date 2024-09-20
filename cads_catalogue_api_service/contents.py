@@ -14,17 +14,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
+import urllib
 
+import cads_catalogue
 import fastapi
+import sqlalchemy as sa
 
-from . import dependencies, models
+from . import config, dependencies, models
 
 router = fastapi.APIRouter(
     prefix="/contents",
     tags=["contents"],
     responses={fastapi.status.HTTP_404_NOT_FOUND: {"description": "Not found"}},
 )
+
+
+def query_contents(
+    session: sa.orm.Session,
+    site: str,
+    ctype: str | None = None,
+):
+    stmt = (
+        sa.select(sa.func.count())
+        .select_from(cads_catalogue.database.Content)
+        .where(cads_catalogue.database.Content.site == site)
+    )
+    count = session.execute(stmt).scalar()
+    stmt = (
+        sa.select(cads_catalogue.database.Content)
+        .where(cads_catalogue.database.Content.site == site)
+        .order_by(cads_catalogue.database.Content.title)
+    )
+    results = session.scalars(stmt).all()
+    return count, results
 
 
 @router.get(
@@ -35,63 +57,78 @@ def list_contents(
     site=fastapi.Depends(dependencies.get_site),
 ) -> models.contents.Contents:
     """Endpoint to get all contents in the material catalogue."""
+    count, results = query_contents(session, site=site)
+
     return models.contents.Contents(
-        count=2,
+        count=count,
         contents=[
             models.contents.Content(
-                type="application",
-                id="copernicus-interactive-climates-atlas",
-                title="Copernicus Interactive Climate Atlas",
-                description=(
-                    "The Copernicus Interactive Climate Atlas provides graphical information "
-                    "about recent past trends and future changes "
-                    "(for different scenarios and global warming levels)"
-                ),
+                type=content.type,
+                id=content.slug,
+                title=content.title,
+                description=content.description,
                 links=[
-                    models.contents.Link(
-                        href="https://atlas.climate.copernicus.eu/atlas",
-                        rel="canonical",
-                        type="text/html",
+                    *(
+                        (
+                            models.contents.Link(
+                                href=urllib.parse.urljoin(
+                                    config.settings.document_storage_url, content.link
+                                ),
+                                rel="canonical",
+                                type="text/html",
+                            ),
+                        )
+                        if content.link
+                        else tuple()
                     ),
-                    models.contents.Link(
-                        href="https://object-store.os-api.cci2.ecmwf.int/cci2-prod-catalogue/resources/multi-origin-c3s-atlas/overview_687312b84696878963fd72a1aa8c63162a4bb5b456e05ba6ce2619dc4324fc0a.png",  # noqa: E501
-                        rel="image",
-                        type="image/png",
+                    *(
+                        (
+                            models.contents.Link(
+                                href=urllib.parse.urljoin(
+                                    config.settings.document_storage_url, content.image
+                                ),
+                                rel="image",
+                                type="image/*",
+                            ),
+                        )
+                        if content.image
+                        else tuple()
+                    ),
+                    *(
+                        (
+                            models.contents.Link(
+                                href=urllib.parse.urljoin(
+                                    config.settings.document_storage_url, content.layout
+                                ),
+                                rel="layout",
+                                type="application/json",
+                            ),
+                        )
+                        if content.layout
+                        else tuple()
                     ),
                 ],
-                published=datetime.datetime.fromisoformat("2024-02-08T11:02:31Z"),
-                updated=datetime.datetime.fromisoformat("2024-02-08T11:02:31Z"),
-            ),
-            models.contents.Content(
-                type="page",
-                id="how-to-api",
-                title="CDSAPI setup",
-                description="Access the full data store catalogue, with search and availability features",
-                links=[
-                    models.contents.Link(
-                        href="https://object-store.os-api.cci2.ecmwf.int/cci2-prod-catalogue/resources/multi-origin-c3s-atlas/layout_174f693ce66d6dffb033bb2b91c8e9339c6e39a72bed5b3e6cf22ce5fbd5f8ce.json",  # noqa: E501
-                        rel="layout",
-                        type="application/json",
-                    ),
-                ],
-                published=datetime.datetime.fromisoformat("2024-02-08T11:02:31Z"),
-                updated=datetime.datetime.fromisoformat("2024-02-08T11:02:31Z"),
-            ),
+                published=content.publication_date,
+                updated=content.content_update,
+            )
+            for content in results
         ],
     )
 
 
 @router.get(
-    "/{type}", response_model=models.contents.Contents, response_model_exclude_none=True
+    "/{ctype}",
+    response_model=models.contents.Contents,
+    response_model_exclude_none=True,
 )
 def list_contents_of_type(
-    type: str,
+    ctype: str,
     session=fastapi.Depends(dependencies.get_session),
     site=fastapi.Depends(dependencies.get_site),
 ) -> models.contents.Contents:
     """Endpoint to get all contents of a single type in the material catalogue."""
     contents = list_contents(session, site)
-    results = [c for c in contents.contents if c.type == type]
+    results = [c for c in contents.contents if c.type == ctype]
     if not results:
         raise fastapi.HTTPException(
             status_code=404, detail=f"No contents of type {type} found"
@@ -100,19 +137,19 @@ def list_contents_of_type(
 
 
 @router.get(
-    "/{type}/{id}",
+    "/{ctype}/{id}",
     response_model=models.contents.Content,
     response_model_exclude_none=True,
 )
 def get_content(
-    type: str,
+    ctype: str,
     id: str,
     session=fastapi.Depends(dependencies.get_session),
     site=fastapi.Depends(dependencies.get_site),
 ) -> models.contents.Content:
     """Endpoint to get a content."""
     contents = list_contents(session, site)
-    results = [c for c in contents.contents if c.type == type and c.id == id]
+    results = [c for c in contents.contents if c.type == ctype and c.id == id]
     if not results:
         raise fastapi.HTTPException(status_code=404, detail=f"Content {id} found")
     return results[0]
