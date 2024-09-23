@@ -29,24 +29,106 @@ router = fastapi.APIRouter(
 )
 
 
+def _apply_common_filters(query, site: str, ctype: str | None = None):
+    return query.where(
+        cads_catalogue.database.Content.site == site,
+        *((cads_catalogue.database.Content.type == ctype,) if ctype else tuple()),
+    )
+
+
 def query_contents(
     session: sa.orm.Session,
     site: str,
     ctype: str | None = None,
 ):
-    stmt = (
-        sa.select(sa.func.count())
-        .select_from(cads_catalogue.database.Content)
-        .where(cads_catalogue.database.Content.site == site)
+    stmt_count = _apply_common_filters(
+        sa.select(sa.func.count()).select_from(cads_catalogue.database.Content),
+        site,
+        ctype,
     )
-    count = session.execute(stmt).scalar()
-    stmt = (
-        sa.select(cads_catalogue.database.Content)
-        .where(cads_catalogue.database.Content.site == site)
-        .order_by(cads_catalogue.database.Content.title)
-    )
-    results = session.scalars(stmt).all()
+    count = session.execute(stmt_count).scalar()
+    if ctype and count == 0:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_501_NOT_IMPLEMENTED,
+            detail=f"Content type {ctype} not implemented",
+        )
+
+    stmt_query = _apply_common_filters(
+        sa.select(cads_catalogue.database.Content), site, ctype
+    ).order_by(cads_catalogue.database.Content.title)
+    results = session.scalars(stmt_query).all()
     return count, results
+
+
+def query_content(
+    session: sa.orm.Session,
+    site: str,
+    ctype: str,
+    id: str,
+):
+    stmt_query = _apply_common_filters(
+        sa.select(cads_catalogue.database.Content), site, ctype
+    ).where(
+        cads_catalogue.database.Content.slug == id,
+    )
+    result = session.scalars(stmt_query).one()
+    return result
+
+
+def _build_content(content):
+    return models.contents.Content(
+        type=content.type,
+        id=content.slug,
+        title=content.title,
+        description=content.description,
+        links=[
+            *(
+                (
+                    models.contents.Link(
+                        href=urllib.parse.urljoin(
+                            config.settings.document_storage_url, content.link
+                        ),
+                        rel="canonical",
+                        type="text/html",
+                    ),
+                )
+                if content.link
+                else tuple()
+            ),
+            *(
+                (
+                    models.contents.Link(
+                        href=urllib.parse.urljoin(
+                            config.settings.document_storage_url, content.image
+                        ),
+                        rel="image",
+                        type="image/*",
+                    ),
+                )
+                if content.image
+                else tuple()
+            ),
+            *(
+                (
+                    models.contents.Link(
+                        href=urllib.parse.urljoin(
+                            config.settings.document_storage_url, content.layout
+                        ),
+                        rel="layout",
+                        type="application/json",
+                    ),
+                )
+                if content.layout
+                else tuple()
+            ),
+        ],
+        published=content.publication_date,
+        updated=content.content_update,
+    )
+
+
+def _build_contents_response(results):
+    return [_build_content(content) for content in results]
 
 
 @router.get(
@@ -61,58 +143,7 @@ def list_contents(
 
     return models.contents.Contents(
         count=count,
-        contents=[
-            models.contents.Content(
-                type=content.type,
-                id=content.slug,
-                title=content.title,
-                description=content.description,
-                links=[
-                    *(
-                        (
-                            models.contents.Link(
-                                href=urllib.parse.urljoin(
-                                    config.settings.document_storage_url, content.link
-                                ),
-                                rel="canonical",
-                                type="text/html",
-                            ),
-                        )
-                        if content.link
-                        else tuple()
-                    ),
-                    *(
-                        (
-                            models.contents.Link(
-                                href=urllib.parse.urljoin(
-                                    config.settings.document_storage_url, content.image
-                                ),
-                                rel="image",
-                                type="image/*",
-                            ),
-                        )
-                        if content.image
-                        else tuple()
-                    ),
-                    *(
-                        (
-                            models.contents.Link(
-                                href=urllib.parse.urljoin(
-                                    config.settings.document_storage_url, content.layout
-                                ),
-                                rel="layout",
-                                type="application/json",
-                            ),
-                        )
-                        if content.layout
-                        else tuple()
-                    ),
-                ],
-                published=content.publication_date,
-                updated=content.content_update,
-            )
-            for content in results
-        ],
+        contents=_build_contents_response(results),
     )
 
 
@@ -127,13 +158,12 @@ def list_contents_of_type(
     site=fastapi.Depends(dependencies.get_site),
 ) -> models.contents.Contents:
     """Endpoint to get all contents of a single type in the material catalogue."""
-    contents = list_contents(session, site)
-    results = [c for c in contents.contents if c.type == ctype]
-    if not results:
-        raise fastapi.HTTPException(
-            status_code=404, detail=f"No contents of type {type} found"
-        )
-    return models.contents.Contents(count=len(results), contents=results)
+    count, results = query_contents(session, site=site, ctype=ctype)
+
+    return models.contents.Contents(
+        count=count,
+        contents=_build_contents_response(results),
+    )
 
 
 @router.get(
@@ -148,8 +178,11 @@ def get_content(
     site=fastapi.Depends(dependencies.get_site),
 ) -> models.contents.Content:
     """Endpoint to get a content."""
-    contents = list_contents(session, site)
-    results = [c for c in contents.contents if c.type == ctype and c.id == id]
-    if not results:
-        raise fastapi.HTTPException(status_code=404, detail=f"Content {id} found")
-    return results[0]
+    try:
+        result = query_content(session, ctype=ctype, site=site, id=id)
+    except sa.orm.exc.NoResultFound as exc:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Content {id} of type {ctype} not found",
+        ) from exc
+    return _build_content(result)
