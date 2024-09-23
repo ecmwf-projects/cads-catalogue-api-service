@@ -38,6 +38,7 @@ from . import (
     client,
     collection_ext,
     config,
+    contents,
     doi,
     exceptions,
     extensions,
@@ -87,6 +88,7 @@ app.include_router(messages.router)
 app.include_router(schema_org.router)
 app.include_router(collection_ext.router)
 app.include_router(doi.router)
+app.include_router(contents.router)
 
 
 def catalogue_openapi() -> dict[str, Any]:
