@@ -87,7 +87,7 @@ def query_licence(
         cads_catalogue.database.Licence.title,
         cads_catalogue.database.Licence.md_filename,
         cads_catalogue.database.Licence.download_filename,
-        sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
+        cads_catalogue.database.Licence.revision,
         cads_catalogue.database.Licence.scope,
         cads_catalogue.database.Licence.portal,
     )
@@ -99,11 +99,12 @@ def query_licence(
                 cads_catalogue.database.Licence.title,
                 cads_catalogue.database.Licence.md_filename,
                 cads_catalogue.database.Licence.download_filename,
+                cads_catalogue.database.Licence.revision,
                 cads_catalogue.database.Licence.scope,
                 cads_catalogue.database.Licence.portal,
             )
-            .order_by(cads_catalogue.database.Licence.title)
-            .one()
+            .order_by(sa.desc("revision"))
+            .first()
         )
     except sa.exc.NoResultFound as exc:
         raise fastapi.HTTPException(
