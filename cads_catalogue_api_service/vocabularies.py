@@ -42,14 +42,22 @@ def query_licences(
     scope: LicenceScopeCriterion,
     portals: list[str] | None = None,
 ) -> list[cads_catalogue.database.Licence]:
-    """Query licences."""
-    # NOTE: possible issue here if the title of a licence change from a revision to another
+    """Query all licences.
+
+    Return the latest revision of each licence. Older revision virtually disappear from API.
+    """
+    # subquery, to select all unique licence_uids and their max revision
+    subquery = session.query(
+        cads_catalogue.database.Licence.licence_uid,
+        sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
+    ).group_by(cads_catalogue.database.Licence.licence_uid)
+
     query = session.query(
         cads_catalogue.database.Licence.licence_uid,
         cads_catalogue.database.Licence.title,
         cads_catalogue.database.Licence.md_filename,
         cads_catalogue.database.Licence.download_filename,
-        sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
+        cads_catalogue.database.Licence.revision,
         cads_catalogue.database.Licence.scope,
         cads_catalogue.database.Licence.portal,
     )
@@ -62,18 +70,14 @@ def query_licences(
                 cads_catalogue.database.Licence.portal.is_(None),
             )
         )
-    results = (
-        query.group_by(
+
+    # Now retrieve all licences where the tuple (licence_uid, revision) is in the subquery
+    results = query.filter(
+        sa.tuple_(
             cads_catalogue.database.Licence.licence_uid,
-            cads_catalogue.database.Licence.title,
-            cads_catalogue.database.Licence.md_filename,
-            cads_catalogue.database.Licence.download_filename,
-            cads_catalogue.database.Licence.scope,
-            cads_catalogue.database.Licence.portal,
-        )
-        .order_by(cads_catalogue.database.Licence.title)
-        .all()
-    )
+            cads_catalogue.database.Licence.revision,
+        ).in_(subquery)
+    ).order_by(cads_catalogue.database.Licence.title)
     return results  # type: ignore
 
 
@@ -87,7 +91,7 @@ def query_licence(
         cads_catalogue.database.Licence.title,
         cads_catalogue.database.Licence.md_filename,
         cads_catalogue.database.Licence.download_filename,
-        sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
+        cads_catalogue.database.Licence.revision,
         cads_catalogue.database.Licence.scope,
         cads_catalogue.database.Licence.portal,
     )
@@ -99,11 +103,12 @@ def query_licence(
                 cads_catalogue.database.Licence.title,
                 cads_catalogue.database.Licence.md_filename,
                 cads_catalogue.database.Licence.download_filename,
+                cads_catalogue.database.Licence.revision,
                 cads_catalogue.database.Licence.scope,
                 cads_catalogue.database.Licence.portal,
             )
-            .order_by(cads_catalogue.database.Licence.title)
-            .one()
+            .order_by(sa.desc("revision"))
+            .first()
         )
     except sa.exc.NoResultFound as exc:
         raise fastapi.HTTPException(
