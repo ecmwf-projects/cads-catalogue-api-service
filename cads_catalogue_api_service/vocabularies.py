@@ -47,14 +47,10 @@ def query_licences(
     Return the latest revision of each licence. Older revision virtually disappear from API.
     """
     # subquery, to select all unique licence_uids and their max revision
-    subquery = (
-        session.query(
-            cads_catalogue.database.Licence.licence_uid,
-            sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
-        )
-        .group_by(cads_catalogue.database.Licence.licence_uid)
-        .subquery()
-    )
+    subquery = session.query(
+        cads_catalogue.database.Licence.licence_uid,
+        sa.func.max(cads_catalogue.database.Licence.revision).label("revision"),
+    ).group_by(cads_catalogue.database.Licence.licence_uid)
 
     query = session.query(
         cads_catalogue.database.Licence.licence_uid,
