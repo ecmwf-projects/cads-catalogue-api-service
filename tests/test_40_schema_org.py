@@ -136,7 +136,7 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         "distribution": [
             {
                 "@type": "DataDownload",
-                "encodingFormat": "",
+                "encodingFormat": "application/octet-stream",
                 "contentUrl": "http://localhost:8080/api/catalogue/v1/collections/era5-something?tab=download",
             }
         ],
