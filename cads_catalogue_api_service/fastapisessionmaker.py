@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from contextlib import contextmanager
 
+import cads_catalogue
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
@@ -110,7 +111,7 @@ def get_engine(uri: str) -> sa.engine.Engine:
     This function may be updated over time to reflect recommended engine configuration
     for use with FastAPI.
     """
-    return sa.create_engine(uri, pool_pre_ping=True)
+    return cads_catalogue.database.ensure_engine(uri)
 
 
 def get_sessionmaker_for_engine(engine: sa.engine.Engine) -> sa.orm.sessionmaker:
