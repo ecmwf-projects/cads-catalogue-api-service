@@ -132,7 +132,5 @@ def schema_org_json_ld(
         ),
         datePublished=collection.get("published", None),
         dateModified=collection.get("updated", None),
-        thumbnailUrl=collection.get("assets", {})
-        .get("thumbnail", {})
-        .get("href", None),
+        image=collection.get("assets", {}).get("thumbnail", {}).get("href", None),
     )

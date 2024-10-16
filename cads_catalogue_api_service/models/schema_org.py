@@ -66,4 +66,4 @@ class Dataset(pydantic.BaseModel):
     spatialCoverage: Place
     datePublished: str | None
     dateModified: str | None
-    thumbnailUrl: str | None = None
+    image: str | None = None
