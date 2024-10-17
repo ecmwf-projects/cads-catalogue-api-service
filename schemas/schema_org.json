@@ -85,7 +85,7 @@
           "dateModified": {
             "type": ["string","null"]
           },
-          "thumbnailUrl": {
+          "image": {
             "type": ["string","null"]
           }
         },
@@ -105,8 +105,7 @@
           "distribution",
           "temporalCoverage",
           "spatialCoverage",
-          "dateModified",
-          "thumbnailUrl"
+          "dateModified"
         ]
   }
 }

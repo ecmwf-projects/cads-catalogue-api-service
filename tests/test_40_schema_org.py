@@ -147,5 +147,5 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         },
         "dateModified": "2023-06-22T00:00:00Z",
         "datePublished": "2020-05-19T00:00:00Z",
-        "thumbnailUrl": "https://s3.cds.org.int/swift/v1/AUTH_3e237111c3a144df8e0e0980577062b4/cds2-dev-catalogue/resources/era5-something/overview_36fc7b601512e3619bc5ba70ae0488b911d9d74e203400f9a321f5745768f6a5.png",
+        "image": "https://s3.cds.org.int/swift/v1/AUTH_3e237111c3a144df8e0e0980577062b4/cds2-dev-catalogue/resources/era5-something/overview_36fc7b601512e3619bc5ba70ae0488b911d9d74e203400f9a321f5745768f6a5.png",
     }
