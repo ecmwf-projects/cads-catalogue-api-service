@@ -131,7 +131,7 @@ def query_keywords(
 
 
 @router.get("/licences", response_model=models.Licences)
-async def list_licences(
+def list_licences(
     session=fastapi.Depends(dependencies.get_session),
     scope: LicenceScopeCriterion = fastapi.Query(default=LicenceScopeCriterion.all),
     portals: list[str] | None = fastapi.Depends(dependencies.get_portals),
@@ -159,7 +159,7 @@ async def list_licences(
 
 
 @router.get("/licences/{licence_uid}", response_model=models.Licence)
-async def licence_details(
+def licence_details(
     session=fastapi.Depends(dependencies.get_session),
     licence_uid: str = fastapi.Path(..., title="Licence UID"),
 ) -> models.Licence:
@@ -181,7 +181,7 @@ async def licence_details(
 
 
 @router.get("/keywords", response_model=models.Keywords)
-async def list_keywords(
+def list_keywords(
     session=fastapi.Depends(dependencies.get_session),
 ) -> models.Keywords:
     """Endpoint to get all available keywords."""
