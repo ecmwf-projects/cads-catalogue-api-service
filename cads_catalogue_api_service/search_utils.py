@@ -30,7 +30,7 @@ WEIGHT_FULLTEXT = 0.03
 def apply_filters_typeahead(
     session: sa.orm.Session,
     chars: str,
-    search: sa.orm.Query | None,
+    search: sa.orm.Query | None = None,
     portals: list[str] | None = None,
     limit: int | None = None,
 ):
@@ -38,7 +38,7 @@ def apply_filters_typeahead(
 
     Args:
         session: sqlalchemy session object
-        chars: characters of the words to find
+        chars: initial characters of the words to find
         search: current dataset query
         portals: list of datasets portals to consider
         limit: if specified, limit length of resulting words
@@ -71,17 +71,19 @@ def apply_filters_typeahead(
     if limit is not None:
         search = search.limit(limit)  # type: ignore
 
-    # final sql should be something like:
+    # final sql for `apply_filters_typeahead(session, 'er', portals=['cams', 'c3s'], limit=10)`:
     # SELECT suggestion FROM
     # (
-    #     SELECT unnest(array_agg(DISTINCT t.g)) AS suggestion FROM
+    #     SELECT unnest(array_agg(distinct(t.g))) AS suggestion FROM
     #     (
     #         SELECT unnest(string_to_array(lower(title), ' ')) AS g FROM resources
     #         WHERE resources.hidden = true AND resources.portal IN ('cams', 'c3s')
     #     )
-    #      as t
-    # ) as tt
-    # WHERE length(tt.suggestion) > 2 and tt.suggestion ilike 'er%' limit 10;
+    #      AS t
+    # ) AS tt
+    # WHERE length(tt.suggestion) > 2 AND tt.suggestion ILIKE 'er%'
+    # ORDER BY tt.suggestion
+    # LIMIT 10;
 
     return search
 
