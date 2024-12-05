@@ -27,6 +27,67 @@ WEIGHT_DESCRIPTION = 0.5
 WEIGHT_FULLTEXT = 0.03
 
 
+def apply_filters_typeahead(
+    session: sa.orm.Session,
+    chars: str,
+    search: sa.orm.Query | None = None,
+    portals: list[str] | None = None,
+    limit: int | None = None,
+):
+    """Apply filters to return words matching initial input characters, as suggestions for searching datasets.
+
+    Args:
+        session: sqlalchemy session object
+        chars: initial characters of the words to find
+        search: current dataset query
+        portals: list of datasets portals to consider
+        limit: if specified, limit length of resulting words
+    """
+    if search is None:
+        search = session.query(cads_catalogue.database.Resource)
+    search = search.filter(cads_catalogue.database.Resource.hidden == False)  # noqa E712
+    if portals:
+        search = search.filter(cads_catalogue.database.Resource.portal.in_(portals))
+    g = sa.func.unnest(
+        sa.func.string_to_array(
+            sa.func.lower(cads_catalogue.database.Resource.title), " "
+        )
+    ).label("g")
+    t = search.with_entities(g).scalar_subquery().alias("t")
+    suggestion = sa.func.unnest(sa.func.array_agg(sa.func.distinct(t.c.g))).label(
+        "suggestion"
+    )
+    tt = session.query(suggestion).select_from(t).scalar_subquery().alias("tt")
+    # consider only (resulting words with length > 2) AND (words starting with chars):
+    filter = sa.and_(
+        sa.func.length(tt.c.suggestion).__gt__(2), tt.c.suggestion.ilike(chars + "%")
+    )
+    search = (
+        session.query(tt.c.suggestion)
+        .select_from(tt)
+        .filter(filter)
+        .order_by(tt.c.suggestion)
+    )
+    if limit is not None:
+        search = search.limit(limit)  # type: ignore
+
+    # final sql for `apply_filters_typeahead(session, 'er', portals=['cams', 'c3s'], limit=10)`:
+    # SELECT suggestion FROM
+    # (
+    #     SELECT unnest(array_agg(distinct(t.g))) AS suggestion FROM
+    #     (
+    #         SELECT unnest(string_to_array(lower(title), ' ')) AS g FROM resources
+    #         WHERE resources.hidden = true AND resources.portal IN ('cams', 'c3s')
+    #     )
+    #      AS t
+    # ) AS tt
+    # WHERE length(tt.suggestion) > 2 AND tt.suggestion ILIKE 'er%'
+    # ORDER BY tt.suggestion
+    # LIMIT 10;
+
+    return search
+
+
 def split_by_category(keywords: list) -> list:
     """Given a list of keywords composed by a "category: value", split them in multiple lists.
 
