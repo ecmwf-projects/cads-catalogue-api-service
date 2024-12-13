@@ -96,26 +96,25 @@ def query_licence(
         cads_catalogue.database.Licence.portal,
     )
     query = query.filter(cads_catalogue.database.Licence.licence_uid == licence_uid)
-    try:
-        results = (
-            query.group_by(
-                cads_catalogue.database.Licence.licence_uid,
-                cads_catalogue.database.Licence.title,
-                cads_catalogue.database.Licence.md_filename,
-                cads_catalogue.database.Licence.download_filename,
-                cads_catalogue.database.Licence.revision,
-                cads_catalogue.database.Licence.scope,
-                cads_catalogue.database.Licence.portal,
-            )
-            .order_by(sa.desc("revision"))
-            .first()
+    result = (
+        query.group_by(
+            cads_catalogue.database.Licence.licence_uid,
+            cads_catalogue.database.Licence.title,
+            cads_catalogue.database.Licence.md_filename,
+            cads_catalogue.database.Licence.download_filename,
+            cads_catalogue.database.Licence.revision,
+            cads_catalogue.database.Licence.scope,
+            cads_catalogue.database.Licence.portal,
         )
-    except sa.exc.NoResultFound as exc:
+        .order_by(sa.desc("revision"))
+        .first()
+    )
+    if not result:
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail=f"licence {licence_uid} not found",
-        ) from exc
-    return results  # type: ignore
+        )
+    return result  # type: ignore
 
 
 def query_keywords(
