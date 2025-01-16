@@ -25,9 +25,9 @@ from . import config, dependencies, models
 
 
 class LicenceScopeCriterion(str, enum.Enum):
-    all: str = "all"
-    dataset: str = "dataset"
-    portal: str = "portal"
+    all = "all"
+    dataset = "dataset"
+    portal = "portal"
 
 
 router = fastapi.APIRouter(

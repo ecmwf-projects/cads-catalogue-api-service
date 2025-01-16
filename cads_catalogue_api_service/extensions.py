@@ -27,10 +27,10 @@ from . import client, config
 
 
 class CatalogueSortCriterion(str, enum.Enum):
-    relevance_desc: str = "relevance"
-    update_desc: str = "update"
-    title_asc: str = "title"
-    id_asc: str = "id"
+    relevance_desc = "relevance"
+    update_desc = "update"
+    title_asc = "title"
+    id_asc = "id"
 
 
 def datasets_search(
