@@ -32,6 +32,7 @@ router = fastapi.APIRouter(
 def _apply_common_filters(query, site: str, ctype: str | None = None):
     return query.where(
         cads_catalogue.database.Content.site == site,
+        cads_catalogue.database.Content.hidden.is_(False),
         *((cads_catalogue.database.Content.type == ctype,) if ctype else tuple()),
     )
 

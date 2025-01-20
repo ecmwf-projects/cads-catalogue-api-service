@@ -22,8 +22,8 @@ import stac_fastapi.types
 
 
 class LicenceCategories(str, enum.Enum):
-    dataset: str = "dataset"
-    portal: str = "portal"
+    dataset = "dataset"
+    portal = "portal"
 
 
 class Licence(TypedDict):
