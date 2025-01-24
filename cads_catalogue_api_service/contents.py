@@ -42,6 +42,7 @@ def query_contents(
     site: str,
     ctype: str | None = None,
 ):
+    """Perform a database query for multiple contents, ideally filtereb by type."""
     stmt_count = _apply_common_filters(
         sa.select(sa.func.count()).select_from(cads_catalogue.database.Content),
         site,
@@ -67,6 +68,7 @@ def query_content(
     ctype: str,
     id: str,
 ):
+    """Perform a database query for a single content."""
     stmt_query = _apply_common_filters(
         sa.select(cads_catalogue.database.Content), site, ctype
     ).where(
@@ -77,6 +79,8 @@ def query_content(
 
 
 def _build_content(content, request: fastapi.Request):
+    related_datasets = content.resources
+
     return models.contents.Content(
         type=content.type,
         id=content.slug,
@@ -133,6 +137,15 @@ def _build_content(content, request: fastapi.Request):
                 )
                 if content.layout
                 else tuple()
+            ),
+            *(
+                models.contents.Link(
+                    href=f'{request.url_for("Get Collections")}/{dataset.resource_uid}',
+                    rel="related",
+                    type="application/json",
+                    title=dataset.title,
+                )
+                for dataset in related_datasets
             ),
         ],
         published=content.publication_date,
