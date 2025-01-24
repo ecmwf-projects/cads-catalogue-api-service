@@ -76,13 +76,25 @@ def query_content(
     return result
 
 
-def _build_content(content):
+def _build_content(content, request: fastapi.Request):
     return models.contents.Content(
         type=content.type,
         id=content.slug,
         title=content.title,
         description=content.description,
         links=[
+            models.contents.Link(
+                href=str(request.url_for("Get contents of type", ctype=content.type)),
+                rel="parent",
+                type="application/json",
+            ),
+            models.contents.Link(
+                href=str(
+                    request.url_for("Get content", ctype=content.type, id=content.slug)
+                ),
+                rel="self",
+                type="application/json",
+            ),
             *(
                 (
                     models.contents.Link(
@@ -125,17 +137,22 @@ def _build_content(content):
         ],
         published=content.publication_date,
         updated=content.content_update,
+        data=content.data,
     )
 
 
-def _build_contents_response(results):
-    return [_build_content(content) for content in results]
+def _build_contents_response(results, request: fastapi.Request):
+    return [_build_content(content, request=request) for content in results]
 
 
 @router.get(
-    "/", response_model=models.contents.Contents, response_model_exclude_none=True
+    "/",
+    response_model=models.contents.Contents,
+    response_model_exclude_none=True,
+    name="Get contents",
 )
 def list_contents(
+    request: fastapi.Request,
     session=fastapi.Depends(dependencies.get_session),
     site=fastapi.Depends(dependencies.get_site),
 ) -> models.contents.Contents:
@@ -144,7 +161,10 @@ def list_contents(
 
     return models.contents.Contents(
         count=count,
-        contents=_build_contents_response(results),
+        contents=_build_contents_response(
+            results,
+            request=request,
+        ),
     )
 
 
@@ -152,8 +172,10 @@ def list_contents(
     "/{ctype}",
     response_model=models.contents.Contents,
     response_model_exclude_none=True,
+    name="Get contents of type",
 )
 def list_contents_of_type(
+    request: fastapi.Request,
     ctype: str,
     session=fastapi.Depends(dependencies.get_session),
     site=fastapi.Depends(dependencies.get_site),
@@ -163,7 +185,10 @@ def list_contents_of_type(
 
     return models.contents.Contents(
         count=count,
-        contents=_build_contents_response(results),
+        contents=_build_contents_response(
+            results,
+            request=request,
+        ),
     )
 
 
@@ -171,10 +196,12 @@ def list_contents_of_type(
     "/{ctype}/{id}",
     response_model=models.contents.Content,
     response_model_exclude_none=True,
+    name="Get content",
 )
 def get_content(
     ctype: str,
     id: str,
+    request: fastapi.Request,
     session=fastapi.Depends(dependencies.get_session),
     site=fastapi.Depends(dependencies.get_site),
 ) -> models.contents.Content:
@@ -186,4 +213,4 @@ def get_content(
             status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail=f"Content {id} of type {ctype} not found",
         ) from exc
-    return _build_content(result)
+    return _build_content(result, request=request)
