@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import datetime
+from typing import Any
 
 import pydantic
 
@@ -38,6 +39,7 @@ class Content(pydantic.BaseModel):
     published: datetime.datetime
     updated: datetime.datetime
     links: list[Link] = []
+    data: dict[str, Any] | None = None
 
 
 class Contents(pydantic.BaseModel):
