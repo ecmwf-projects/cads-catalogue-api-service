@@ -23,6 +23,12 @@ from cads_catalogue_api_service.main import app
 
 client = fastapi.testclient.TestClient(app)
 
+STATIC_DATASET = database.Resource(
+    resource_id=1,
+    resource_uid="foo-bar-baz",
+    title="Foo bar baz",
+)
+
 STATIC_RESULTS = [
     database.Content(
         content_id=1,
@@ -35,6 +41,7 @@ STATIC_RESULTS = [
         site="cds",
         title="Copernicus Interactive Climate Atlas",
         type="application",
+        resources=[STATIC_DATASET],
     ),
     database.Content(
         content_id=2,
@@ -173,3 +180,43 @@ def test_query_content(monkeypatch) -> None:
 
     results = response.json()
     assert results["title"] == "How to API?"
+
+
+def test_links(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.contents.query_content",
+        static_query_content,
+    )
+
+    response = client.get("/contents/page/how-to-api", headers={"X-CADS-SITE": "cds"})
+
+    assert response.status_code == 200
+
+    result = response.json()
+    assert result["title"] == "How to API?"
+    assert result["links"][0]["href"] == "http://testserver/contents/page"
+    assert result["links"][1]["href"] == "http://testserver/contents/page/how-to-api"
+    assert result["links"][0]["rel"] == "parent"
+    assert result["links"][1]["rel"] == "self"
+
+
+def test_links_relations(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.contents.query_content",
+        static_query_content,
+    )
+
+    response = client.get(
+        "/contents/application/copernicus-interactive-climates-atlas",
+        headers={"X-CADS-SITE": "cds"},
+    )
+
+    assert response.status_code == 200
+
+    result = response.json()
+    assert result["title"] == "Copernicus Interactive Climate Atlas"
+    assert len([link for link in result["links"] if link.get("rel") == "related"]) > 0
+    related = [link for link in result["links"] if link.get("rel") == "related"][0]
+    assert related["href"] == "http://testserver/collections/foo-bar-baz"
+    assert related["rel"] == "related"
+    assert related["title"] == "Foo bar baz"
