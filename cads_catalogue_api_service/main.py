@@ -100,10 +100,13 @@ def catalogue_openapi() -> dict[str, Any]:
         version=api.api_version,
         routes=api.app.routes,
         description=(
-            "The CADS catalogue API is a STAC compliant API to access the CADS catalogues.\n\n"
+            "This API is a [STAC](https://stacspec.org/) compliant API to access CADS catalogues.\\"
+            "\n"
             "The implementation is based on [Standalone Collections]"
             "(https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#standalone-collections) "  # noqa: E501
-            "while a custom extension is present to provide datasets search capabilities."
+            "while a custom extension is included to provide collection search capabilities."
+            "\n\n"
+            "Scope of this API is to search into an CADS catalogue and access datasets' metadata."
         ),
     )
 
