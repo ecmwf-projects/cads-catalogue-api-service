@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import uuid
 
 import fastapi
@@ -82,6 +83,7 @@ class LoggerInitializationMiddleware:
 
 
 CACHEABLE_HTTP_METHODS = ["GET", "HEAD"]
+CACHE_TIME = os.getenv("CACHE_TIME", "180")
 
 
 class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
@@ -100,5 +102,5 @@ class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
             "cache-control" not in response.headers
             and request.method in CACHEABLE_HTTP_METHODS
         ):
-            response.headers.update({"cache-control": "public, max-age=180"})
+            response.headers.update({"cache-control": f"public, max-age={CACHE_TIME}"})
         return response
