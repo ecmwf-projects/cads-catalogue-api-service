@@ -100,5 +100,5 @@ class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
             "cache-control" not in response.headers
             and request.method in CACHEABLE_HTTP_METHODS
         ):
-            response.headers.update({"cache-control": "public, max-age=300"})
+            response.headers.update({"cache-control": "public, max-age=180"})
         return response
