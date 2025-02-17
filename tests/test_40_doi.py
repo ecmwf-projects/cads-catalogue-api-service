@@ -94,7 +94,7 @@ def test_doi_redirect(monkeypatch) -> None:
         static_collection,
     )
 
-    response = client.get("/doi/11111/22222", allow_redirects=False)
+    response = client.get("/doi/11111/22222", follow_redirects=False)
 
     assert response.status_code == 301
     assert response.headers["location"] == "/datasets/era5-something"
