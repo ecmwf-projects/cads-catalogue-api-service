@@ -108,7 +108,7 @@ def test_ext_form(monkeypatch):
         _static_query_collection,
     )
     response = client.get(
-        "/collections/era5-something/form.json", allow_redirects=False
+        "/collections/era5-something/form.json", follow_redirects=False
     )
     assert response.status_code == 307
     assert response.headers["location"] == "https://somewhere.or/s3/form.json"
@@ -118,7 +118,7 @@ def test_ext_form(monkeypatch):
         _static_query_collection_nolinks,
     )
     response = client.get(
-        "/collections/era5-something/form.json", allow_redirects=False
+        "/collections/era5-something/form.json", follow_redirects=False
     )
     assert response.status_code == 404
     assert (
@@ -132,7 +132,7 @@ def test_ext_constraints(monkeypatch):
         _static_query_collection,
     )
     response = client.get(
-        "/collections/era5-something/constraints.json", allow_redirects=False
+        "/collections/era5-something/constraints.json", follow_redirects=False
     )
     assert response.status_code == 307
     assert response.headers["location"] == "https://somewhere.or/s3/constraints.json"
@@ -142,7 +142,7 @@ def test_ext_constraints(monkeypatch):
         _static_query_collection_nolinks,
     )
     response = client.get(
-        "/collections/era5-something/constraints.json", allow_redirects=False
+        "/collections/era5-something/constraints.json", follow_redirects=False
     )
     assert response.status_code == 404
     assert (
