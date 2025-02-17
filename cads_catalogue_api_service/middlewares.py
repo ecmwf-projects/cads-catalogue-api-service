@@ -101,6 +101,7 @@ class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
         if (
             "cache-control" not in response.headers
             and request.method in CACHEABLE_HTTP_METHODS
+            and response.status_code == fastapi.status.HTTP_200_OK
         ):
             response.headers.update({"cache-control": f"public, max-age={CACHE_TIME}"})
         return response
