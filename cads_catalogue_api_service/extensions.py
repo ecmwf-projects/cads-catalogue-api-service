@@ -33,6 +33,12 @@ class CatalogueSortCriterion(str, enum.Enum):
     id_asc = "id"
 
 
+class ContentSortCriterion(str, enum.Enum):
+    title_asc = "title"
+    publication_desc = "publication"
+    update_desc = "update"
+
+
 def datasets_search(
     request: fastapi.Request,
     q: str = fastapi.Query(default=None, description="Full-text search query"),
