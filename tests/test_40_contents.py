@@ -74,6 +74,7 @@ def static_query_contents(
     session: Any,
     site: str,
     ctype: str | None = None,
+    sortby: str | None = None,
 ):
     results = (
         STATIC_RESULTS
