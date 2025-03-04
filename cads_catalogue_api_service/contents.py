@@ -32,7 +32,7 @@ router = fastapi.APIRouter(
 def _apply_common_filters(
     query,
     site: str,
-    ctype: str | None = None,
+    ctype: str | list[str] | None = None,
     related_dataset: list[str] | None = None,
 ):
     filters = [
@@ -40,8 +40,11 @@ def _apply_common_filters(
         cads_catalogue.database.Content.hidden.is_(False),
     ]
 
+    if isinstance(ctype, str):
+        ctype = [ctype]
+
     if ctype:
-        filters.append(cads_catalogue.database.Content.type == ctype)
+        filters.append(cads_catalogue.database.Content.type.in_(ctype))
 
     if related_dataset:
         query = query.join(cads_catalogue.database.Content.resources).distinct()
@@ -64,11 +67,14 @@ def get_sorting_clause(sort: str) -> tuple:
 def query_contents(
     session: sa.orm.Session,
     site: str,
-    ctype: str | None = None,
+    ctype: str | list[str] | None = None,
     related_dataset: list[str] | None = None,
     sortby: str = "title",
 ):
     """Perform a database query for multiple contents, ideally filtered by type and related dataset."""
+    if isinstance(ctype, str):
+        ctype = [ctype]
+
     base_query = sa.select(
         sa.func.count(sa.distinct(cads_catalogue.database.Content.content_id))
     )
@@ -202,7 +208,7 @@ def _build_contents_response(results, request: fastapi.Request):
 )
 def list_contents(
     request: fastapi.Request,
-    ctype: str | None = None,
+    ctype: list[str] | None = fastapi.Query(None),
     related_dataset: list[str] | None = fastapi.Query(None),
     sortby: extensions.ContentSortCriterion = extensions.ContentSortCriterion.title_asc,
     session=fastapi.Depends(dependencies.get_session),
