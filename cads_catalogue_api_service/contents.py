@@ -85,11 +85,6 @@ def query_contents(
         related_dataset,
     )
     count = session.execute(stmt_count).scalar()
-    if ctype and count == 0:
-        raise fastapi.HTTPException(
-            status_code=fastapi.status.HTTP_501_NOT_IMPLEMENTED,
-            detail=f"Content type {ctype} not implemented",
-        )
 
     # Get secondary sorting clause
     sort_by, sort_order_fn = get_sorting_clause(sortby)
@@ -243,6 +238,12 @@ def list_contents_of_type(
 ) -> models.contents.Contents:
     """Endpoint to get all contents of a single type in the material catalogue."""
     count, results = query_contents(session, site=site, ctype=ctype, sortby=sortby)
+
+    if count == 0:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_501_NOT_IMPLEMENTED,
+            detail=f"Content type {ctype} not implemented",
+        )
 
     return models.contents.Contents(
         count=count,
