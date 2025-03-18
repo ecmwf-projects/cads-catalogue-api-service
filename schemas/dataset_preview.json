@@ -71,7 +71,8 @@
           "description": "The timestamp of the sanity check",
           "format": "date-time"
         }
-      }
+      },
+      "required": ["status", "timestamp"]
     }
   },
   "required": ["published", "updated"]
