@@ -17,6 +17,8 @@ import urllib
 
 import cads_catalogue.database
 
+from cads_catalogue_api_service.client import SanityCheckStatus
+
 
 class Request:
     def __init__(self, base_url: str) -> None:
@@ -230,6 +232,10 @@ def generate_expected(
             "id": "message-2",
             "live": True,
             "severity": "warning",
+        },
+        "cads:sanity_check": {
+            "status": SanityCheckStatus.available,
+            "timestamp": None,
         },
     }
     if not preview:

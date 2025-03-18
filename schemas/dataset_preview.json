@@ -53,6 +53,25 @@
       "title": "Hidden",
       "description": "Whether this dataset is hidden from the public",
       "default": false
+    },
+    "cads:sanity_check": {
+      "type": "object",
+      "title": "Sanity check",
+      "description": "The result of the sanity check for this dataset",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "Status",
+          "description": "The status of the sanity check",
+          "enum": ["available", "warning", "down"]
+        },
+        "timestamp": {
+          "type": "string",
+          "title": "Timestamp",
+          "description": "The timestamp of the sanity check",
+          "format": "date-time"
+        }
+      }
     }
   },
   "required": ["published", "updated"]
