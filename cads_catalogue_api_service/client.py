@@ -138,7 +138,7 @@ def process_sanity_check(
         return {"status": SanityCheckStatus.available, "timestamp": None}
 
     # Extract timestamp from the first test
-    timestamp = sanity_check[0].get("timestamp") if sanity_check else None
+    timestamp = sanity_check[0].get("timestamp")
 
     # Count successful tests
     successful_tests = sum(1 for test in sanity_check if test.get("success", False))
