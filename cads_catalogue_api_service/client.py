@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import urllib
-from enum import Enum
 from typing import Any, Type
 
 import attrs
@@ -35,15 +34,10 @@ from . import (
     exceptions,
     extensions,
     models,
+    sanity_check,
     search_utils,
 )
 from .fastapisessionmaker import FastAPISessionMaker
-
-
-class SanityCheckStatus(str, Enum):
-    available = "available"
-    warning = "warning"
-    down = "down"
 
 
 def get_sorting_clause(
@@ -103,70 +97,6 @@ def get_next_prev_links(
     if page > 0:
         links["prev"] = dict(page=page - 1, limit=limit, sortby=sortby)
     return links
-
-
-def process_sanity_check(
-    sanity_check: list[dict[str, Any]] | None,
-) -> dict[str, str | None]:
-    """Process the sanity check results and determine the status.
-
-    Calculates the status based on the following rules:
-
-    1. If sanity_check is None or empty or has more than 3 tests, status is "available".
-    2. For 1 test:
-       - If successful, status is "available"
-       - If failed, status is "down"
-    3. For 2 tests:
-       - If 2 tests succeeded, status is "available"
-       - If 1 test succeeded, status is "warning"
-       - If 0 tests succeeded, status is "down"
-    4. For 3 tests:
-       - If 3 or 2 tests succeeded, status is "available"
-       - If 1 test succeeded, status is "warning"
-       - If 0 tests succeeded, status is "down"
-
-    Args:
-        sanity_check: List of test results, each containing a "success" boolean
-
-    Returns
-    -------
-        Dict with "status" ("available", "warning", or "down") and
-        "timestamp" (from the first test if available)
-    """
-    # Default status for empty checks
-    if not sanity_check:
-        return {"status": SanityCheckStatus.available, "timestamp": None}
-
-    # Extract timestamp from the first test
-    timestamp = sanity_check[0].get("timestamp")
-
-    # Count successful tests
-    successful_tests = sum(1 for test in sanity_check if test.get("success", False))
-    total_tests = len(sanity_check)
-
-    # Rules mapping for determining status
-    # Format: {total_tests: {successful_tests: status}}
-    status_rules = {
-        1: {0: SanityCheckStatus.down, 1: SanityCheckStatus.available},
-        2: {
-            0: SanityCheckStatus.down,
-            1: SanityCheckStatus.warning,
-            2: SanityCheckStatus.available,
-        },
-        3: {
-            0: SanityCheckStatus.down,
-            1: SanityCheckStatus.warning,
-            2: SanityCheckStatus.available,
-            3: SanityCheckStatus.available,
-        },
-    }
-
-    # Get status based on rules or default to "available"
-    status = status_rules.get(total_tests, {}).get(
-        successful_tests, SanityCheckStatus.available
-    )
-
-    return {"status": status, "timestamp": timestamp}
 
 
 def get_extent(
@@ -427,7 +357,9 @@ def collection_serializer(
     )
 
     active_message = get_active_message(db_model, session) if with_message else None
-    processed_sanity_check = process_sanity_check(db_model.sanity_check)
+    processed_sanity_check = sanity_check.process(
+        sanity_check.get_outputs(db_model.sanity_check)
+    ).dict()
 
     additional_properties = {
         **({"assets": assets} if assets else {}),

@@ -17,7 +17,7 @@ import urllib
 
 import cads_catalogue.database
 
-from cads_catalogue_api_service.client import SanityCheckStatus
+from cads_catalogue_api_service.sanity_check import SanityCheckStatus
 
 
 class Request:
@@ -235,7 +235,7 @@ def generate_expected(
         },
         "cads:sanity_check": {
             "status": SanityCheckStatus.available,
-            "timestamp": None,
+            "timestamp": datetime.datetime(2024, 1, 1, 12, 15, 34),
         },
     }
     if not preview:

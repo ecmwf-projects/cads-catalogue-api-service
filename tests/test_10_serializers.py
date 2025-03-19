@@ -18,7 +18,10 @@ from testing import Request, generate_expected, get_record
 
 import cads_catalogue_api_service.client
 import cads_catalogue_api_service.models
-from cads_catalogue_api_service.client import SanityCheckStatus
+from cads_catalogue_api_service.sanity_check import (
+    SanityCheckResult,
+    SanityCheckStatus,
+)
 
 
 def fake_get_active_message(*args, **kwargs) -> None:
@@ -31,11 +34,11 @@ def fake_get_active_message(*args, **kwargs) -> None:
     )
 
 
-def fake_process_sanity_check(*args, **kwargs) -> dict[str, str | None]:
-    return {
-        "status": SanityCheckStatus.available,
-        "timestamp": None,
-    }
+def fake_process_sanity_check(*args, **kwargs) -> SanityCheckResult:
+    return SanityCheckResult(
+        status=SanityCheckStatus.available,
+        timestamp=datetime.datetime(2024, 1, 1, 12, 15, 34),
+    )
 
 
 def test_collection_serializer(monkeypatch) -> None:
@@ -45,7 +48,7 @@ def test_collection_serializer(monkeypatch) -> None:
         fake_get_active_message,
     )
     monkeypatch.setattr(
-        "cads_catalogue_api_service.client.process_sanity_check",
+        "cads_catalogue_api_service.client.sanity_check.process",
         fake_process_sanity_check,
     )
     request = Request("https://mycatalogue.org/")  # note the final slash!
