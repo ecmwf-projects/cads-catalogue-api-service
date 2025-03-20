@@ -20,7 +20,8 @@ class SanityCheckOutput(BaseModel):
 
     req_id: str
     success: bool
-    timestamp: datetime.datetime
+    started_at: datetime.datetime
+    finished_at: datetime.datetime
 
 
 class SanityCheckResult(BaseModel):
@@ -63,7 +64,8 @@ def get_outputs(
             SanityCheckOutput(
                 req_id=output["req_id"],
                 success=output["success"],
-                timestamp=output["timestamp"],
+                started_at=output["started_at"],
+                finished_at=output["finished_at"],
             )
             for output in raw_sanity_checks
         ]
@@ -104,8 +106,8 @@ def process(
     if not sanity_check:
         return SanityCheckResult(status=SanityCheckStatus.available, timestamp=None)
 
-    # Extract timestamp from the first test
-    timestamp = sanity_check[0].timestamp
+    # Extract timestamp from the last test
+    timestamp = sanity_check[-1].finished_at
 
     # Count successful tests
     successful_tests = sum(1 for test in sanity_check if test.success)
