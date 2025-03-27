@@ -67,3 +67,7 @@ class Dataset(pydantic.BaseModel):
     datePublished: str | None
     dateModified: str | None
     image: str | None = None
+
+    isPartOf: list[dict] | None = None
+    provider: dict | None = None
+    variableMeasured: list[str] | None = None
