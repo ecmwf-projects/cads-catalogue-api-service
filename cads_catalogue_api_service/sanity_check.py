@@ -28,7 +28,7 @@ class SanityCheckResult(BaseModel):
     """Result of processing sanity checks."""
 
     status: SanityCheckStatus
-    timestamp: datetime.datetime | None
+    timestamp: str | None
 
 
 # Rules mapping for determining status
@@ -106,8 +106,9 @@ def process(
     if not sanity_check:
         return SanityCheckResult(status=SanityCheckStatus.available, timestamp=None)
 
-    # Extract timestamp from the last test
+    # Extract timestamp from the last test and convert to ISO string
     timestamp = sanity_check[-1].finished_at
+    timestamp_str = timestamp.isoformat() if timestamp else None
 
     # Count successful tests
     successful_tests = sum(1 for test in sanity_check if test.success)
@@ -118,4 +119,4 @@ def process(
         successful_tests, SanityCheckStatus.available
     )
 
-    return SanityCheckResult(status=status, timestamp=timestamp)
+    return SanityCheckResult(status=status, timestamp=timestamp_str)

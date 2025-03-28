@@ -37,7 +37,7 @@ def fake_get_active_message(*args, **kwargs) -> None:
 def fake_process_sanity_check(*args, **kwargs) -> SanityCheckResult:
     return SanityCheckResult(
         status=SanityCheckStatus.available,
-        timestamp=datetime.datetime(2024, 1, 1, 12, 15, 34),
+        timestamp="2024-01-01T12:15:34",
     )
 
 
