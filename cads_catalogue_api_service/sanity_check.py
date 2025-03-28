@@ -28,7 +28,14 @@ class SanityCheckResult(BaseModel):
     """Result of processing sanity checks."""
 
     status: SanityCheckStatus
-    timestamp: str | None
+    timestamp: datetime.datetime | None
+
+    def dict(self, *args, **kwargs):
+        """Override dict method to handle datetime serialization."""
+        data = super().dict(*args, **kwargs)
+        if data["timestamp"] is not None:
+            data["timestamp"] = data["timestamp"].isoformat()
+        return data
 
 
 # Rules mapping for determining status
@@ -106,9 +113,8 @@ def process(
     if not sanity_check:
         return SanityCheckResult(status=SanityCheckStatus.available, timestamp=None)
 
-    # Extract timestamp from the last test and convert to ISO string
+    # Extract timestamp from the last test
     timestamp = sanity_check[-1].finished_at
-    timestamp_str = timestamp.isoformat() if timestamp else None
 
     # Count successful tests
     successful_tests = sum(1 for test in sanity_check if test.success)
@@ -119,4 +125,4 @@ def process(
         successful_tests, SanityCheckStatus.available
     )
 
-    return SanityCheckResult(status=status, timestamp=timestamp_str)
+    return SanityCheckResult(status=status, timestamp=timestamp)

@@ -81,7 +81,6 @@ def test_get_outputs() -> None:
 
 def test_process() -> None:
     timestamp = datetime.datetime.now(datetime.timezone.utc)
-    timestamp_str = timestamp.isoformat()
 
     # Test case: None or empty list
     assert process(None) == SanityCheckResult(
@@ -110,7 +109,7 @@ def test_process() -> None:
     ]
     assert process(four_tests) == SanityCheckResult(
         status=SanityCheckStatus.available,
-        timestamp=timestamp_str,
+        timestamp=timestamp,
     )
 
     # Test case: 1 test, successful
@@ -121,7 +120,7 @@ def test_process() -> None:
     ]
     assert process(one_test_success) == SanityCheckResult(
         status=SanityCheckStatus.available,
-        timestamp=timestamp_str,
+        timestamp=timestamp,
     )
 
     # Test case: 1 test, failed
@@ -132,7 +131,7 @@ def test_process() -> None:
     ]
     assert process(one_test_failed) == SanityCheckResult(
         status=SanityCheckStatus.down,
-        timestamp=timestamp_str,
+        timestamp=timestamp,
     )
 
     # Test case: 2 tests, all successful
@@ -146,7 +145,7 @@ def test_process() -> None:
     ]
     assert process(two_tests_all_success) == SanityCheckResult(
         status=SanityCheckStatus.available,
-        timestamp=timestamp_str,
+        timestamp=timestamp,
     )
 
     # Test case: 2 tests, 1 successful
@@ -160,7 +159,7 @@ def test_process() -> None:
     ]
     assert process(two_tests_one_success) == SanityCheckResult(
         status=SanityCheckStatus.warning,
-        timestamp=timestamp_str,
+        timestamp=timestamp,
     )
 
     # Test case: 2 tests, none successful
@@ -174,7 +173,7 @@ def test_process() -> None:
     ]
     assert process(two_tests_none_success) == SanityCheckResult(
         status=SanityCheckStatus.down,
-        timestamp=timestamp_str,
+        timestamp=timestamp,
     )
 
     # Test case: 3 tests, all successful
@@ -191,7 +190,7 @@ def test_process() -> None:
     ]
     assert process(three_tests_all_success) == SanityCheckResult(
         status=SanityCheckStatus.available,
-        timestamp=timestamp_str,
+        timestamp=timestamp,
     )
 
     # Test case: 3 tests, 2 successful
@@ -208,7 +207,7 @@ def test_process() -> None:
     ]
     assert process(three_tests_two_success) == SanityCheckResult(
         status=SanityCheckStatus.available,
-        timestamp=timestamp_str,
+        timestamp=timestamp,
     )
 
     # Test case: 3 tests, 1 successful
@@ -225,7 +224,7 @@ def test_process() -> None:
     ]
     assert process(three_tests_one_success) == SanityCheckResult(
         status=SanityCheckStatus.warning,
-        timestamp=timestamp_str,
+        timestamp=timestamp,
     )
 
     # Test case: 3 tests, none successful
@@ -242,5 +241,5 @@ def test_process() -> None:
     ]
     assert process(three_tests_none_success) == SanityCheckResult(
         status=SanityCheckStatus.down,
-        timestamp=timestamp_str,
+        timestamp=timestamp,
     )
