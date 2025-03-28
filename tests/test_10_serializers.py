@@ -18,6 +18,10 @@ from testing import Request, generate_expected, get_record
 
 import cads_catalogue_api_service.client
 import cads_catalogue_api_service.models
+from cads_catalogue_api_service.sanity_check import (
+    SanityCheckResult,
+    SanityCheckStatus,
+)
 
 
 def fake_get_active_message(*args, **kwargs) -> None:
@@ -30,11 +34,22 @@ def fake_get_active_message(*args, **kwargs) -> None:
     )
 
 
+def fake_process_sanity_check(*args, **kwargs) -> SanityCheckResult:
+    return SanityCheckResult(
+        status=SanityCheckStatus.available,
+        timestamp=datetime.datetime(2024, 1, 1, 12, 15, 34),
+    )
+
+
 def test_collection_serializer(monkeypatch) -> None:
     """Test serialization from db record to STAC."""
     monkeypatch.setattr(
         "cads_catalogue_api_service.client.get_active_message",
         fake_get_active_message,
+    )
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.client.sanity_check.process",
+        fake_process_sanity_check,
     )
     request = Request("https://mycatalogue.org/")  # note the final slash!
     record = get_record("era5-something")

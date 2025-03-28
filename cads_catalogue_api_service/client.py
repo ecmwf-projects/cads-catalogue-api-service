@@ -34,6 +34,7 @@ from . import (
     exceptions,
     extensions,
     models,
+    sanity_check,
     search_utils,
 )
 from .fastapisessionmaker import FastAPISessionMaker
@@ -356,6 +357,9 @@ def collection_serializer(
     )
 
     active_message = get_active_message(db_model, session) if with_message else None
+    processed_sanity_check = sanity_check.process(
+        sanity_check.get_outputs(db_model.sanity_check)
+    ).dict()
 
     additional_properties = {
         **({"assets": assets} if assets else {}),
@@ -378,6 +382,7 @@ def collection_serializer(
         **({"cads:message": active_message} if active_message else {}),
         "cads:disabled_reason": db_model.disabled_reason,
         **({"cads:hidden": db_model.hidden} if db_model.hidden else {}),
+        "cads:sanity_check": processed_sanity_check,
     }
 
     if schema_org:
