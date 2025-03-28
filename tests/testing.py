@@ -235,7 +235,7 @@ def generate_expected(
         },
         "cads:sanity_check": {
             "status": SanityCheckStatus.available,
-            "timestamp": datetime.datetime(2024, 1, 1, 12, 15, 34),
+            "timestamp": "2024-01-01T12:15:34",
         },
     }
     if not preview:

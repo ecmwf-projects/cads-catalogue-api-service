@@ -30,6 +30,13 @@ class SanityCheckResult(BaseModel):
     status: SanityCheckStatus
     timestamp: datetime.datetime | None
 
+    def dict(self, *args, **kwargs):
+        """Override dict method to handle datetime serialization."""
+        data = super().dict(*args, **kwargs)
+        if data["timestamp"] is not None:
+            data["timestamp"] = data["timestamp"].isoformat()
+        return data
+
 
 # Rules mapping for determining status
 # Format: {total_tests: {successful_tests: status}}
