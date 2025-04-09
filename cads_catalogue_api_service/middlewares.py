@@ -84,7 +84,7 @@ class LoggerInitializationMiddleware:
 
 CACHEABLE_HTTP_METHODS = ["GET", "HEAD"]
 CACHE_TIME = os.getenv("CACHE_TIME", "180")
-CACHE_STALE_TIME = os.getenv("CACHE_TIME", "60")
+CACHE_STALE_TIME = os.getenv("CACHE_STALE_TIME", "60")
 
 
 class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
