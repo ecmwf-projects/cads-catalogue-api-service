@@ -108,7 +108,7 @@ class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
                 {
                     "cache-control": (
                         f"public, max-age={CACHE_TIME},"
-                        " stale-while-revalidate={CACHE_STALE_TIME}"
+                        f" stale-while-revalidate={CACHE_STALE_TIME}"
                     )
                 }
             )
