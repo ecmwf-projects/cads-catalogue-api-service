@@ -84,6 +84,7 @@ class LoggerInitializationMiddleware:
 
 CACHEABLE_HTTP_METHODS = ["GET", "HEAD"]
 CACHE_TIME = os.getenv("CACHE_TIME", "180")
+CACHE_STALE_TIME = os.getenv("CACHE_TIME", "60")
 
 
 class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
@@ -103,5 +104,12 @@ class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
             and request.method in CACHEABLE_HTTP_METHODS
             and response.status_code == fastapi.status.HTTP_200_OK
         ):
-            response.headers.update({"cache-control": f"public, max-age={CACHE_TIME}"})
+            response.headers.update(
+                {
+                    "cache-control": (
+                        f"public, max-age={CACHE_TIME},"
+                        " stale-while-revalidate={CACHE_STALE_TIME}"
+                    )
+                }
+            )
         return response
