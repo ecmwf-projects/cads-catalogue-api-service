@@ -8,6 +8,8 @@ from pydantic import BaseModel
 
 logger = structlog.getLogger(__name__)
 
+SANITY_CHECK_MAX_ENTRIES = 3
+
 
 class SanityCheckStatus(str, Enum):
     available = "available"
@@ -102,7 +104,8 @@ def process(
        - If 0 tests succeeded, status is "down"
 
     Args:
-        sanity_check: List of test results, each containing a "success" boolean
+        sanity_check: List of test results, each containing a "success" boolean. Only first
+            SANITY_CHECK_MAX_ENTRIES are considered for status calculation.
 
     Returns
     -------
@@ -113,8 +116,11 @@ def process(
     if not sanity_check:
         return SanityCheckResult(status=SanityCheckStatus.available, timestamp=None)
 
-    # Extract timestamp from the last test
-    timestamp = sanity_check[-1].finished_at
+    # Just take into account latest X tests (tests are sorted descending by finished_at)
+    sanity_check = sanity_check[:SANITY_CHECK_MAX_ENTRIES]
+
+    # Extract timestamp from the latest test
+    timestamp = sanity_check[0].finished_at
 
     # Count successful tests
     successful_tests = sum(1 for test in sanity_check if test.success)
