@@ -14,7 +14,6 @@ def test_get_outputs() -> None:
 
     # Test case: None input
     assert get_outputs(None) is None
-
     # Test case: Empty list
     assert get_outputs([]) is None
 
@@ -34,6 +33,7 @@ def test_get_outputs() -> None:
         },
     ]
     result = get_outputs(valid_input)
+
     assert result is not None
     assert len(result) == 2
     assert result[0].req_id == "test1"
@@ -54,6 +54,7 @@ def test_get_outputs() -> None:
             "finished_at": timestamp,
         }
     ]
+
     assert get_outputs(invalid_missing_field) is None
 
     # Test case: Wrong type for success field
@@ -65,6 +66,7 @@ def test_get_outputs() -> None:
             "finished_at": timestamp,
         }
     ]
+
     assert get_outputs(invalid_wrong_type) is None
 
     # Test case: Invalid timestamp
@@ -76,11 +78,15 @@ def test_get_outputs() -> None:
             "finished_at": timestamp,
         }
     ]
+
     assert get_outputs(invalid_timestamp) is None
 
 
 def test_process() -> None:
-    timestamp = datetime.datetime.now(datetime.timezone.utc)
+    timestamp = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+        seconds=1
+    )
+    timestamp_e = datetime.datetime.now(datetime.timezone.utc)
 
     # Test case: None or empty list
     assert process(None) == SanityCheckResult(
@@ -92,13 +98,13 @@ def test_process() -> None:
         timestamp=None,
     )
 
-    # Test case: More than 3 tests
-    four_tests = [
+    # Test case: more than 3 tests
+    many_tests = [
         SanityCheckOutput(
-            req_id="test1", success=True, started_at=timestamp, finished_at=timestamp
+            req_id="test1", success=False, started_at=timestamp, finished_at=timestamp_e
         ),
         SanityCheckOutput(
-            req_id="test2", success=False, started_at=timestamp, finished_at=timestamp
+            req_id="test2", success=True, started_at=timestamp, finished_at=timestamp
         ),
         SanityCheckOutput(
             req_id="test3", success=False, started_at=timestamp, finished_at=timestamp
@@ -106,10 +112,20 @@ def test_process() -> None:
         SanityCheckOutput(
             req_id="test4", success=False, started_at=timestamp, finished_at=timestamp
         ),
+        SanityCheckOutput(
+            req_id="test5", success=False, started_at=timestamp, finished_at=timestamp
+        ),
+        SanityCheckOutput(
+            req_id="test6", success=False, started_at=timestamp, finished_at=timestamp
+        ),
+        SanityCheckOutput(
+            req_id="test7", success=False, started_at=timestamp, finished_at=timestamp
+        ),
     ]
-    assert process(four_tests) == SanityCheckResult(
-        status=SanityCheckStatus.available,
-        timestamp=timestamp,
+
+    assert process(many_tests) == SanityCheckResult(
+        status=SanityCheckStatus.warning,
+        timestamp=timestamp_e,
     )
 
     # Test case: 1 test, successful
@@ -118,6 +134,7 @@ def test_process() -> None:
             req_id="test1", success=True, started_at=timestamp, finished_at=timestamp
         )
     ]
+
     assert process(one_test_success) == SanityCheckResult(
         status=SanityCheckStatus.available,
         timestamp=timestamp,
@@ -129,6 +146,7 @@ def test_process() -> None:
             req_id="test1", success=False, started_at=timestamp, finished_at=timestamp
         )
     ]
+
     assert process(one_test_failed) == SanityCheckResult(
         status=SanityCheckStatus.down,
         timestamp=timestamp,
@@ -143,6 +161,7 @@ def test_process() -> None:
             req_id="test2", success=True, started_at=timestamp, finished_at=timestamp
         ),
     ]
+
     assert process(two_tests_all_success) == SanityCheckResult(
         status=SanityCheckStatus.available,
         timestamp=timestamp,
@@ -157,6 +176,7 @@ def test_process() -> None:
             req_id="test2", success=False, started_at=timestamp, finished_at=timestamp
         ),
     ]
+
     assert process(two_tests_one_success) == SanityCheckResult(
         status=SanityCheckStatus.warning,
         timestamp=timestamp,
@@ -171,6 +191,7 @@ def test_process() -> None:
             req_id="test2", success=False, started_at=timestamp, finished_at=timestamp
         ),
     ]
+
     assert process(two_tests_none_success) == SanityCheckResult(
         status=SanityCheckStatus.down,
         timestamp=timestamp,
@@ -188,6 +209,7 @@ def test_process() -> None:
             req_id="test3", success=True, started_at=timestamp, finished_at=timestamp
         ),
     ]
+
     assert process(three_tests_all_success) == SanityCheckResult(
         status=SanityCheckStatus.available,
         timestamp=timestamp,
@@ -205,6 +227,7 @@ def test_process() -> None:
             req_id="test3", success=False, started_at=timestamp, finished_at=timestamp
         ),
     ]
+
     assert process(three_tests_two_success) == SanityCheckResult(
         status=SanityCheckStatus.available,
         timestamp=timestamp,
@@ -222,6 +245,7 @@ def test_process() -> None:
             req_id="test3", success=False, started_at=timestamp, finished_at=timestamp
         ),
     ]
+
     assert process(three_tests_one_success) == SanityCheckResult(
         status=SanityCheckStatus.warning,
         timestamp=timestamp,
@@ -239,6 +263,7 @@ def test_process() -> None:
             req_id="test3", success=False, started_at=timestamp, finished_at=timestamp
         ),
     ]
+
     assert process(three_tests_none_success) == SanityCheckResult(
         status=SanityCheckStatus.down,
         timestamp=timestamp,
