@@ -86,7 +86,6 @@ def schema_org_json_ld(
 
     box = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
 
-
     return models.schema_org.Dataset(
         context="http://schema.org/",
         type="Dataset",
@@ -134,9 +133,12 @@ def schema_org_json_ld(
         datePublished=collection.get("published", None),
         dateModified=collection.get("updated", None),
         image=collection.get("assets", {}).get("thumbnail", {}).get("href", None),
-        isPartOf=[{
-            "@type": "DataCatalog",
-            "@id": "https://cds.climate.copernicus.eu/datasets",
-            "name": "Climate Data Store"
-        }],
+        isPartOf=[
+            {
+                "@type": "DataCatalog",
+                "@id": "https://cds.climate.copernicus.eu/datasets",
+                "name": "Climate Data Store",
+            }
+        ],
+        conditionsOfAccess="<add suitable phrase here>. Examples: https://schema.org/conditionsOfAccess",
     )
