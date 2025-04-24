@@ -69,5 +69,3 @@ class Dataset(pydantic.BaseModel):
     image: str | None = None
 
     isPartOf: list[dict] | None = None
-    provider: dict | None = None
-    variableMeasured: list[str] | None = None

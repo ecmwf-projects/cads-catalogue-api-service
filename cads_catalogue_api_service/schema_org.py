@@ -86,13 +86,6 @@ def schema_org_json_ld(
 
     box = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
 
-    # Get variables if available
-    variables = collection.get("variables", [])
-    if not variables and "keywords" in collection:
-        # Extract variables from keywords if specifically formatted
-        variables = [k.replace("Variable domain: ", "") for k in collection.get("keywords", []) 
-                   if k.startswith("Variable domain:")]
-
 
     return models.schema_org.Dataset(
         context="http://schema.org/",
@@ -143,13 +136,7 @@ def schema_org_json_ld(
         image=collection.get("assets", {}).get("thumbnail", {}).get("href", None),
         isPartOf=[{
             "@type": "DataCatalog",
-            "@id": "https://cds.climate.copernicus.eu/catalogue",
+            "@id": "https://cds.climate.copernicus.eu/datasets",
             "name": "Climate Data Store"
         }],
-        provider={
-            "@type": "Organization",
-            "name": collection["creator_name"],
-            "url": collection["creator_url"]
-        },
-        variableMeasured=variables,
     )
