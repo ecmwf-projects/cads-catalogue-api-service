@@ -113,10 +113,8 @@ def schema_org_json_ld(
         distribution=[
             (
                 models.schema_org.DataDownload(
-                    encodingFormat=collection.get("file_format")
-                    # Sometimes the file_format is not defined on the input data
-                    or "application/octet-stream",
-                    contentUrl=f"{url}?tab=download",
+                    encodingFormat="application/json",
+                    contentUrl=f"{url}",
                 )
                 if distribution
                 else ""
