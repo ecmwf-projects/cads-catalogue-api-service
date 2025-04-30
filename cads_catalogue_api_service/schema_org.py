@@ -86,6 +86,13 @@ def schema_org_json_ld(
 
     box = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
 
+    existing_keywords = collection.get("keywords", [])
+    # Define semantic vocabulary URIs relevant to the dataset
+    semantic_keywords = [
+        "http://purl.oclc.org/NET/ssnx/cf/cf-feature#Surface",
+    ]
+    all_keywords = list(set(existing_keywords + semantic_keywords))
+
     return models.schema_org.Dataset(
         context="http://schema.org/",
         type="Dataset",
@@ -98,7 +105,7 @@ def schema_org_json_ld(
             else []
         ),
         license=license,
-        keywords=collection.get("keywords", []),
+        keywords=all_keywords,
         isAccessibleForFree=True,
         creator=models.schema_org.Organization(
             url=collection.get("creator_url", None),
