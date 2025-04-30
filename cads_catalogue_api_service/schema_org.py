@@ -115,6 +115,7 @@ def schema_org_json_ld(
                 models.schema_org.DataDownload(
                     encodingFormat="application/json",
                     contentUrl=f"{url}",
+                    contentSize="~5000"
                 )
                 if distribution
                 else ""

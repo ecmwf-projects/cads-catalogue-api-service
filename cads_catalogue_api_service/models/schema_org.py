@@ -36,6 +36,7 @@ class DataDownload(pydantic.BaseModel):
     type: str = pydantic.Field("DataDownload", const=True, alias="@type")
     encodingFormat: str
     contentUrl: str
+    contentSize: str
 
 
 class GeoShape(pydantic.BaseModel):
@@ -68,5 +69,4 @@ class Dataset(pydantic.BaseModel):
     dateModified: str | None
     image: str | None = None
     conditionsOfAccess: str | None = None
-
     isPartOf: list[dict] | None = None
