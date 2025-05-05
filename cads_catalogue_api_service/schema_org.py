@@ -147,4 +147,5 @@ def schema_org_json_ld(
             }
         ],
         conditionsOfAccess="<add suitable phrase here>. Examples: https://schema.org/conditionsOfAccess",
+        isBasedOn = ["http://cfconventions.org/documents.html"],
     )

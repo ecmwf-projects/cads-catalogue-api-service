@@ -70,3 +70,4 @@ class Dataset(pydantic.BaseModel):
     image: str | None = None
     conditionsOfAccess: str | None = None
     isPartOf: list[dict] | None = None
+    isBasedOn: list[str] | None = None
