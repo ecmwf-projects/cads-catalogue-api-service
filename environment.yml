@@ -11,6 +11,7 @@ dependencies:
 - attrs
 - brotli-asgi
 - fastapi>=0.113.0
+- geojson-pydantic<1
 - httpx
 - pip
 - pydantic<2
