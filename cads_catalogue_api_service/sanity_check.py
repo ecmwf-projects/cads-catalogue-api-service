@@ -111,8 +111,8 @@ def process(
 
     Returns
     -------
-        When sanity_check data is available, a dict with "status" ("available", "warning",
-        "down" or "unknown") and "timestamp" (from the first check, if available)
+        A dict with "status" ("available", "warning", "down" or "unknown") and "timestamp"
+        (from the first check, if available)
     """
     # Default status for empty checks
     if not sanity_check:
