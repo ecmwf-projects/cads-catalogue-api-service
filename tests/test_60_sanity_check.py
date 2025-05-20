@@ -90,11 +90,11 @@ def test_process() -> None:
 
     # Test case: None or empty list
     assert process(None) == SanityCheckResult(
-        status=SanityCheckStatus.available,
+        status=SanityCheckStatus.unknown,
         timestamp=None,
     )
     assert process([]) == SanityCheckResult(
-        status=SanityCheckStatus.available,
+        status=SanityCheckStatus.unknown,
         timestamp=None,
     )
 

@@ -62,8 +62,8 @@
         "status": {
           "type": "string",
           "title": "Status",
-          "description": "The status of the sanity check",
-          "enum": ["available", "warning", "down"]
+          "description": "The result of the sanity check on the dataset",
+          "enum": ["available", "warning", "down", "unknown"]
         },
         "timestamp": {
           "type": "string",

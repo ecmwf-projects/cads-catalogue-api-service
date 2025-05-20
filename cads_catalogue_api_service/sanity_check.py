@@ -15,6 +15,7 @@ class SanityCheckStatus(str, Enum):
     available = "available"
     warning = "warning"
     down = "down"
+    unknown = "unknown"
 
 
 class SanityCheckOutput(BaseModel):
@@ -90,15 +91,16 @@ def process(
 
     Calculates the status based on the following rules:
 
-    1. If sanity_check is None or empty or has more than 3 tests, status is "available".
-    2. For 1 test:
+    1. If sanity_check is None or empty, status is "unknown".
+    2. If sanity_check has more than 3 checks, only last 3 checks are taken into account.
+    3. For 1 checks:
        - If successful, status is "available"
        - If failed, status is "down"
-    3. For 2 tests:
+    3. For 2 checks:
        - If 2 tests succeeded, status is "available"
        - If 1 test succeeded, status is "warning"
        - If 0 tests succeeded, status is "down"
-    4. For 3 tests:
+    4. For 3 checks:
        - If 3 or 2 tests succeeded, status is "available"
        - If 1 test succeeded, status is "warning"
        - If 0 tests succeeded, status is "down"
@@ -109,12 +111,12 @@ def process(
 
     Returns
     -------
-        Dict with "status" ("available", "warning", or "down") and
-        "timestamp" (from the first test if available)
+        A dict with "status" ("available", "warning", "down" or "unknown") and "timestamp"
+        (from the first check, if available)
     """
     # Default status for empty checks
     if not sanity_check:
-        return SanityCheckResult(status=SanityCheckStatus.available, timestamp=None)
+        return SanityCheckResult(status=SanityCheckStatus.unknown, timestamp=None)
 
     # Just take into account latest X tests (tests are sorted descending by finished_at)
     sanity_check = sanity_check[:SANITY_CHECK_MAX_ENTRIES]
