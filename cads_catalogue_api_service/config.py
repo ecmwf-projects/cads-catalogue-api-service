@@ -21,8 +21,6 @@ import cads_catalogue.config
 import pydantic
 import stac_fastapi.types.config
 
-MAX_LIMIT = 50
-
 PORTAL_HEADER_NAME = "X-CADS-Portal"
 SITE_HEADER_NAME = "X-CADS-Site"
 
@@ -58,6 +56,8 @@ class Settings(pydantic.BaseSettings):
 
     document_storage_url: str = "/document-storage/"
     processes_base_url: str = "/api/processing/"
+    catalogue_page_size: int = 50
+    catalogue_max_page_size: int = 500
 
 
 dbsettings = SqlalchemySettings()

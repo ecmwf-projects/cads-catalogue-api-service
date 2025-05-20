@@ -52,7 +52,11 @@ def datasets_search(
         default=CatalogueSortCriterion.update_desc
     ),
     page: int = fastapi.Query(default=0, ge=0),
-    limit: int = fastapi.Query(default=config.MAX_LIMIT, ge=1, le=config.MAX_LIMIT),
+    limit: int = fastapi.Query(
+        default=config.settings.catalogue_page_size,
+        ge=1,
+        le=config.settings.catalogue_max_page_size,
+    ),
     search_stats: bool = fastapi.Query(
         default=True,
         description="Include additional search statistics in results (like: faceted data)",
@@ -80,7 +84,7 @@ class FormData(pydantic.BaseModel):
     idx: list[str] | None = []
     sortby: CatalogueSortCriterion = CatalogueSortCriterion.update_desc
     page: int = 0
-    limit: int = config.MAX_LIMIT
+    limit: int = config.settings.catalogue_page_size
     search_stats: bool = True
 
 
