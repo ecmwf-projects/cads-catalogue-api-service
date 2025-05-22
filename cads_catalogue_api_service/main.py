@@ -76,7 +76,7 @@ api = stac_fastapi.api.app.StacApi(
         middlewares.LoggerInitializationMiddleware,
     ],
     # FIXME: this must be different from site to site
-    title="CDS STAC Catalogue API",
+    title="ECMWF Data Stores STAC Catalogue API",
     description="The CDS catalogue API is a STAC compliant API to access the CDS catalogue.",
 )
 
