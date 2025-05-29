@@ -1,4 +1,4 @@
-from . import contents, schema_org
+from . import contents, schema_org, status
 from .base import (
     CADSCollections,
     Changelog,
@@ -10,9 +10,11 @@ from .base import (
     Message,
     Messages,
 )
+from .status import CatalogueUpdateStatus
 
 __all__ = [
     "CADSCollections",
+    "CatalogueUpdateStatus",
     "Changelog",
     "Keyword",
     "Keywords",
@@ -23,4 +25,5 @@ __all__ = [
     "Messages",
     "schema_org",
     "contents",
+    "status",
 ]
