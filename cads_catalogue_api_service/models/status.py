@@ -7,7 +7,7 @@ from pydantic.utils import GetterDict
 class CatalogueUpdateStatus(pydantic.BaseModel):
     update_time: datetime.datetime
     catalogue_repo_commit: str | None
-    forms_repo_commit: str | None
+    forms_repo_commit: list[str] | None
     licence_repo_commit: str | None
     message_repo_commit: str | None
     cim_repo_commit: str | None
@@ -22,11 +22,9 @@ class CatalogueUpdateStatus(pydantic.BaseModel):
 
         metadata_commit = values.get("metadata_repo_commit")
         if isinstance(metadata_commit, dict) and metadata_commit:
-            output_values["forms_repo_commit"] = next(
-                iter(metadata_commit.values()), None
-            )
+            output_values["forms_repo_commit"] = list(metadata_commit.values())
         elif isinstance(metadata_commit, str):
-            output_values["forms_repo_commit"] = metadata_commit
+            output_values["forms_repo_commit"] = [metadata_commit]
         else:
             output_values["forms_repo_commit"] = None
         return output_values
