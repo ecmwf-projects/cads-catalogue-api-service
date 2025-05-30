@@ -1,16 +1,35 @@
 import datetime
 
 import pydantic
+from pydantic.utils import GetterDict
 
 
 class CatalogueUpdateStatus(pydantic.BaseModel):
     update_time: datetime.datetime
     catalogue_repo_commit: str | None
-    metadata_repo_commit: dict | None
+    forms_repo_commit: str | None
     licence_repo_commit: str | None
     message_repo_commit: str | None
     cim_repo_commit: str | None
     content_repo_commit: str | None
+
+    @pydantic.root_validator(pre=True)
+    def transform_metadata_repo_commit(cls, values: GetterDict | dict) -> dict:
+        output_values = {}
+        for key, value in values.items():
+            if key != "metadata_repo_commit":
+                output_values[key] = value
+
+        metadata_commit = values.get("metadata_repo_commit")
+        if isinstance(metadata_commit, dict) and metadata_commit:
+            output_values["forms_repo_commit"] = next(
+                iter(metadata_commit.values()), None
+            )
+        elif isinstance(metadata_commit, str):
+            output_values["forms_repo_commit"] = metadata_commit
+        else:
+            output_values["forms_repo_commit"] = None
+        return output_values
 
     class Config:
         orm_mode = True
