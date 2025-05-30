@@ -179,6 +179,25 @@ def licence_details(
     )
 
 
+@router.get(
+    "/licences/{licence_uid}/download",
+    response_class=fastapi.responses.RedirectResponse,
+    status_code=fastapi.status.HTTP_302_FOUND,
+)
+def download_licence_file(
+    session: sa.orm.Session = fastapi.Depends(dependencies.get_session),
+    licence_uid: str = fastapi.Path(..., title="Licence UID"),
+) -> fastapi.responses.RedirectResponse:
+    """Redirects to the download URL for the specified licence file."""
+    licence: cads_catalogue.database.Licence = query_licence(session, licence_uid)
+    download_url = urllib.parse.urljoin(
+        config.settings.document_storage_url, licence.download_filename
+    )
+    return fastapi.responses.RedirectResponse(
+        url=download_url, status_code=fastapi.status.HTTP_302_FOUND
+    )
+
+
 @router.get("/keywords", response_model=models.Keywords)
 def list_keywords(
     session=fastapi.Depends(dependencies.get_session),
