@@ -105,9 +105,11 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         "cads_catalogue_api_service.schema_org.query_collection",
         static_collection_query,
     )
+    monkeypatch.setenv("CDS_PROJECT_URL", "https://cds.climate.copernicus.eu/datasets")
 
     response = client.get(
         "/collections/era5-something/schema.org",
+        headers={"X-CADS-Site": "cds"},
     )
 
     assert response.status_code == 200
@@ -148,4 +150,12 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         "dateModified": "2023-06-22T00:00:00Z",
         "datePublished": "2020-05-19T00:00:00Z",
         "image": "https://s3.cds.org.int/swift/v1/AUTH_3e237111c3a144df8e0e0980577062b4/cds2-dev-catalogue/resources/era5-something/overview_36fc7b601512e3619bc5ba70ae0488b911d9d74e203400f9a321f5745768f6a5.png",
+        "conditionsOfAccess": "Free access upon acceptance of applicable licences and terms of use",
+        "isPartOf": [
+            {
+                "@type": "DataCatalog",
+                "@id": "https://cds.climate.copernicus.eu/datasets",
+                "name": "ECMWF Data Store",
+            }
+        ],
     }
