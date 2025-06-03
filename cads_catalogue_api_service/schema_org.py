@@ -15,6 +15,8 @@
 # limitations under the License.
 # mypy: ignore-errors
 
+import os
+
 import cads_catalogue
 import fastapi
 import sqlalchemy as sa
@@ -66,6 +68,7 @@ def schema_org_json_ld(
     collection_id: str,
     request: fastapi.Request,
     session=fastapi.Depends(dependencies.get_session),
+    site: str | None = fastapi.Depends(dependencies.get_site),
 ) -> models.schema_org.Dataset:
     """Endpoint to get the proper schema.org compatible definition for the dataset.
 
@@ -133,4 +136,12 @@ def schema_org_json_ld(
         datePublished=collection.get("published", None),
         dateModified=collection.get("updated", None),
         image=collection.get("assets", {}).get("thumbnail", {}).get("href", None),
+        conditionsOfAccess="Free access upon acceptance of applicable licences and terms of use",
+        isPartOf=[
+            {
+                "@type": "DataCatalog",
+                "@id": os.getenv(f"{site.upper()}_PROJECT_URL", None),
+                "name": "ECMWF Data Store",
+            }
+        ],
     )
