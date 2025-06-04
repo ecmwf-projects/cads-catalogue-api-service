@@ -105,7 +105,7 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         "cads_catalogue_api_service.schema_org.query_collection",
         static_collection_query,
     )
-    monkeypatch.setenv("CDS_PROJECT_URL", "https://cds.climate.copernicus.eu/datasets")
+    monkeypatch.setenv("CDS_PROJECT_URL", "https://cds.climate.copernicus.eu")
 
     response = client.get(
         "/collections/era5-something/schema.org",
