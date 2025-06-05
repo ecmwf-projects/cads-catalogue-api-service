@@ -140,10 +140,11 @@ def schema_org_json_ld(
         isPartOf=[
             {
                 "@type": "DataCatalog",
-                "@id": f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets"
+                "identifier": site,
+                "name": "ECMWF Data Store",
+                "url": f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets"
                 if site
                 else None,
-                "name": "ECMWF Data Store",
             }
         ],
     )

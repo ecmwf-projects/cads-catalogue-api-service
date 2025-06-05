@@ -154,8 +154,9 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         "isPartOf": [
             {
                 "@type": "DataCatalog",
-                "@id": "https://cds.climate.copernicus.eu/datasets",
+                "identifier": "cds",
                 "name": "ECMWF Data Store",
+                "url": "https://cds.climate.copernicus.eu/datasets",
             }
         ],
     }
