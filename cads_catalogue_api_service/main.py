@@ -45,6 +45,7 @@ from . import (
     messages,
     middlewares,
     schema_org,
+    status,
     typeahead,
     vocabularies,
 )
@@ -93,6 +94,7 @@ app.include_router(collection_ext.router)
 app.include_router(doi.router)
 app.include_router(contents.router)
 app.include_router(typeahead.router)
+app.include_router(status.router)
 
 
 def catalogue_openapi() -> dict[str, Any]:
