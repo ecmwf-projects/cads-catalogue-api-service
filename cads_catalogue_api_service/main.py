@@ -77,7 +77,9 @@ api = stac_fastapi.api.app.StacApi(
     ],
     # FIXME: this must be different from site to site
     title="ECMWF Data Stores STAC Catalogue API",
-    description="The CDS catalogue API is a STAC compliant API to access the CDS catalogue.",
+    description=(
+        "A STAC (https://stacspec.org/) compliant API to access ECMWF Data Stores catalogues."
+    ),
 )
 
 app = api.app
@@ -96,17 +98,16 @@ app.include_router(typeahead.router)
 def catalogue_openapi() -> dict[str, Any]:
     """OpenAPI, but with not implemented paths removed."""
     openapi_schema = fastapi.openapi.utils.get_openapi(
-        title="CADS STAC Catalogue",
+        title="ECMWF Data Stores STAC Catalogue",
         version=api.api_version,
         routes=api.app.routes,
         description=(
-            "This API is a [STAC](https://stacspec.org/) compliant API to access CADS catalogues.\\"
+            "This API is a [STAC](https://stacspec.org/) compliant API to access "
+            "ECMWF Data Stores Service (DSS) catalogues.\\"
             "\n"
-            "The implementation is based on [Standalone Collections]"
+            "The implementation is based on [Standalone STAC Collections]"
             "(https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#standalone-collections) "  # noqa: E501
-            "while a custom extension is included to provide collection search capabilities."
-            "\n\n"
-            "Scope of this API is to search into an CADS catalogue and access datasets' metadata."
+            "while a custom extension is included to provide search capabilities among collections."
         ),
     )
 
