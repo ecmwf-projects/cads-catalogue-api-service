@@ -34,6 +34,17 @@ router = fastapi.APIRouter(
 )
 
 
+CADS_SITE_TO_LONG_NAME = {
+    "cds": "Climate Data Store",
+    "ads": "Atmosphere Data Store",
+    "cems": "CEMS Early Warning Data Store",
+    "ecds": "ECMWF Data Store",
+    "xds": "ECMWF Cross Data Store",
+    "eds": "Energy Thematic Hub",
+    "hds": "Health Thematic Hub",
+}
+
+
 def query_collection(
     session: sa.orm.Session,
     collection_id: str,
@@ -116,10 +127,8 @@ def schema_org_json_ld(
         distribution=[
             (
                 models.schema_org.DataDownload(
-                    encodingFormat=collection.get("file_format")
-                    # Sometimes the file_format is not defined on the input data
-                    or "application/octet-stream",
-                    contentUrl=f"{url}?tab=download",
+                    encodingFormat="application/json",
+                    url=f"{url}",
                 )
                 if distribution
                 else ""
@@ -141,7 +150,7 @@ def schema_org_json_ld(
             {
                 "@type": "DataCatalog",
                 "identifier": site,
-                "name": "ECMWF Data Store",
+                "name": CADS_SITE_TO_LONG_NAME.get(site, "ECMWF Data Store"),
                 "url": f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets"
                 if site
                 else None,

@@ -35,7 +35,7 @@ class Organization(pydantic.BaseModel):
 class DataDownload(pydantic.BaseModel):
     type: str = pydantic.Field("DataDownload", const=True, alias="@type")
     encodingFormat: str
-    contentUrl: str
+    url: str | None = None
 
 
 class GeoShape(pydantic.BaseModel):

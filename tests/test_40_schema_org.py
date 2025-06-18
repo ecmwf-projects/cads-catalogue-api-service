@@ -138,8 +138,8 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         "distribution": [
             {
                 "@type": "DataDownload",
-                "encodingFormat": "application/octet-stream",
-                "contentUrl": "http://localhost:8080/api/catalogue/v1/collections/era5-something?tab=download",
+                "encodingFormat": "application/json",
+                "url": "http://localhost:8080/api/catalogue/v1/collections/era5-something",
             }
         ],
         "temporalCoverage": "2019-11-05T00:00:00Z/2023-06-22T00:00:00Z",
@@ -155,7 +155,7 @@ def test_schema_org_jsonId(monkeypatch) -> None:
             {
                 "@type": "DataCatalog",
                 "identifier": "cds",
-                "name": "ECMWF Data Store",
+                "name": "Climate Data Store",
                 "url": "https://cds.climate.copernicus.eu/datasets",
             }
         ],
