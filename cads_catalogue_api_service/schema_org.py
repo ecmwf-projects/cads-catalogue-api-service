@@ -34,6 +34,7 @@ router = fastapi.APIRouter(
 )
 
 
+# List subject to change in case of new portals
 CADS_SITE_TO_LONG_NAME = {
     "cds": "Climate Data Store",
     "ads": "Atmosphere Data Store",
@@ -91,12 +92,14 @@ def schema_org_json_ld(
         url = get_url_link(collection, "self")
         license = get_url_link(collection, "license")
         distribution = get_url_link(collection, "layout")
+        retrieve_url = get_url_link(collection, "retrieve")
     temporal_coverage = (
         collection.get("extent", {}).get("temporal", {}).get("interval", [])
     )
     temporal_coverage = (
         list(filter(None, temporal_coverage[0])) if temporal_coverage else []
     )
+    download_url = f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets/{collection_id}?tab=download"
 
     box = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
 
@@ -127,12 +130,22 @@ def schema_org_json_ld(
         distribution=[
             (
                 models.schema_org.DataDownload(
-                    encodingFormat="application/json",
-                    url=f"{url}",
+                    encodingFormat=collection.get("file_format")
+                    or "application/octet-stream",
+                    url=f"{retrieve_url}",
                 )
                 if distribution
                 else ""
-            )
+            ),
+            (
+                models.schema_org.DataDownload(
+                    encodingFormat=collection.get("file_format")
+                    or "application/octet-stream",
+                    url=download_url,
+                )
+                if distribution
+                else ""
+            ),
         ],
         temporalCoverage="/".join(temporal_coverage) if temporal_coverage else None,
         spatialCoverage=models.schema_org.Place(

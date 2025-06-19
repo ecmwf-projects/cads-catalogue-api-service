@@ -81,6 +81,11 @@ def static_collection_query(
                 "href": "http://localhost:8080/api/catalogue/v1/collections/era5-something/layout",
                 "title": "Distribution",
             },
+            {
+                "rel": "retrieve",
+                "href": "http://localhost:8080/api/retrieve/v1/processes/era5-something",
+                "title": "Retrieve",
+            },
         ],
         "assets": {
             "thumbnail": {
@@ -138,9 +143,14 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         "distribution": [
             {
                 "@type": "DataDownload",
-                "encodingFormat": "application/json",
-                "url": "http://localhost:8080/api/catalogue/v1/collections/era5-something",
-            }
+                "encodingFormat": "application/octet-stream",
+                "url": "http://localhost:8080/api/retrieve/v1/processes/era5-something",
+            },
+            {
+                "@type": "DataDownload",
+                "encodingFormat": "application/octet-stream",
+                "url": "https://cds.climate.copernicus.eu/datasets/era5-something?tab=download",
+            },
         ],
         "temporalCoverage": "2019-11-05T00:00:00Z/2023-06-22T00:00:00Z",
         "spatialCoverage": {
