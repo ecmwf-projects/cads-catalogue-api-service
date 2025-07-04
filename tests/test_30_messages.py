@@ -34,6 +34,7 @@ class Message:
         severity: str,
         content: str,
         live: bool,
+        show_date: bool,
     ):
         self.message_uid = message_uid
         self.date = date
@@ -42,11 +43,13 @@ class Message:
         self.severity = severity
         self.content = content
         self.live = live
+        self.show_date = show_date
 
 
 def static_messages_query(
     session: Any,
     live: bool = True,
+    show_date: bool = True,
     is_global: bool = True,
     collection_id: str | None = None,
     site: str | None = None,
@@ -60,6 +63,7 @@ def static_messages_query(
             severity="info",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=True,
+            show_date=True,
         ),
         Message(
             message_uid="1-yyy-zzzz.md",
@@ -69,6 +73,7 @@ def static_messages_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=True,
+            show_date=True,
         ),
     ]
 
@@ -76,6 +81,7 @@ def static_messages_query(
 def static_changelog_query(
     session: Any,
     live: bool = False,
+    show_date: bool = True,
     is_global: bool = True,
     collection_id: str | None = None,
     site: str | None = None,
@@ -89,6 +95,7 @@ def static_changelog_query(
             severity="info",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
+            show_date=True,
         ),
         Message(
             message_uid="1-yyy-zzzz.md",
@@ -98,6 +105,7 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
+            show_date=True,
         ),
         Message(
             message_uid="2-yyy-zzzz.md",
@@ -107,6 +115,7 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
+            show_date=True,
         ),
         Message(
             message_uid="3-yyy-zzzz.md",
@@ -116,6 +125,7 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
+            show_date=True,
         ),
         Message(
             message_uid="4-yyy-zzzz.md",
@@ -125,6 +135,7 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
+            show_date=True,
         ),
         Message(
             message_uid="5-yyy-zzzz.md",
@@ -134,6 +145,7 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
+            show_date=True,
         ),
         Message(
             message_uid="6-yyy-zzzz.md",
@@ -143,6 +155,7 @@ def static_changelog_query(
             severity="warning",
             content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
             live=False,
+            show_date=True,
         ),
     ]
 
@@ -178,6 +191,7 @@ def test_messages(monkeypatch) -> None:
                 "severity": "info",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": True,
+                "show_date": True,
             },
             {
                 "id": "1-yyy-zzzz.md",
@@ -187,6 +201,7 @@ def test_messages(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": True,
+                "show_date": True,
             },
         ],
     }
@@ -213,6 +228,7 @@ def test_messages_all(monkeypatch) -> None:
                 "severity": "info",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": True,
+                "show_date": True,
             },
             {
                 "id": "1-yyy-zzzz.md",
@@ -222,6 +238,7 @@ def test_messages_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": True,
+                "show_date": True,
             },
         ],
     }
@@ -248,6 +265,7 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "info",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "1-yyy-zzzz.md",
@@ -257,6 +275,7 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "2-yyy-zzzz.md",
@@ -266,6 +285,7 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "3-yyy-zzzz.md",
@@ -275,6 +295,7 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "4-yyy-zzzz.md",
@@ -284,6 +305,7 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "5-yyy-zzzz.md",
@@ -293,6 +315,7 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "6-yyy-zzzz.md",
@@ -302,6 +325,7 @@ def test_changelog(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
         ],
     }
@@ -328,6 +352,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "info",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "1-yyy-zzzz.md",
@@ -337,6 +362,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "2-yyy-zzzz.md",
@@ -346,6 +372,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "3-yyy-zzzz.md",
@@ -355,6 +382,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "4-yyy-zzzz.md",
@@ -364,6 +392,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "5-yyy-zzzz.md",
@@ -373,6 +402,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
             {
                 "id": "6-yyy-zzzz.md",
@@ -382,6 +412,7 @@ def test_changelog_all(monkeypatch) -> None:
                 "severity": "warning",
                 "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque.",
                 "live": False,
+                "show_date": True,
             },
         ],
     }

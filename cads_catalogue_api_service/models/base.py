@@ -68,6 +68,7 @@ class Message(TypedDict):
     severity: str | None
     content: str | None
     live: bool | None
+    show_date: bool | None
 
 
 class Messages(TypedDict):

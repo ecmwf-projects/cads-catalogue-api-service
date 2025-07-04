@@ -334,6 +334,7 @@ def get_active_message(
             severity=message.severity,
             content=message.content,
             live=message.live,
+            show_date=message.show_date,
         )
     return None
 
