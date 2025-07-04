@@ -30,6 +30,9 @@
           },
           "live": {
             "type": "boolean"
+          },
+          "show_date": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -37,7 +40,8 @@
           "date",
           "severity",
           "content",
-          "live"
+          "live",
+          "show_date"
         ]
       }
     }
