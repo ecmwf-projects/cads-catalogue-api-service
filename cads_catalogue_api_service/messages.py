@@ -44,6 +44,7 @@ def query_messages(
             cads_catalogue.database.Message.severity,
             cads_catalogue.database.Message.content,
             cads_catalogue.database.Message.live,
+            cads_catalogue.database.Message.show_date,
         )
         .join(
             cads_catalogue.database.ResourceMessage,
@@ -91,6 +92,7 @@ def list_messages_by_dataset(
                 severity=message.severity,
                 content=message.content,
                 live=message.live,
+                show_date=message.show_date,
             )
             for message in results
         ]
@@ -119,6 +121,7 @@ def list_changelog_by_id(
                 severity=message.severity,
                 content=message.content,
                 live=message.live,
+                show_date=message.show_date,
             )
             for message in results
         ]
@@ -142,6 +145,7 @@ def list_messages(
                 severity=message.severity,
                 content=message.content,
                 live=message.live,
+                show_date=message.show_date,
             )
             for message in results
         ]
@@ -165,6 +169,7 @@ def list_changelog(
                 severity=message.severity,
                 content=message.content,
                 live=message.live,
+                show_date=message.show_date,
             )
             for message in results
         ]
