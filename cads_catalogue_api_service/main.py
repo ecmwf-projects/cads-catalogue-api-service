@@ -31,6 +31,7 @@ import stac_fastapi.types
 import stac_fastapi.types.conformance
 import stac_fastapi.types.links
 import starlette
+import starlette.middleware
 from brotli_asgi import BrotliMiddleware  # type: ignore
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
@@ -70,11 +71,11 @@ api = stac_fastapi.api.app.StacApi(
     extensions=exts,
     client=client.cads_client,
     middlewares=[
-        BrotliMiddleware,
-        PrometheusMiddleware,
-        stac_fastapi.api.middleware.CORSMiddleware,
-        middlewares.CacheControlMiddleware,
-        middlewares.LoggerInitializationMiddleware,
+        starlette.middleware.Middleware(BrotliMiddleware),
+        starlette.middleware.Middleware(PrometheusMiddleware),
+        starlette.middleware.Middleware(stac_fastapi.api.middleware.CORSMiddleware),
+        starlette.middleware.Middleware(middlewares.CacheControlMiddleware),
+        starlette.middleware.Middleware(middlewares.LoggerInitializationMiddleware),
     ],
     # FIXME: this must be different from site to site
     title="ECMWF Data Stores STAC Catalogue API",
