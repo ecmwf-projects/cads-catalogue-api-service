@@ -14,18 +14,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Literal
+
 import pydantic
 
 
 class ContactPoint(pydantic.BaseModel):
-    type: str = pydantic.Field("ContactPoint", const=True, alias="@type")
+    type: Literal["ContactPoint"] = pydantic.Field(
+        default="ContactPoint", alias="@type"
+    )
     contactType: str
     email: str | None = None
     url: str | None = None
 
 
 class Organization(pydantic.BaseModel):
-    type: str = pydantic.Field("Organization", const=True, alias="@type")
+    type: Literal["Organization"] = pydantic.Field(
+        default="Organization", alias="@type"
+    )
     url: str
     name: str
     logo: str | None = None
@@ -33,24 +39,28 @@ class Organization(pydantic.BaseModel):
 
 
 class DataDownload(pydantic.BaseModel):
-    type: str = pydantic.Field("DataDownload", const=True, alias="@type")
+    type: Literal["DataDownload"] = pydantic.Field(
+        default="DataDownload", alias="@type"
+    )
     encodingFormat: str
     url: str | None = None
 
 
 class GeoShape(pydantic.BaseModel):
-    type: str = pydantic.Field("GeoShape", const=True, alias="@type")
+    type: Literal["GeoShape"] = pydantic.Field(default="GeoShape", alias="@type")
     box: list[float]
 
 
 class Place(pydantic.BaseModel):
-    type: str = pydantic.Field("Place", const=True, alias="@type")
+    type: Literal["Place"] = pydantic.Field(default="Place", alias="@type")
     geo: GeoShape
 
 
 class Dataset(pydantic.BaseModel):
-    context: str = pydantic.Field("https://schema.org/", const=True, alias="@context")
-    type: str = pydantic.Field("Dataset", const=True, alias="@type")
+    context: Literal["https://schema.org/"] = pydantic.Field(
+        default="https://schema.org/", alias="@context"
+    )
+    type: Literal["Dataset"] = pydantic.Field(default="Dataset", alias="@type")
 
     name: str
     description: str | None

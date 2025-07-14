@@ -16,9 +16,9 @@
 
 import datetime
 import enum
-from typing import TypedDict
 
 import stac_fastapi.types
+from typing_extensions import TypedDict
 
 
 class LicenceCategories(str, enum.Enum):
