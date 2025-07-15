@@ -19,6 +19,7 @@ from typing import Any
 import cads_catalogue.database
 import sqlalchemy as sa
 import stac_fastapi.types
+import stac_fastapi.types.stac
 
 # TODO: this should be placed in a configuration file
 WEIGHT_HIGH_PRIORITY_TERMS = 1.0

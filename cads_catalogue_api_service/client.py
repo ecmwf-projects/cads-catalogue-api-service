@@ -26,6 +26,7 @@ import sqlalchemy.dialects
 import sqlalchemy.orm
 import stac_fastapi.types
 import stac_fastapi.types.core
+import stac_fastapi.types.links
 import stac_fastapi.types.stac
 import stac_pydantic
 
@@ -174,7 +175,7 @@ def generate_collection_links(
     """Generate collection links."""
     base_url = str(request.base_url)
     collection_links = stac_fastapi.types.links.CollectionLinks(
-        collection_id=model.resource_uid, base_url=base_url
+        collection_id=str(model.resource_uid), base_url=base_url
     ).create_links()
     # We don't implement items. Let's remove the rel="items" entry
     collection_links = [link for link in collection_links if link["rel"] != "items"]
@@ -347,16 +348,7 @@ def get_active_message(
         .first()
     )
     if message:
-        return models.Message(
-            id=message.message_uid,
-            date=None,
-            summary=message.summary,
-            url=message.url,
-            severity=message.severity,
-            content=message.content,
-            live=message.live,
-            show_date=message.show_date,
-        )
+        return models.Message.model_validate(message)
     return None
 
 
@@ -417,27 +409,28 @@ def collection_serializer(
         }
         additional_properties.update(schema_org_properties)  # type: ignore
 
-    return stac_fastapi.types.stac.Collection(
-        type="Collection",
-        id=db_model.resource_uid,
-        stac_version="1.0.0",
-        title=db_model.title,
-        description=db_model.abstract,
+    collection_dict = {
+        "type": "Collection",
+        "id": db_model.resource_uid,
+        "stac_version": "1.0.0",
+        "title": db_model.title,
+        "description": db_model.abstract,
         # FIXME: this is triggering a long list of subqueries
-        keywords=(
+        "keywords": (
             [keyword.keyword_name for keyword in db_model.keywords]
             if with_keywords
             else []
         ),
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         # note that this small check, even if correct, is triggering a lot of subrequests
-        license=(
+        "license": (
             "various" if not preview and len(db_model.licences) > 1 else "proprietary"
         ),
-        extent=get_extent(db_model),
-        links=collection_links,
+        "extent": get_extent(db_model),
+        "links": collection_links,
         **additional_properties,
-    )
+    }
+    return stac_fastapi.types.stac.Collection(**collection_dict)  # type: ignore
 
 
 @attrs.define
@@ -619,10 +612,17 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             )
 
         if search_stats:
+            collections = search_utils.CollectionsWithStats(
+                collections=serialized_collections or [],
+                links=links,
+                numberMatched=count,
+                numberReturned=len(serialized_collections),
+                search={},
+            )
             with self.reader.context_session() as session:
                 all_collections = self.load_catalogue(session, request, q, portals)
 
-                search_utils.populate_facets(
+                collections = search_utils.populate_facets(
                     all_collections=all_collections,
                     collections=collections,
                     keywords=kw,
@@ -631,15 +631,23 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         return collections
 
     def all_collections(
-        self, request: fastapi.Request
+        self,
+        **kwargs: Any,
     ) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the catalogue."""
-        return self.all_datasets(request=request)
+        return self.all_datasets(**kwargs)
 
     def get_collection(
-        self, collection_id: str, request: fastapi.Request
+        self,
+        collection_id: str,
+        **kwargs: Any,
     ) -> stac_fastapi.types.stac.Collection:
         """Get a STAC collection by id."""
+        request: fastapi.Request | None = kwargs.get("request")
+
+        if request is None:
+            raise ValueError("Request object is required but not provided")
+
         portals = dependencies.get_portals_values(
             request.headers.get(config.PORTAL_HEADER_NAME)
         )
@@ -651,23 +659,23 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 collection, session=session, request=request, preview=False
             )
 
-    def get_item(self, **kwargs: dict[str, Any]) -> None:
+    def get_item(
+        self, item_id: str, collection_id: str, **kwargs: Any
+    ) -> stac_fastapi.types.stac.Item:
         """Access to STAC items: explicitly not implemented."""
         raise exceptions.FeatureNotImplemented("STAC item is not implemented")
 
-    def get_search(self, **kwargs: dict[str, Any]) -> None:
+    def get_search(self, **kwargs: Any) -> None:  # type: ignore
         """GET search catalog. Explicitly not implemented."""
         raise exceptions.FeatureNotImplemented("STAC search is not implemented")
 
-    def item_collection(
-        self, **kwargs: dict[str, Any]
-    ) -> stac_fastapi.types.stac.ItemCollection:
+    def item_collection(self, **kwargs: Any) -> stac_fastapi.types.stac.ItemCollection:  # type: ignore
         """Read an item collection from the database."""
         raise exceptions.FeatureNotImplemented("STAC items is not implemented")
 
-    def post_search(self) -> None:
+    def post_search(self) -> None:  # type: ignore
         """POST search catalog. Explicitly not implemented."""
-        raise exceptions.FeatureNotImplemented("STAC search is not implemented")
+        raise exceptions.FeatureNotImplemented("STAC search is not implemented")  # type: ignore
 
 
 cads_client = CatalogueClient()

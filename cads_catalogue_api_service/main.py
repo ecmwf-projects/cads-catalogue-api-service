@@ -123,7 +123,7 @@ def catalogue_openapi() -> dict[str, Any]:
     return openapi_schema
 
 
-app.openapi = catalogue_openapi
+setattr(app, "openapi", catalogue_openapi)
 
 
 @app.get("/api.html", include_in_schema=False)

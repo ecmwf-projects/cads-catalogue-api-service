@@ -15,15 +15,14 @@
 # limitations under the License.
 
 import enum
-from typing import Any
 
 import attr
 import fastapi
 import pydantic
-import stac_fastapi.api
 import stac_fastapi.types.extension
+import stac_fastapi.types.stac
 
-from . import client, config
+from . import client, config, search_utils
 
 
 class CatalogueSortCriterion(str, enum.Enum):
@@ -61,7 +60,7 @@ def datasets_search(
         default=True,
         description="Include additional search statistics in results (like: faceted data)",
     ),
-) -> dict[str, Any]:
+) -> stac_fastapi.types.stac.Collections | search_utils.CollectionsWithStats:
     """Filter datasets based on search parameters."""
     return client.cads_client.all_datasets(
         request=request,
@@ -88,7 +87,9 @@ class FormData(pydantic.BaseModel):
     search_stats: bool = True
 
 
-def datasets_search_post(request: fastapi.Request, data: FormData) -> dict[str, Any]:
+def datasets_search_post(
+    request: fastapi.Request, data: FormData
+) -> stac_fastapi.types.stac.Collections | search_utils.CollectionsWithStats:
     """Filter datasets based on search parameters."""
     return datasets_search(
         request=request,
