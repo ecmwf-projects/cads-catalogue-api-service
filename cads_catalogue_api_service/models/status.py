@@ -8,12 +8,12 @@ class CatalogueUpdateStatus(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(from_attributes=True)
 
     update_time: datetime.datetime
-    catalogue_repo_commit: str | None
-    forms_repo_commits: list[str] | None
-    licence_repo_commit: str | None
-    message_repo_commit: str | None
-    cim_repo_commit: str | None
-    content_repo_commit: str | None
+    catalogue_repo_commit: str | None = None
+    forms_repo_commits: list[str] | None = None
+    licence_repo_commit: str | None = None
+    message_repo_commit: str | None = None
+    cim_repo_commit: str | None = None
+    content_repo_commit: str | None = None
 
     @pydantic.model_validator(mode="before")
     @classmethod

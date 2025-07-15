@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import urllib
 from typing import Any, Type
 
@@ -25,6 +26,7 @@ import sqlalchemy.dialects
 import sqlalchemy.orm
 import stac_fastapi.types
 import stac_fastapi.types.core
+import stac_fastapi.types.stac
 import stac_pydantic
 
 from . import (
@@ -100,35 +102,54 @@ def get_next_prev_links(
 
 
 def get_extent(
-    model: cads_catalogue.database.Resource,
+    record: cads_catalogue.database.Resource,
 ) -> dict:
     """Get extent from model."""
-    spatial = model.geo_extent or {}
+    spatial = record.geo_extent or {}
     try:
         spatial_extent = stac_pydantic.collection.SpatialExtent(
             bbox=[
-                [
+                (
                     spatial.get("bboxW", -180),
                     spatial.get("bboxS", -90),
                     spatial.get("bboxE", 180),
                     spatial.get("bboxN", 90),
-                ]
+                )
             ],
         )
     except pydantic.ValidationError:
         spatial_extent = stac_pydantic.collection.SpatialExtent(
-            bbox=[[-180, -90, 180, 90]]
+            bbox=[(-180, -90, 180, 90)]
         )
-    begin_date = (
-        f"{model.begin_date.isoformat()}T00:00:00Z" if model.begin_date else None
-    )
-    end_date = f"{model.end_date.isoformat()}T00:00:00Z" if model.end_date else None
+
+    begin_date_value = getattr(record, "begin_date", None)
+    end_date_value = getattr(record, "end_date", None)
+
     return stac_pydantic.collection.Extent(
         spatial=spatial_extent,
         temporal=stac_pydantic.collection.TimeInterval(
-            interval=[[begin_date, end_date]],
+            interval=[
+                [
+                    (
+                        # We have datetime.date on DB, while STAC requires datetime with timezone
+                        datetime.datetime.combine(
+                            begin_date_value, datetime.datetime.min.time()
+                        ).replace(tzinfo=datetime.timezone.utc)
+                        if begin_date_value
+                        else None
+                    ),
+                    (
+                        # We have datetime.date on DB, while STAC requires datetime with timezone
+                        datetime.datetime.combine(
+                            end_date_value, datetime.datetime.min.time()
+                        ).replace(tzinfo=datetime.timezone.utc)
+                        if end_date_value
+                        else None
+                    ),
+                ]
+            ],
         ),
-    ).dict()
+    ).model_dump()
 
 
 def generate_assets(
@@ -348,7 +369,7 @@ def collection_serializer(
     with_message: bool = True,
     with_keywords: bool = True,
 ) -> stac_fastapi.types.stac.Collection:
-    """Transform database model to stac collection."""
+    """Transform database model to STAC collection."""
     collection_links = generate_collection_links(
         model=db_model, request=request, preview=preview
     )

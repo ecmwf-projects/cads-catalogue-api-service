@@ -83,19 +83,7 @@ def list_messages_by_dataset(
         collection_id=collection_id,
     )
     return models.Messages(
-        messages=[
-            models.Message(
-                id=message.message_uid,
-                date=message.date,
-                summary=message.summary,
-                url=message.url,
-                severity=message.severity,
-                content=message.content,
-                live=message.live,
-                show_date=message.show_date,
-            )
-            for message in results
-        ]
+        messages=[models.Message.model_validate(message) for message in results]
     )
 
 
@@ -112,19 +100,7 @@ def list_changelog_by_id(
         session=session, live=False, is_global=False, collection_id=collection_id
     )
     return models.Changelog(
-        changelog=[
-            models.Message(
-                id=message.message_uid,
-                date=message.date,
-                summary=message.summary,
-                url=message.url,
-                severity=message.severity,
-                content=message.content,
-                live=message.live,
-                show_date=message.show_date,
-            )
-            for message in results
-        ]
+        changelog=[models.Message.model_validate(message) for message in results]
     )
 
 
@@ -136,19 +112,7 @@ def list_messages(
     """Endpoint to get all messages."""
     results = query_messages(session=session, live=True, is_global=True, site=site)
     return models.Messages(
-        messages=[
-            models.Message(
-                id=message.message_uid,
-                date=message.date,
-                summary=message.summary,
-                url=message.url,
-                severity=message.severity,
-                content=message.content,
-                live=message.live,
-                show_date=message.show_date,
-            )
-            for message in results
-        ]
+        messages=[models.Message.model_validate(message) for message in results]
     )
 
 
@@ -160,17 +124,5 @@ def list_changelog(
     """Full changelog of site messages."""
     results = query_messages(session=session, live=False, is_global=True, site=site)
     return models.Changelog(
-        changelog=[
-            models.Message(
-                id=message.message_uid,
-                date=message.date,
-                summary=message.summary,
-                url=message.url,
-                severity=message.severity,
-                content=message.content,
-                live=message.live,
-                show_date=message.show_date,
-            )
-            for message in results
-        ]
+        changelog=[models.Message.model_validate(message) for message in results]
     )

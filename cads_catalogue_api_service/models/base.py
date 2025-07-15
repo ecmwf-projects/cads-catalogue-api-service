@@ -17,6 +17,7 @@
 import datetime
 import enum
 
+import pydantic
 import stac_fastapi.types
 from typing_extensions import TypedDict
 
@@ -58,17 +59,19 @@ class Keywords(TypedDict):
     keywords: list[Keyword]
 
 
-class Message(TypedDict):
-    """Message definition."""
+class Message(pydantic.BaseModel):
+    """A portal or dataset message."""
 
-    id: str | None
+    model_config = pydantic.ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: str | None = pydantic.Field(alias="message_uid", serialization_alias="id")
     date: datetime.datetime | None
-    summary: str | None
-    url: str | None
+    summary: str | None = None
+    url: str | None = None
     severity: str | None
     content: str | None
     live: bool | None
-    show_date: bool | None
+    show_date: bool | None = True
 
 
 class Messages(TypedDict):
