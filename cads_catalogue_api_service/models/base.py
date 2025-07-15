@@ -19,6 +19,7 @@ import enum
 
 import pydantic
 import stac_fastapi.types
+import stac_fastapi.types.stac
 from typing_extensions import TypedDict
 
 
