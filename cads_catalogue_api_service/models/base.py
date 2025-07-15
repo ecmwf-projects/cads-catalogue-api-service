@@ -18,8 +18,6 @@ import datetime
 import enum
 
 import pydantic
-import stac_fastapi.types
-import stac_fastapi.types.stac
 from typing_extensions import TypedDict
 
 
@@ -85,12 +83,3 @@ class Changelog(TypedDict):
     """Changelog vocabulary."""
 
     changelog: list[Message]
-
-
-class CADSCollections(stac_fastapi.types.stac.Collections):
-    """STAC collections entitiy with additional fields not (yet) in the STAC spec."""
-
-    # Injecting elements count (waiting for STAC API to support this officially)
-    # See https://github.com/radiantearth/stac-api-spec/issues/442
-    numberMatched: int | None
-    numberReturned: int | None

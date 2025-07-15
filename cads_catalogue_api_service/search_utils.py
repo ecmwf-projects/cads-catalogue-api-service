@@ -45,7 +45,9 @@ def apply_filters_typeahead(
     """
     if search is None:
         search = session.query(cads_catalogue.database.Resource)
-    search = search.filter(cads_catalogue.database.Resource.hidden == False)  # noqa E712
+    search = search.filter(
+        cads_catalogue.database.Resource.hidden == False  # noqa E712
+    )
     if portals:
         search = search.filter(cads_catalogue.database.Resource.portal.in_(portals))
     g = sa.func.unnest(
@@ -260,7 +262,7 @@ def count_all(collections: list, result: dict) -> None:
 
 def populate_facets(
     all_collections: list,
-    collections: stac_fastapi.types.stac.Collections,
+    collections: CollectionsWithStats,
     keywords: list[str] | None,
 ) -> CollectionsWithStats:
     """Populate the collections entity with facets."""
@@ -284,10 +286,9 @@ def populate_facets(
     sorted_result = {
         k: {x: y for x, y in sorted(v.items())} for k, v in sorted(result.items())
     }
-    """
-    Make the result formatted as expected
-    ES. from {'Cat1':{'Kw1':1}} to {'kw':[{'category':'Cat1','groups':{'Kw1':1}}]}
-    """
+
+    # Make the result formatted as expected
+    # ES. from {'Cat1':{'Kw1':1}} to {'kw':[{'category':'Cat1','groups':{'Kw1':1}}]}
     collections["search"] = {
         "kw": [
             {"category": cat, "groups": {kw: count for kw, count in kws.items()}}

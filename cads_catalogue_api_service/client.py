@@ -522,7 +522,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         limit: int = 999,
         route_name="Get Collections",
         search_stats: bool = False,
-    ) -> models.CADSCollections:
+    ) -> stac_fastapi.types.stac.Collections | search_utils.CollectionsWithStats:
         """Read datasets from the catalogue."""
         portals = dependencies.get_portals_values(
             request.headers.get(config.PORTAL_HEADER_NAME)
@@ -611,7 +611,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                     }
                 )
 
-            collections = models.CADSCollections(
+            collections = stac_fastapi.types.stac.Collections(
                 collections=serialized_collections or [],
                 links=links,
                 numberMatched=count,
@@ -630,7 +630,9 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         return collections
 
-    def all_collections(self, request: fastapi.Request) -> models.CADSCollections:
+    def all_collections(
+        self, request: fastapi.Request
+    ) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the catalogue."""
         return self.all_datasets(request=request)
 
