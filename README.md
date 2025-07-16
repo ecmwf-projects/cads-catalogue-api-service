@@ -5,32 +5,31 @@ STAC based API service for the Climate & Atmosphere Data Store
 ## Running the API
 
 ```bash
-catalogue_db_password=… \
-    uvicorn cads_catalogue_api_service.main:app --host 0.0.0.0 --proxy-headers --forwarded-allow-ips "*" --log-level info --reload
+catalogue_db_name=catalogue catalogue_db_user=cads catalogue_db_password=******** catalogue_db_host_read=localhost catalogue_db_host=localhost uvicorn cads_catalogue_api_service.main:app --host 0.0.0.0 --proxy-headers --forwarded-allow-ips "*" --log-level info --reload
 ```
 
 ## REST API description
 
-Let say that WSGI service root is configured to serve the API at `http://localhost:8080/api/catalogue`.
+Let say that WSGI service root is configured to serve the API at `http://localhost:8000/api/catalogue/v1`.
 
-The Swagger/OpenAPI documentation can be accessed at <http://localhost:8080/api/catalogue/api.html>.
+The Swagger/OpenAPI documentation can be accessed at <http://localhost:8080/api/catalogue/v1/docs>.
 
 To access the list of all datasets (STAC collections index):
 
 ```bash
-curl http://localhost:8080/api/catalogue/collections | jq
+curl http://localhost:8080/api/catalogue/v1/collections | jq
 ```
 
 To access a dataset by id (STAC collection):
 
 ```bash
-curl http://localhost:8080/api/catalogue/collections/reanalysis-era5-land-monthly-means | jq
+curl http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-land-monthly-means | jq
 ```
 
 To obtain the thumbnail image of a dataset:
 
 ```bash
-curl http://localhost:8080/api/catalogue/collections/reanalysis-era5-land-monthly-means | jq -r .assets.thumbnail.href
+curl http://localhost:8080/api/catalogue/v1/collections/reanalysis-era5-land-monthly-means | jq -r .assets.thumbnail.href
 ```
 
 ### Links

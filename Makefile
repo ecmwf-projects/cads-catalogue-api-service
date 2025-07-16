@@ -32,7 +32,7 @@ docs-build:
 	cd docs && rm -fr _api && make clean && make html
 
 # DO NOT EDIT ABOVE THIS LINE, ADD COMMANDS BELOW
-API_ROOT_PATH := http://localhost:8080/api/catalogue/v1/
+API_ROOT_PATH := http://localhost:8000/
 
 start:
 	uvicorn --reload cads_catalogue_api_service.main:app
