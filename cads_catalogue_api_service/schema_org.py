@@ -86,7 +86,13 @@ def schema_org_json_ld(
 
     See https://developers.google.com/search/docs/appearance/structured-data/dataset
     """
-    collection = query_collection(session, collection_id, request)
+    try:
+        collection = query_collection(session, collection_id, request)
+    except sa.orm.exc.NoResultFound:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Resource {collection_id} not found.",
+        )
     url, license, distribution = None, None, None
     if "links" in collection and collection["links"]:
         url = get_url_link(collection, "self")
@@ -164,9 +170,11 @@ def schema_org_json_ld(
                 "@type": "DataCatalog",
                 "identifier": site,
                 "name": CADS_SITE_TO_LONG_NAME.get(site, "ECMWF Data Store"),
-                "url": f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets"
-                if site
-                else None,
+                "url": (
+                    f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets"
+                    if site
+                    else None
+                ),
             }
         ],
     )
