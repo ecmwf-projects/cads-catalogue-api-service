@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 from typing import Any
 
 import fastapi
@@ -42,7 +43,16 @@ def static_collection_query(
         "extent": {
             "spatial": {"bbox": [[0, -70, 70, 360]]},
             "temporal": {
-                "interval": [["2019-11-05T00:00:00Z", "2023-06-22T00:00:00Z"]]
+                "interval": [
+                    [
+                        datetime.datetime.strptime(
+                            "2019-11-05T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
+                        ),
+                        datetime.datetime.strptime(
+                            "2023-06-22T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"
+                        ),
+                    ]
+                ]
             },
         },
         "links": [

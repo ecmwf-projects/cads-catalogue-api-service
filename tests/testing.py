@@ -228,7 +228,7 @@ def generate_expected(
                     "href": urllib.parse.urljoin(
                         base_url, "collections/era5-something/messages"
                     ),
-                    "title": "All messages related to the selected dataset",
+                    "title": "All active messages on ERA5",
                 },
             ]
         ),

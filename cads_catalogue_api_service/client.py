@@ -415,14 +415,15 @@ def collection_serializer(
         "stac_version": "1.1.0",
         "title": db_model.title,
         "description": db_model.abstract,
-        # FIXME: this is triggering a long list of subqueries
+        # NOTE: this is triggering a long list of subqueries
+        # FIXME: we can do the same we did for resource_data
         "keywords": (
             [keyword.keyword_name for keyword in db_model.keywords]
             if with_keywords
             else []
         ),
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
-        # note that this small check, even if correct, is triggering a lot of subrequests
+        # NOTE: this small check, even if correct, is triggering a lot of subrequests
         # FIXME: we can do the same we did for resource_data
         "license": (
             "various" if not preview and len(db_model.licences) > 1 else "proprietary"

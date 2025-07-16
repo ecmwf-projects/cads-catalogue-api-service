@@ -155,7 +155,7 @@ def schema_org_json_ld(
             ),
         ],
         temporalCoverage=(
-            "/".join([t.isoformat() for t in temporal_coverage])
+            "/".join([t.isoformat() + "Z" for t in temporal_coverage])
             if temporal_coverage
             else None
         ),
