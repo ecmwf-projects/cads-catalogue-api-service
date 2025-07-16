@@ -110,7 +110,7 @@ def generate_expected(
     expected = {
         "type": "Collection",
         "id": "era5-something",
-        "stac_version": "1.0.0",
+        "stac_version": "1.1.0",
         "title": "ERA5",
         "description": "Lorem ipsum dolor",
         "keywords": ["kw1"],
@@ -247,7 +247,7 @@ def generate_expected(
         ),
         "cads:sanity_check": {
             "status": SanityCheckStatus.available,
-            "timestamp": "2024-01-01T12:15:34",
+            "timestamp": "2024-01-01T12:15:34Z",
         },
     }
     if not preview:

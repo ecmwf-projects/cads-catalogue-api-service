@@ -18,6 +18,7 @@ import datetime
 import enum
 
 import pydantic
+from pydantic import field_serializer
 from typing_extensions import TypedDict
 
 
@@ -71,6 +72,27 @@ class Message(pydantic.BaseModel):
     content: str | None
     live: bool | None
     show_date: bool | None = True
+
+    @field_serializer("date")
+    def serialize_date(
+        self, value: datetime.datetime | datetime.date | None
+    ) -> str | None:
+        """Serialize datetime in ISO format."""
+        if value is None:
+            return None
+
+        # If no timezone info, add it
+        if isinstance(value, datetime.datetime) and value.tzinfo is None:
+            value = value.replace(tzinfo=datetime.timezone.utc)
+
+        # If not UTC yet, converto to UTC
+        if (
+            isinstance(value, datetime.datetime)
+            and value.tzinfo != datetime.timezone.utc
+        ):
+            value = value.astimezone(datetime.timezone.utc)
+
+        return value.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class Messages(TypedDict):
