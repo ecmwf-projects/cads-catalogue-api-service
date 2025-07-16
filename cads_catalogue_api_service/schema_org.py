@@ -105,7 +105,8 @@ def schema_org_json_ld(
     temporal_coverage = (
         list(filter(None, temporal_coverage[0])) if temporal_coverage else []
     )
-    download_url = f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets/{collection_id}?tab=download"
+    current_site = (site or "").upper()
+    download_url = f"{os.getenv(f'{current_site}_PROJECT_URL', '')}/datasets/{collection_id}?tab=download"
 
     box = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
 
@@ -153,7 +154,11 @@ def schema_org_json_ld(
                 else ""
             ),
         ],
-        temporalCoverage="/".join(temporal_coverage) if temporal_coverage else None,
+        temporalCoverage=(
+            "/".join([t.isoformat() for t in temporal_coverage])
+            if temporal_coverage
+            else None
+        ),
         spatialCoverage=models.schema_org.Place(
             type="",
             geo=models.schema_org.GeoShape(

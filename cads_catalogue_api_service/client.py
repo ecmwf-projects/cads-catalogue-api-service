@@ -296,7 +296,7 @@ def generate_collection_links(
             {
                 "rel": "messages",
                 "href": f"{url_ref}/{model.resource_uid}/messages",
-                "title": "All messages related to the selected dataset",
+                "title": f"All active messages on {model.title}",
             }
         ]
 
@@ -412,7 +412,7 @@ def collection_serializer(
     collection_dict = {
         "type": "Collection",
         "id": db_model.resource_uid,
-        "stac_version": "1.0.0",
+        "stac_version": "1.1.0",
         "title": db_model.title,
         "description": db_model.abstract,
         # FIXME: this is triggering a long list of subqueries
@@ -423,6 +423,7 @@ def collection_serializer(
         ),
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         # note that this small check, even if correct, is triggering a lot of subrequests
+        # FIXME: we can do the same we did for resource_data
         "license": (
             "various" if not preview and len(db_model.licences) > 1 else "proprietary"
         ),

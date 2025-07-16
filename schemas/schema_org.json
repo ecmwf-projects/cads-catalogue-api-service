@@ -1,111 +1,108 @@
 {
   "$id": "/schemas/schema_org",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "CADS schema.org",
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "EDSS schema.org",
   "type": "object",
   "properties": {
-        "type":"object",
-        "properties":{
-          "context":{
-            "type":"string"
-          },
-          "type": {
+    "@context": {
+      "type": "string"
+    },
+    "@type": {
+      "type": "string"
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "url": {
+      "type": ["string", "null"]
+    },
+    "sameAs": {
+      "type": ["string", "null"]
+    },
+    "identifier": {
+      "type": ["string", "null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "license": {
+      "type": ["string", "null"]
+    },
+    "keywords": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "isAccessibleForFree": {
+      "type": "boolean"
+    },
+    "creator": {
+      "type": "object"
+    },
+    "funder": {
+      "type": "object"
+    },
+    "distribution": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "encodingFormat": {
             "type": "string"
           },
-          "name":{
-            "type":["string","null"]
-          },
-          "description":{
-            "type":["string","null"]
-          },
-          "url":{
-            "type":["string","null"]
-          },
-          "sameAs": {
-            "type": ["string","null"]
-          },
-          "identifier": {
-            "type": ["string","null"]
-          },
-          "license": {
-            "type": ["string","null"]
-          },
-          "keywords": {
-            "type": ["string","null"]
-          },
-          "is_accessible_for_free": {
-            "type": "boolean"
-          },
-          "creator": {
-            "type": "object"
-          },
-          "funder": {
-            "type": "object"
-          },
-          "distribution":{
-            "type":"array",
-            "items": {
-              "type": "object",
-              "properties":{
-                "encodingFormat":{
-                  "type":"string"
-                },
-                "contentUrl": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "encodingFormat",
-                "contentUrl"
-              ]
-            }
-
-          },
-          "creator_name":{
-            "type":"string"
-          },
-          "creator_url":{
-            "type":"string"
-          },
-          "creator_type":{
-            "type":"string"
-          },
-          "creator_contact_email":{
-            "type":"string"
-          },
-          "file_format":{
-            "type":"string"
-          },
-          "temporalCoverage": {
-            "type": ["string","null"]
-          },
-          "spatialCoverage": {
-            "type": "object"
-          },
-          "dateModified": {
-            "type": ["string","null"]
-          },
-          "image": {
-            "type": ["string","null"]
+          "contentUrl": {
+            "type": "string"
           }
         },
-        "required": [
-          "context",
-          "type",
-          "name",
-          "description",
-          "url",
-          "sameAs",
-          "identifier",
-          "license",
-          "keywords",
-          "is_accessible_for_free",
-          "creator",
-          "funder",
-          "distribution",
-          "temporalCoverage",
-          "spatialCoverage",
-          "dateModified"
-        ]
-  }
+        "required": ["encodingFormat"]
+      }
+    },
+    "creator_name": {
+      "type": "string"
+    },
+    "creator_url": {
+      "type": "string"
+    },
+    "creator_type": {
+      "type": "string"
+    },
+    "creator_contact_email": {
+      "type": "string"
+    },
+    "file_format": {
+      "type": "string"
+    },
+    "temporalCoverage": {
+      "type": ["string", "null"]
+    },
+    "spatialCoverage": {
+      "type": "object"
+    },
+    "dateModified": {
+      "type": ["string", "null"]
+    },
+    "image": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": [
+    "@context",
+    "@type",
+    "name",
+    "description",
+    "url",
+    "identifier",
+    "license",
+    "keywords",
+    "isAccessibleForFree",
+    "creator",
+    "distribution",
+    "temporalCoverage",
+    "spatialCoverage",
+    "dateModified"
+  ]
 }
