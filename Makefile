@@ -38,4 +38,4 @@ start:
 	uvicorn --reload cads_catalogue_api_service.main:app
 
 integration-tests:
-	API_ROOT_PATH=$(API_ROOT_PATH) pytest --log-cli-level=INFO -vv tests/integration_*.py
+	API_ROOT_PATH=$(API_ROOT_PATH) pytest -s --log-cli-level=INFO -vv tests/integration_*.py

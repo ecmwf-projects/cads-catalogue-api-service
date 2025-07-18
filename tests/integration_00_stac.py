@@ -2,6 +2,7 @@ import json
 import os
 
 import jsonschema
+import pytest
 import referencing
 import requests
 from referencing.jsonschema import DRAFT7
@@ -62,21 +63,39 @@ collection_validator = jsonschema.validators.validator_for(schemas["/schemas/dat
 )
 
 
-def test_stac_collection_set_conformance() -> None:
+@pytest.fixture
+def stac_collections():
     r = requests.get(f"{API_ROOT_PATH}collections")
+    return r
 
+
+@pytest.fixture
+def collection_by_id(request):
+    """Fixture che restituisce una collezione specifica per ID."""
+    collection_id = request.param
+    r = requests.get(f"{API_ROOT_PATH}collections/{collection_id}")
     assert r.status_code == 200
-    collection_set_validator.validate(r.json())
+    return r.json()
 
 
-def test_stac_collection_conformance() -> None:
+def get_collection_ids():
     r = requests.get(f"{API_ROOT_PATH}collections")
+    if r.status_code != 200:
+        raise Exception("Failed to retrieve collections")
     collections = r.json()["collections"]
-    for collection in collections:
-        collections_url = [
-            link for link in collection["links"] if link["rel"] == "self"
-        ][0]["href"]
-        r = requests.get(collections_url)
+    return [collection["id"] for collection in collections]
 
-        assert r.status_code == 200
-        collection_validator.validate(r.json())
+
+def test_stac_collectionset_conformance(stac_collections) -> None:
+    assert stac_collections.status_code == 200
+    collection_set_validator.validate(stac_collections.json())
+
+
+@pytest.mark.parametrize(
+    "collection_by_id",
+    get_collection_ids(),
+    indirect=True,
+    ids=lambda x: f"collection_{x}",
+)
+def test_stac_collection_conformance(collection_by_id) -> None:
+    collection_validator.validate(collection_by_id)
