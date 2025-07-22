@@ -14,6 +14,7 @@
 
 import datetime
 
+import cads_catalogue.database
 from testing import Request, generate_expected, get_record
 
 import cads_catalogue_api_service.client
@@ -92,3 +93,81 @@ def test_hidden(monkeypatch) -> None:
     )
 
     assert stac_record["cads:hidden"] is True
+
+
+def test_collection_serializer_licences(monkeypatch) -> None:
+    """Test serialization of licenses from db record to STAC."""
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.client.get_active_message",
+        fake_get_active_message,
+    )
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.client.sanity_check.process",
+        fake_process_sanity_check,
+    )
+    request = Request("https://mycatalogue.org/")
+    record = get_record("era5-something")
+
+    # Test "various"
+    record.licences = [
+        cads_catalogue.database.Licence(
+            licence_id="licence-1",
+            revision=1,
+            title="Licence 1",
+            download_filename="licences/licence1.docx",
+        ),
+        cads_catalogue.database.Licence(
+            licence_id="licence-2",
+            revision=1,
+            title="Licence 2",
+            download_filename="licences/licence2.docx",
+        ),
+    ]
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+    assert stac_record["license"] == "various"
+
+    # Test spdx_identifier
+    record.licences = [
+        cads_catalogue.database.Licence(
+            licence_id="licence-1",
+            revision=1,
+            title="Licence 1",
+            download_filename="licences/licence1.docx",
+            spdx_identifier="CC-BY-4.0",
+        )
+    ]
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+    assert stac_record["license"] == "CC-BY-4.0"
+
+    # Test proprietary (default)
+    record.licences = [
+        cads_catalogue.database.Licence(
+            licence_id="licence-1",
+            revision=1,
+            title="Licence 1",
+            download_filename="licences/licence1.docx",
+        )
+    ]
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+    assert stac_record["license"] == "proprietary"
+
+    # Test preview mode, should be proprietary
+    record.licences = [
+        cads_catalogue.database.Licence(
+            licence_id="licence-1",
+            revision=1,
+            title="Licence 1",
+            download_filename="licences/licence1.docx",
+            spdx_identifier="MIT",
+        )
+    ]
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request, preview=True
+    )
+    assert stac_record["license"] == "proprietary"
