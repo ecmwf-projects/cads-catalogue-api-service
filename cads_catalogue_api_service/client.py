@@ -176,16 +176,21 @@ def generate_collection_links(
 
     if not preview:
         # Licenses
-        additional_links += [
-            {
-                "rel": "license",
-                "href": urllib.parse.urljoin(
+        for license in model.licences:
+            href = (
+                license.download_filename
+                if license.spdx_identifier
+                else urllib.parse.urljoin(
                     config.settings.document_storage_url, license.download_filename
-                ),
-                "title": license.title,
-            }
-            for license in model.licences
-        ]
+                )
+            )
+            additional_links.append(
+                {
+                    "rel": "license",
+                    "href": href,
+                    "title": license.title,
+                }
+            )
         # Documentation
         additional_links += [
             {
@@ -396,6 +401,13 @@ def collection_serializer(
         }
         additional_properties.update(schema_org_properties)  # type: ignore
 
+    stac_license = "proprietary"
+    if not preview:
+        if len(db_model.licences) > 1:
+            stac_license = "various"
+        elif len(db_model.licences) == 1 and db_model.licences[0].spdx_identifier:
+            stac_license = db_model.licences[0].spdx_identifier
+
     return stac_fastapi.types.stac.Collection(
         type="Collection",
         id=db_model.resource_uid,
@@ -410,9 +422,7 @@ def collection_serializer(
         ),
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         # note that this small check, even if correct, is triggering a lot of subrequests
-        license=(
-            "various" if not preview and len(db_model.licences) > 1 else "proprietary"
-        ),
+        license=stac_license,
         extent=get_extent(db_model),
         links=collection_links,
         **additional_properties,
