@@ -108,7 +108,7 @@ def test_collection_serializer_licences(monkeypatch) -> None:
     request = Request("https://mycatalogue.org/")
     record = get_record("era5-something")
 
-    # Test "various"
+    # Test with multiple licences, should be "other"
     record.licences = [
         cads_catalogue.database.Licence(
             licence_id="licence-1",
@@ -126,9 +126,9 @@ def test_collection_serializer_licences(monkeypatch) -> None:
     stac_record = cads_catalogue_api_service.client.collection_serializer(
         record, session=object(), request=request
     )
-    assert stac_record["license"] == "various"
+    assert stac_record["license"] == "other"
 
-    # Test spdx_identifier
+    # Test with a single licence with spdx_identifier
     record.licences = [
         cads_catalogue.database.Licence(
             licence_id="licence-1",
@@ -143,7 +143,7 @@ def test_collection_serializer_licences(monkeypatch) -> None:
     )
     assert stac_record["license"] == "CC-BY-4.0"
 
-    # Test proprietary (default)
+    # Test with a single licence without spdx_identifier, should be "other"
     record.licences = [
         cads_catalogue.database.Licence(
             licence_id="licence-1",
@@ -155,9 +155,9 @@ def test_collection_serializer_licences(monkeypatch) -> None:
     stac_record = cads_catalogue_api_service.client.collection_serializer(
         record, session=object(), request=request
     )
-    assert stac_record["license"] == "proprietary"
+    assert stac_record["license"] == "other"
 
-    # Test preview mode, should be proprietary
+    # Test with a single licence with spdx_identifier in preview mode
     record.licences = [
         cads_catalogue.database.Licence(
             licence_id="licence-1",
@@ -170,4 +170,11 @@ def test_collection_serializer_licences(monkeypatch) -> None:
     stac_record = cads_catalogue_api_service.client.collection_serializer(
         record, session=object(), request=request, preview=True
     )
-    assert stac_record["license"] == "proprietary"
+    assert stac_record["license"] == "MIT"
+
+    # Test with no licences, should be "other"
+    record.licences = []
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+    assert stac_record["license"] == "other"

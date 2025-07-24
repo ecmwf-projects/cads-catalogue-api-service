@@ -38,7 +38,7 @@ def static_collection_query(
         "keywords": [
             "Temporal coverage: Past",
         ],
-        "license": "proprietary",
+        "license": "other",
         "extent": {
             "spatial": {"bbox": [[0, -70, 70, 360]]},
             "temporal": {

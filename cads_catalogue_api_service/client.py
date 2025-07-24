@@ -299,7 +299,10 @@ def lookup_id(
     try:
         search = (
             session.query(record)
-            .options(*database.deferred_columns)
+            .options(
+                *database.deferred_columns,
+                sqlalchemy.orm.selectinload(record.licences),
+            )
             .filter(record.resource_uid == id)
         )
         if portals:
@@ -401,12 +404,13 @@ def collection_serializer(
         }
         additional_properties.update(schema_org_properties)  # type: ignore
 
-    stac_license = "proprietary"
-    if not preview:
-        if len(db_model.licences) > 1:
-            stac_license = "various"
-        elif len(db_model.licences) == 1 and db_model.licences[0].spdx_identifier:
-            stac_license = db_model.licences[0].spdx_identifier
+    stac_license = "other"
+    if (
+        db_model.licences
+        and len(db_model.licences) == 1
+        and db_model.licences[0].spdx_identifier
+    ):
+        stac_license = db_model.licences[0].spdx_identifier
 
     return stac_fastapi.types.stac.Collection(
         type="Collection",
@@ -522,7 +526,8 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         with self.reader.context_session() as session:
             search = session.query(self.collection_table).options(
-                *database.deferred_columns
+                *database.deferred_columns,
+                sqlalchemy.orm.selectinload(self.collection_table.licences),
             )
             search = search_utils.apply_filters(
                 session, search, q, kw, idx, portals=portals
