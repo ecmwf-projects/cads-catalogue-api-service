@@ -232,11 +232,7 @@ def generate_collection_links(
             }
         )
 
-        if (
-            model.resource_data
-            and model.resource_data.adaptor_configuration
-            and "costing" in model.resource_data.adaptor_configuration
-        ):
+        if model.has_adaptor_costing:
             additional_links.append(
                 {
                     "rel": "costing_api",
