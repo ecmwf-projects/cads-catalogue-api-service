@@ -60,6 +60,7 @@ def query_licences(
         cads_catalogue.database.Licence.revision,
         cads_catalogue.database.Licence.scope,
         cads_catalogue.database.Licence.portal,
+        cads_catalogue.database.Licence.spdx_identifier,
     )
     if scope and scope != LicenceScopeCriterion.all:
         query = query.filter(cads_catalogue.database.Licence.scope == scope)
@@ -94,6 +95,7 @@ def query_licence(
         cads_catalogue.database.Licence.revision,
         cads_catalogue.database.Licence.scope,
         cads_catalogue.database.Licence.portal,
+        cads_catalogue.database.Licence.spdx_identifier,
     )
     query = query.filter(cads_catalogue.database.Licence.licence_uid == licence_uid)
     result = (
@@ -105,6 +107,7 @@ def query_licence(
             cads_catalogue.database.Licence.revision,
             cads_catalogue.database.Licence.scope,
             cads_catalogue.database.Licence.portal,
+            cads_catalogue.database.Licence.spdx_identifier,
         )
         .order_by(sa.desc("revision"))
         .first()
@@ -151,6 +154,7 @@ def list_licences(
                 ),
                 scope=licence.scope,
                 portal=licence.portal,
+                spdx_identifier=licence.spdx_identifier,
             )
             for licence in results
         ]
@@ -176,6 +180,7 @@ def licence_details(
         ),
         scope=licence.scope,
         portal=licence.portal,
+        spdx_identifier=licence.spdx_identifier,
     )
 
 

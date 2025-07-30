@@ -33,6 +33,7 @@ TEST_DATA = [
         md_filename="cc-by-4.0-1.md",
         download_filename="cc-by-4.0-1.pdf",
         scope="dataset",
+        spdx_identifier="CC-BY-4.0",
     ),
     cads_catalogue.database.Licence(
         licence_id=3,
@@ -106,6 +107,7 @@ def test_vocabularies_license(monkeypatch) -> None:
                 "attachment_url": "/document-storage/cc-by-4.0-1.pdf",
                 "contents_url": "/document-storage/cc-by-4.0-1.md",
                 "scope": "dataset",
+                "spdx_identifier": "CC-BY-4.0",
             },
             {
                 "id": "cc-by-sa-4.0",
@@ -115,6 +117,7 @@ def test_vocabularies_license(monkeypatch) -> None:
                 "attachment_url": "/document-storage/cc-by-4.0-2.pdf",
                 "contents_url": "/document-storage/cc-by-4.0-2.md",
                 "scope": "dataset",
+                "spdx_identifier": None,
             },
         ],
     }
@@ -139,6 +142,7 @@ def test_vocabulary_license(monkeypatch) -> None:
         "attachment_url": "/document-storage/cc-by-4.0-1.pdf",
         "contents_url": "/document-storage/cc-by-4.0-1.md",
         "scope": "dataset",
+        "spdx_identifier": "CC-BY-4.0",
     }
 
 

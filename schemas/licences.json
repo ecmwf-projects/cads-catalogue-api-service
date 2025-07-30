@@ -18,16 +18,26 @@
           "revision": {
             "type": "number"
           },
-          "text": {
+          "contents_url": {
             "type": "string",
             "format": "uri"
           },
-          "file": {
+          "attachment_url": {
             "type": "string",
             "format": "uri"
+          },
+          "scope": {
+            "type": "string",
+            "enum": ["portal", "dataset"]
+          },
+          "portal": {
+            "type": ["string", "null"]
+          },
+          "spdx_identifier": {
+            "type": ["string", "null"]
           }
         },
-        "required": ["id", "label", "revision", "text"]
+        "required": ["id", "label", "revision", "contents_url", "attachment_url", "scope", "portal", "spdx_identifier"]
       }
     }
   },
