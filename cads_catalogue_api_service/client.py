@@ -45,6 +45,10 @@ def get_sorting_clause(
 ) -> dict | tuple:
     """Get the sorting clause."""
     supported_sorts = {
+        "publication": (
+            model.publication_date,
+            sqlalchemy.desc,
+        ),
         "update": (
             model.resource_update,
             sqlalchemy.desc,

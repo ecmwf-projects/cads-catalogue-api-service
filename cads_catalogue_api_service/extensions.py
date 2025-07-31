@@ -27,6 +27,9 @@ from . import client, config
 
 
 class CatalogueSortCriterion(str, enum.Enum):
+    """Sorting criteria for datasets search."""
+
+    publication_desc = "publication"
     relevance_desc = "relevance"
     update_desc = "update"
     title_asc = "title"
@@ -34,6 +37,8 @@ class CatalogueSortCriterion(str, enum.Enum):
 
 
 class ContentSortCriterion(str, enum.Enum):
+    """Sorting criteria for contents search."""
+
     title_asc = "title"
     publication_desc = "publication"
     update_desc = "update"
