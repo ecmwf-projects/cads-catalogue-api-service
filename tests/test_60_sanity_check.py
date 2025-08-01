@@ -271,12 +271,10 @@ def test_process() -> None:
     )
 
 
-@mock.patch(
-    "cads_catalogue_api_service.sanity_check.os.getenv",
-    return_value="10",
-)
-def test_process_expired(mock_getenv) -> None:
+@mock.patch("cads_catalogue_api_service.config.settings")
+def test_process_expired(mock_settings) -> None:
     # Test case: expired status
+    mock_settings.sanity_check_validity_duration = 10
     expired_timestamp = datetime.datetime.now(
         datetime.timezone.utc
     ) - datetime.timedelta(minutes=11)
@@ -311,14 +309,7 @@ def test_process_expired(mock_getenv) -> None:
     )
 
     # Test case: env var is not set
-    mock_getenv.return_value = None
-    assert process(expired_test) == SanityCheckResult(
-        status=SanityCheckStatus.available,
-        timestamp=expired_timestamp,
-    )
-
-    # Test case: env var is not a valid value
-    mock_getenv.return_value = "not-a-valid-int"
+    mock_settings.sanity_check_validity_duration = None
     assert process(expired_test) == SanityCheckResult(
         status=SanityCheckStatus.available,
         timestamp=expired_timestamp,

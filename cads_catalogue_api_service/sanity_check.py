@@ -1,11 +1,12 @@
 import datetime
-import os
 from enum import Enum
 from typing import Any
 
 import pydantic
 import structlog
 from pydantic import BaseModel
+
+from cads_catalogue_api_service import config
 
 logger = structlog.getLogger(__name__)
 
@@ -128,20 +129,12 @@ def process(
     latest_timestamp = sanity_check[0].finished_at
 
     # Expired status
-    validity_duration = os.getenv("SANITY_CHECK_VALIDITY_DURATION")
+    validity_duration = config.settings.sanity_check_validity_duration
     if validity_duration and latest_timestamp:
-        try:
-            validity_minutes = int(validity_duration)
-            now = datetime.datetime.now(datetime.timezone.utc)
-
-            if now - latest_timestamp > datetime.timedelta(minutes=validity_minutes):
-                return SanityCheckResult(
-                    status=SanityCheckStatus.expired, timestamp=latest_timestamp
-                )
-        except ValueError:
-            logger.warning(
-                "SANITY_CHECK_VALIDITY_DURATION is not a valid integer",
-                value=validity_duration,
+        now = datetime.datetime.now(datetime.timezone.utc)
+        if now - latest_timestamp > datetime.timedelta(minutes=validity_duration):
+            return SanityCheckResult(
+                status=SanityCheckStatus.expired, timestamp=latest_timestamp
             )
 
     # Count successful tests
