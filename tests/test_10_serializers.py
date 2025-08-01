@@ -14,6 +14,7 @@
 
 import datetime
 
+import pytest
 from testing import Request, generate_expected, get_record
 
 import cads_catalogue_api_service.client
@@ -92,3 +93,28 @@ def test_hidden(monkeypatch) -> None:
     )
 
     assert stac_record["cads:hidden"] is True
+
+
+@pytest.mark.parametrize(
+    "update_frequency",
+    [
+        (None),
+        ("Daily"),
+    ],
+)
+def test_update_frequency(monkeypatch, update_frequency: str | None) -> None:
+    """Test cads:update_frequency properly shown on STAC."""
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.client.get_active_message",
+        fake_get_active_message,
+    )
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.client.sanity_check.process",
+        fake_process_sanity_check,
+    )
+    request = Request("https://mycatalogue.org/")
+    record = get_record("era5-something", update_frequency=update_frequency)
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+    assert stac_record["cads:update_frequency"] == update_frequency
