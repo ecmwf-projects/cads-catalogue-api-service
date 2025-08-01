@@ -1,13 +1,13 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "$id": "/schemas/datasets",
   "title": "CADS catalogue API",
-  "description": "Description of the CADS catalogue API for obtaining the list of datasets",
+  "description": "Description of the EDSS catalogue API for obtaining the list of datasets",
   "type": "object",
   "properties": {
     "collections": {
       "title": "STAC collections",
-      "description": "Datasets in the stac catalogue",
+      "description": "Datasets in the STAC catalogue",
       "type": "array",
       "items": {
         "type": "object",

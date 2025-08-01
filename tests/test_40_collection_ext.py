@@ -30,7 +30,7 @@ def _static_query_collection(
     return {
         "type": "Collection",
         "id": "era5-something",
-        "stac_version": "1.0.0",
+        "stac_version": "1.1.0",
         "title": "Era5 name",
         "description": "This dataset provides a modelled time series of gridded river discharge.",
         "keywords": [
@@ -75,7 +75,7 @@ def _static_query_collection_nolinks(
     return {
         "type": "Collection",
         "id": "era5-something",
-        "stac_version": "1.0.0",
+        "stac_version": "1.1.0",
         "title": "Era5 name",
         "description": "This dataset provides a modelled time series of gridded river discharge.",
         "keywords": [

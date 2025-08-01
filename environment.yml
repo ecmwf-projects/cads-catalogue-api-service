@@ -11,18 +11,19 @@ dependencies:
 - attrs
 - brotli-asgi
 - fastapi>=0.113.0
-- geojson-pydantic<1
 - httpx
 - pip
-- pydantic<2
+- pydantic
+- pydantic-settings
 - python-dateutil
 - requests
 - rfc3339-validator
 - sqlalchemy>=2.0.9
 - structlog
 - uvicorn
+- typing_extensions>=4.6.0  # required only for python<3.12
 - pip:
-  - stac_fastapi.api==2.4.1
-  - stac_fastapi.extensions==2.4.1
-  - stac_fastapi.types==2.4.1
+  - stac_fastapi.api==6.0
+  - stac_fastapi.extensions==6.0
+  - stac_fastapi.types==6.0
   - starlette_exporter
