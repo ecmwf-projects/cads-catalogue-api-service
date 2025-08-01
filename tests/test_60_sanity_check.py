@@ -1,4 +1,5 @@
 import datetime
+from unittest import mock
 
 from cads_catalogue_api_service.sanity_check import (
     SanityCheckOutput,
@@ -267,4 +268,49 @@ def test_process() -> None:
     assert process(three_tests_none_success) == SanityCheckResult(
         status=SanityCheckStatus.down,
         timestamp=timestamp,
+    )
+
+
+@mock.patch("cads_catalogue_api_service.config.settings")
+def test_process_expired(mock_settings) -> None:
+    # Test case: expired status
+    mock_settings.sanity_check_validity_duration = 10
+    expired_timestamp = datetime.datetime.now(
+        datetime.timezone.utc
+    ) - datetime.timedelta(minutes=11)
+    expired_test = [
+        SanityCheckOutput(
+            req_id="test1",
+            success=True,
+            started_at=expired_timestamp,
+            finished_at=expired_timestamp,
+        )
+    ]
+    assert process(expired_test) == SanityCheckResult(
+        status=SanityCheckStatus.expired,
+        timestamp=expired_timestamp,
+    )
+
+    # Test case: not expired status
+    not_expired_timestamp = datetime.datetime.now(
+        datetime.timezone.utc
+    ) - datetime.timedelta(minutes=9)
+    not_expired_test = [
+        SanityCheckOutput(
+            req_id="test1",
+            success=True,
+            started_at=not_expired_timestamp,
+            finished_at=not_expired_timestamp,
+        )
+    ]
+    assert process(not_expired_test) == SanityCheckResult(
+        status=SanityCheckStatus.available,
+        timestamp=not_expired_timestamp,
+    )
+
+    # Test case: env var is not set
+    mock_settings.sanity_check_validity_duration = None
+    assert process(expired_test) == SanityCheckResult(
+        status=SanityCheckStatus.available,
+        timestamp=expired_timestamp,
     )

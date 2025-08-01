@@ -58,6 +58,7 @@ class Settings(pydantic.BaseSettings):
     processes_base_url: str = "/api/processing/"
     catalogue_page_size: int = 50
     catalogue_max_page_size: int = 500
+    sanity_check_validity_duration: int | None = None
 
 
 dbsettings = SqlalchemySettings()

@@ -28,7 +28,9 @@ class Request:
         return "/collections"
 
 
-def get_record(id: str, hidden=False) -> cads_catalogue.database.Resource:
+def get_record(
+    id: str, hidden: bool = False, update_frequency: str | None = None
+) -> cads_catalogue.database.Resource:
     return cads_catalogue.database.Resource(
         resource_uid=id,
         title="ERA5",
@@ -97,6 +99,7 @@ def get_record(id: str, hidden=False) -> cads_catalogue.database.Resource:
         disabled_reason="Disabled because of a reason",
         layout="resouces/reanalysis-era5-pressure-levels/layout.json",
         hidden=hidden,
+        update_frequency=update_frequency,
     )
 
 
@@ -237,6 +240,7 @@ def generate_expected(
             "status": SanityCheckStatus.available,
             "timestamp": "2024-01-01T12:15:34",
         },
+        "cads:update_frequency": None,
     }
     if not preview:
         expected = {
