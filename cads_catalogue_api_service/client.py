@@ -180,16 +180,21 @@ def generate_collection_links(
 
     if not preview:
         # Licenses
-        additional_links += [
-            {
-                "rel": "license",
-                "href": urllib.parse.urljoin(
+        for license in model.licences:
+            href = (
+                license.download_filename
+                if license.spdx_identifier
+                else urllib.parse.urljoin(
                     config.settings.document_storage_url, license.download_filename
-                ),
-                "title": license.title,
-            }
-            for license in model.licences
-        ]
+                )
+            )
+            additional_links.append(
+                {
+                    "rel": "license",
+                    "href": href,
+                    "title": license.title,
+                }
+            )
         # Documentation
         additional_links += [
             {
@@ -294,7 +299,10 @@ def lookup_id(
     try:
         search = (
             session.query(record)
-            .options(*database.deferred_columns)
+            .options(
+                *database.deferred_columns,
+                sqlalchemy.orm.selectinload(record.licences),
+            )
             .filter(record.resource_uid == id)
         )
         if portals:
@@ -396,6 +404,14 @@ def collection_serializer(
         }
         additional_properties.update(schema_org_properties)  # type: ignore
 
+    stac_license = "other"
+    if (
+        db_model.licences
+        and len(db_model.licences) == 1
+        and db_model.licences[0].spdx_identifier
+    ):
+        stac_license = db_model.licences[0].spdx_identifier
+
     return stac_fastapi.types.stac.Collection(
         type="Collection",
         id=db_model.resource_uid,
@@ -410,9 +426,7 @@ def collection_serializer(
         ),
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         # note that this small check, even if correct, is triggering a lot of subrequests
-        license=(
-            "various" if not preview and len(db_model.licences) > 1 else "proprietary"
-        ),
+        license=stac_license,
         extent=get_extent(db_model),
         links=collection_links,
         **additional_properties,
@@ -512,7 +526,8 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         with self.reader.context_session() as session:
             search = session.query(self.collection_table).options(
-                *database.deferred_columns
+                *database.deferred_columns,
+                sqlalchemy.orm.selectinload(self.collection_table.licences),
             )
             search = search_utils.apply_filters(
                 session, search, q, kw, idx, portals=portals
