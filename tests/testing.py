@@ -113,7 +113,7 @@ def generate_expected(
         "title": "ERA5",
         "description": "Lorem ipsum dolor",
         "keywords": ["kw1"],
-        "license": "proprietary",
+        "license": "other",
         "extent": {
             "spatial": {"bbox": [[-0.5, 45.0, 15.0, 50.0]]},
             "temporal": {"interval": [["1980-01-01T00:00:00Z", None]]},
