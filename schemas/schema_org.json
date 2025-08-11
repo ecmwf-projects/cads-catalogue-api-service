@@ -50,13 +50,16 @@
                 "encodingFormat":{
                   "type":"string"
                 },
-                "contentUrl": {
+                "url": {
+                  "type": "string"
+                },
+                "contentSize": {
                   "type": "string"
                 }
               },
               "required": [
                 "encodingFormat",
-                "contentUrl"
+                "url"
               ]
             }
 
