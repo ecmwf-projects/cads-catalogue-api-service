@@ -193,6 +193,8 @@ def generate_collection_links(
                     "rel": "license",
                     "href": href,
                     "title": license.title,
+                    "rev": license.revision,
+                    "id": license.licence_uid,
                 }
             )
         # Documentation
