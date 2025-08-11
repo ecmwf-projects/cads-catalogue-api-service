@@ -125,6 +125,7 @@ def generate_expected(
                 "creator_type": None,
                 "creator_url": None,
                 "file_format": None,
+                "content_size": None,
             }
             if schema_org
             else {}
