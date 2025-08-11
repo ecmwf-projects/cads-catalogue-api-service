@@ -102,6 +102,11 @@ def schema_org_json_ld(
     download_url = f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets/{collection_id}?tab=download"
 
     box = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
+    contentSize = (
+        f"{collection.get('content_size')}Gb"
+        if collection.get("content_size")
+        else None
+    )
 
     return models.schema_org.Dataset(
         context="http://schema.org/",
@@ -133,6 +138,7 @@ def schema_org_json_ld(
                     encodingFormat=collection.get("file_format")
                     or "application/octet-stream",
                     url=f"{retrieve_url}",
+                    contentSize=contentSize,
                 )
                 if distribution
                 else ""
@@ -142,6 +148,7 @@ def schema_org_json_ld(
                     encodingFormat=collection.get("file_format")
                     or "application/octet-stream",
                     url=download_url,
+                    contentSize=contentSize,
                 )
                 if distribution
                 else ""
