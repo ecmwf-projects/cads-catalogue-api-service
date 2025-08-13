@@ -174,16 +174,14 @@ def apply_filters(
         for categorized in splitted_categories:
             # 1. Filter by all keywords in this category
             query_kw = (
-                session.query(cads_catalogue.database.Keyword.keyword_id)
+                session.query(cads_catalogue.database.Facet.facet_id)
                 # We cannot just use in_ on all kws because we need to AND on different
-                .filter(cads_catalogue.database.Keyword.keyword_name.in_(categorized))
+                .filter(cads_catalogue.database.Facet.facet_name.in_(categorized))
             )
             # 2. Manually build many to many relation
             subquery_mtm = (
-                session.query(cads_catalogue.database.ResourceKeyword.resource_id)
-                .filter(
-                    cads_catalogue.database.ResourceKeyword.keyword_id.in_(query_kw)
-                )
+                session.query(cads_catalogue.database.ResourceFacet.resource_id)
+                .filter(cads_catalogue.database.ResourceFacet.facet_id.in_(query_kw))
                 .scalar_subquery()
             )
             # 3. Perform partial query

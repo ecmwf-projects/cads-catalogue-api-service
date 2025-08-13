@@ -67,13 +67,13 @@ KEYWORDS = [
 ]
 
 
-class Keyword:
-    def __init__(self, keyword_name: str):
-        self.keyword_name = keyword_name
+class Facet:
+    def __init__(self, facet_name: str):
+        self.facet_name = facet_name
 
 
-def static_keywords_licence(_foo: Any) -> list[cads_catalogue.database.Keyword]:
-    return [Keyword(keyword_name=kw) for kw in KEYWORDS]
+def static_keywords_licence(_foo: Any) -> list[cads_catalogue.database.Facet]:
+    return [Facet(facet_name=kw) for kw in KEYWORDS]
 
 
 def get_session() -> None:

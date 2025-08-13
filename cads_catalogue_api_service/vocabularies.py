@@ -122,11 +122,11 @@ def query_licence(
 
 def query_keywords(
     session: sa.orm.Session,
-) -> list[cads_catalogue.database.Keyword]:
+) -> list[cads_catalogue.database.Facet]:
     """Query keywords."""
     results = (
-        session.query(cads_catalogue.database.Keyword)
-        .order_by(cads_catalogue.database.Keyword.keyword_name)
+        session.query(cads_catalogue.database.Facet)
+        .order_by(cads_catalogue.database.Facet.facet_name)
         .all()
     )
     return results
@@ -193,9 +193,9 @@ def list_keywords(
     return models.Keywords(
         keywords=[
             models.Keyword(
-                id=keyword.keyword_name,
-                label=keyword.keyword_name,
+                id=facet.facet_name,
+                label=facet.facet_name,
             )
-            for keyword in results
+            for facet in results
         ]
     )
