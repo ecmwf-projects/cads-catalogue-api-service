@@ -4,7 +4,7 @@ WORKDIR /src/cads-catalogue-api-service
 
 COPY environment.yml /src/cads-catalogue-api-service
 
-RUN conda install -c conda-forge python=3.10 \
+RUN conda install -c conda-forge python=3.12 \
     && conda env update -n base -f environment.yml
 
 COPY . /src/cads-catalogue-api-service
