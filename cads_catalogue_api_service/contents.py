@@ -177,7 +177,7 @@ def _build_content(content, request: fastapi.Request):
             ),
             *(
                 models.contents.Link(
-                    href=f'{request.url_for("Get Collections")}/{dataset.resource_uid}',
+                    href=f"{request.url_for('Get Collections')}/{dataset.resource_uid}",
                     rel="related",
                     type="application/json",
                     title=dataset.title,

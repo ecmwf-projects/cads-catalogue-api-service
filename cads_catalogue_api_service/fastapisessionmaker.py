@@ -127,7 +127,7 @@ def get_sessionmaker_for_engine(engine: sa.engine.Engine) -> sa.orm.sessionmaker
 @contextmanager
 def context_session(engine: sa.engine.Engine) -> Iterator[Session]:
     """
-    contextmanager yielding a managed session for the provided engine.
+    Contextmanager yielding a managed session for the provided engine.
 
     Usage is similar to `FastAPISessionMaker.context_session`, except that you have to
     provide the engine to use.

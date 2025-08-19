@@ -1,5 +1,6 @@
 [build-system]
-requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=64", "setuptools_scm>=8"]
 
 [project]
 classifiers = [
@@ -76,6 +77,7 @@ convention = "numpy"
 packages = ["cads_catalogue_api_service"]
 
 [tool.setuptools_scm]
+fallback_version = "999"
 write_to = "cads_catalogue_api_service/version.py"
 write_to_template = '''
 # Do not change! Do not track in version control!
