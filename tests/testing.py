@@ -165,6 +165,8 @@ def generate_expected(
                         f"{document_storage_url}licences/license.docx",
                     ),
                     "title": "Creative Commons Attribution 4.0 International",
+                    "rev": 2,
+                    "id": None,
                 },
                 {
                     "rel": "describedby",
