@@ -131,6 +131,7 @@ def generate_expected(
                 "keywords_urls": [
                     "http://purl.oclc.org/NET/ssnx/cf/cf-feature",
                 ],
+                "content_size": None,
             }
             if schema_org
             else {}
