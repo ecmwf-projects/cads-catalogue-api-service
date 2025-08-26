@@ -37,7 +37,7 @@ def get_record(id: str, hidden=False) -> cads_catalogue.database.Resource:
             "data-type": "Gridded",
             "projection": "Regular latitude-longitude grid.",
         },
-        keywords=[cads_catalogue.database.Keyword(keyword_name="kw1")],
+        facets=[cads_catalogue.database.Facet(facet_name="kw1")],
         abstract="Lorem ipsum dolor",
         form="resources/reanalysis-era5-pressure-levels/form.json",
         constraints="resources/reanalysis-era5-pressure-levels/constraints.json",
@@ -97,6 +97,9 @@ def get_record(id: str, hidden=False) -> cads_catalogue.database.Resource:
         disabled_reason="Disabled because of a reason",
         layout="resouces/reanalysis-era5-pressure-levels/layout.json",
         hidden=hidden,
+        keywords_urls=[
+            "http://purl.oclc.org/NET/ssnx/cf/cf-feature",
+        ],
     )
 
 
@@ -125,6 +128,9 @@ def generate_expected(
                 "creator_type": None,
                 "creator_url": None,
                 "file_format": None,
+                "keywords_urls": [
+                    "http://purl.oclc.org/NET/ssnx/cf/cf-feature",
+                ],
                 "content_size": None,
             }
             if schema_org
@@ -166,6 +172,8 @@ def generate_expected(
                         f"{document_storage_url}licences/license.docx",
                     ),
                     "title": "Creative Commons Attribution 4.0 International",
+                    "rev": 2,
+                    "id": None,
                 },
                 {
                     "rel": "describedby",

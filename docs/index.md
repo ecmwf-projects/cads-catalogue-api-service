@@ -6,6 +6,7 @@ STAC based API service for the Climate & Atmosphere Data Store.
 :caption: 'Contents:'
 :maxdepth: 2
 
+README.md
 API Reference <_api/cads_catalogue_api_service/index>
 ```
 

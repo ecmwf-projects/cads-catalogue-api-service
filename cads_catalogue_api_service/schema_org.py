@@ -120,7 +120,7 @@ def schema_org_json_ld(
             else []
         ),
         license=license,
-        keywords=collection.get("keywords", []),
+        keywords=collection.get("keywords_urls") or [],
         isAccessibleForFree=True,
         creator=models.schema_org.Organization(
             url=collection.get("creator_url", None),

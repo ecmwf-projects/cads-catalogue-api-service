@@ -193,6 +193,8 @@ def generate_collection_links(
                     "rel": "license",
                     "href": href,
                     "title": license.title,
+                    "rev": license.revision,
+                    "id": license.licence_uid,
                 }
             )
         # Documentation
@@ -401,6 +403,7 @@ def collection_serializer(
             "creator_type": db_model.responsible_organisation_role,
             "creator_contact_email": db_model.contactemail,
             "file_format": db_model.file_format,
+            "keywords_urls": db_model.keywords_urls,
             "content_size": db_model.content_size,
         }
         additional_properties.update(schema_org_properties)  # type: ignore
@@ -421,9 +424,7 @@ def collection_serializer(
         description=db_model.abstract,
         # FIXME: this is triggering a long list of subqueries
         keywords=(
-            [keyword.keyword_name for keyword in db_model.keywords]
-            if with_keywords
-            else []
+            [facet.facet_name for facet in db_model.facets] if with_keywords else []
         ),
         # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
         # note that this small check, even if correct, is triggering a lot of subrequests
