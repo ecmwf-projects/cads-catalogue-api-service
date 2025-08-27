@@ -394,6 +394,9 @@ def collection_serializer(
         "cads:disabled_reason": db_model.disabled_reason,
         **({"cads:hidden": db_model.hidden} if db_model.hidden else {}),
         "cads:sanity_check": processed_sanity_check,
+        "cads:update_frequency": db_model.update_frequency
+        if db_model.update_frequency
+        else None,
     }
 
     if schema_org:

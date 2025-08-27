@@ -6,6 +6,8 @@ import pydantic
 import structlog
 from pydantic import BaseModel
 
+from cads_catalogue_api_service import config
+
 logger = structlog.getLogger(__name__)
 
 SANITY_CHECK_MAX_ENTRIES = 3
@@ -16,6 +18,7 @@ class SanityCheckStatus(str, Enum):
     warning = "warning"
     down = "down"
     unknown = "unknown"
+    expired = "expired"
 
 
 class SanityCheckOutput(BaseModel):
@@ -92,15 +95,16 @@ def process(
     Calculates the status based on the following rules:
 
     1. If sanity_check is None or empty, status is "unknown".
-    2. If sanity_check has more than 3 checks, only last 3 checks are taken into account.
-    3. For 1 checks:
+    2. If the last check is older than `SANITY_CHECK_VALIDITY_DURATION`, status is "expired".
+    3. If sanity_check has more than 3 checks, only last 3 checks are taken into account.
+    4. For 1 checks:
        - If successful, status is "available"
        - If failed, status is "down"
-    3. For 2 checks:
+    5. For 2 checks:
        - If 2 tests succeeded, status is "available"
        - If 1 test succeeded, status is "warning"
        - If 0 tests succeeded, status is "down"
-    4. For 3 checks:
+    6. For 3 checks:
        - If 3 or 2 tests succeeded, status is "available"
        - If 1 test succeeded, status is "warning"
        - If 0 tests succeeded, status is "down"
@@ -122,7 +126,16 @@ def process(
     sanity_check = sanity_check[:SANITY_CHECK_MAX_ENTRIES]
 
     # Extract timestamp from the latest test
-    timestamp = sanity_check[0].finished_at
+    latest_timestamp = sanity_check[0].finished_at
+
+    # Expired status
+    validity_duration = config.settings.sanity_check_validity_duration
+    if validity_duration and latest_timestamp:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        if now - latest_timestamp > datetime.timedelta(minutes=validity_duration):
+            return SanityCheckResult(
+                status=SanityCheckStatus.expired, timestamp=latest_timestamp
+            )
 
     # Count successful tests
     successful_tests = sum(1 for test in sanity_check if test.success)
@@ -133,4 +146,4 @@ def process(
         successful_tests, SanityCheckStatus.available
     )
 
-    return SanityCheckResult(status=status, timestamp=timestamp)
+    return SanityCheckResult(status=status, timestamp=latest_timestamp)
