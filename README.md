@@ -35,12 +35,12 @@ curl http://localhost:8080/api/catalogue/collections/reanalysis-era5-land-monthl
 
 ### Links
 
-Many related information are obtained using hypermedia-like resources (as defined by the OGC standard itself).  \
+Many related information are obtained using hypermedia-like resources (as defined by the OGC standard itself). \
 Every dataset provides a `links` array.
 
 **Licenses** are provided using links with `rel="license"` (the first license is also found in the `license` field), as defined by the STAC Collection.
 
-**Documentation** are provided using links with `rel=describedby"`.  \
+**Documentation** are provided using links with `rel=describedby"`. \
 Only title and URL are provided for now.
 
 **Form** is a single link with `rel=form"`.
@@ -49,10 +49,10 @@ Only title and URL are provided for now.
 
 ## Workflow for developers/contributors
 
-For best experience create a new conda environment (e.g. DEVELOP) with Python 3.11:
+For best experience create a new conda environment (e.g. DEVELOP) with Python 3.12:
 
 ```bash
-conda create -n DEVELOP -c conda-forge python=3.11
+conda create -n DEVELOP -c conda-forge python=3.12
 conda activate DEVELOP
 ```
 

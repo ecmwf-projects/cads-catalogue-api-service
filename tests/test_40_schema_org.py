@@ -38,7 +38,10 @@ def static_collection_query(
         "keywords": [
             "Temporal coverage: Past",
         ],
-        "license": "proprietary",
+        "keywords_urls": [
+            "http://purl.oclc.org/NET/ssnx/cf/cf-feature",
+        ],
+        "license": "other",
         "extent": {
             "spatial": {"bbox": [[0, -70, 70, 360]]},
             "temporal": {
@@ -126,7 +129,7 @@ def test_schema_org_jsonId(monkeypatch) -> None:
         "url": "http://localhost:8080/api/catalogue/v1/collections/era5-something",
         "identifier": ["https://doi.org/10.24381/cds.ff2aef70"],
         "keywords": [
-            "Temporal coverage: Past",
+            "http://purl.oclc.org/NET/ssnx/cf/cf-feature",
         ],
         "isAccessibleForFree": True,
         "creator": {

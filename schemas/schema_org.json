@@ -31,7 +31,10 @@
             "type": ["string","null"]
           },
           "keywords": {
-            "type": ["string","null"]
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            }
           },
           "is_accessible_for_free": {
             "type": "boolean"
@@ -50,13 +53,16 @@
                 "encodingFormat":{
                   "type":"string"
                 },
-                "contentUrl": {
+                "url": {
+                  "type": "string"
+                },
+                "contentSize": {
                   "type": "string"
                 }
               },
               "required": [
                 "encodingFormat",
-                "contentUrl"
+                "url"
               ]
             }
 

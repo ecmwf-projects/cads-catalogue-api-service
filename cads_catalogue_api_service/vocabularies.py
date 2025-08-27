@@ -60,6 +60,7 @@ def query_licences(
         cads_catalogue.database.Licence.revision,
         cads_catalogue.database.Licence.scope,
         cads_catalogue.database.Licence.portal,
+        cads_catalogue.database.Licence.spdx_identifier,
     )
     if scope and scope != LicenceScopeCriterion.all:
         query = query.filter(cads_catalogue.database.Licence.scope == scope)
@@ -94,6 +95,7 @@ def query_licence(
         cads_catalogue.database.Licence.revision,
         cads_catalogue.database.Licence.scope,
         cads_catalogue.database.Licence.portal,
+        cads_catalogue.database.Licence.spdx_identifier,
     )
     query = query.filter(cads_catalogue.database.Licence.licence_uid == licence_uid)
     result = (
@@ -105,6 +107,7 @@ def query_licence(
             cads_catalogue.database.Licence.revision,
             cads_catalogue.database.Licence.scope,
             cads_catalogue.database.Licence.portal,
+            cads_catalogue.database.Licence.spdx_identifier,
         )
         .order_by(sa.desc("revision"))
         .first()
@@ -119,11 +122,11 @@ def query_licence(
 
 def query_keywords(
     session: sa.orm.Session,
-) -> list[cads_catalogue.database.Keyword]:
+) -> list[cads_catalogue.database.Facet]:
     """Query keywords."""
     results = (
-        session.query(cads_catalogue.database.Keyword)
-        .order_by(cads_catalogue.database.Keyword.keyword_name)
+        session.query(cads_catalogue.database.Facet)
+        .order_by(cads_catalogue.database.Facet.facet_name)
         .all()
     )
     return results
@@ -151,6 +154,7 @@ def list_licences(
                 ),
                 scope=licence.scope,
                 portal=licence.portal,
+                spdx_identifier=licence.spdx_identifier,
             )
             for licence in results
         ]
@@ -176,6 +180,7 @@ def licence_details(
         ),
         scope=licence.scope,
         portal=licence.portal,
+        spdx_identifier=licence.spdx_identifier,
     )
 
 
@@ -188,9 +193,9 @@ def list_keywords(
     return models.Keywords(
         keywords=[
             models.Keyword(
-                id=keyword.keyword_name,
-                label=keyword.keyword_name,
+                id=facet.facet_name,
+                label=facet.facet_name,
             )
-            for keyword in results
+            for facet in results
         ]
     )

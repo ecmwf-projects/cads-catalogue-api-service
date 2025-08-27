@@ -14,6 +14,7 @@
 
 import datetime
 
+import cads_catalogue.database
 import pytest
 from testing import Request, generate_expected, get_record
 
@@ -95,11 +96,96 @@ def test_hidden(monkeypatch) -> None:
     assert stac_record["cads:hidden"] is True
 
 
+def test_collection_serializer_licences(monkeypatch) -> None:
+    """Test serialization of licenses from db record to STAC."""
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.client.get_active_message",
+        fake_get_active_message,
+    )
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.client.sanity_check.process",
+        fake_process_sanity_check,
+    )
+    request = Request("https://mycatalogue.org/")
+    record = get_record("era5-something")
+
+    # Test with multiple licences, should be "other"
+    record.licences = [
+        cads_catalogue.database.Licence(
+            licence_id="licence-1",
+            revision=1,
+            title="Licence 1",
+            download_filename="licences/licence1.docx",
+        ),
+        cads_catalogue.database.Licence(
+            licence_id="licence-2",
+            revision=1,
+            title="Licence 2",
+            download_filename="licences/licence2.docx",
+        ),
+    ]
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+    assert stac_record["license"] == "other"
+
+    # Test with a single licence with spdx_identifier
+    record.licences = [
+        cads_catalogue.database.Licence(
+            licence_id="licence-1",
+            revision=1,
+            title="Licence 1",
+            download_filename="licences/licence1.docx",
+            spdx_identifier="CC-BY-4.0",
+        )
+    ]
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+    assert stac_record["license"] == "CC-BY-4.0"
+
+    # Test with a single licence without spdx_identifier, should be "other"
+    record.licences = [
+        cads_catalogue.database.Licence(
+            licence_id="licence-1",
+            revision=1,
+            title="Licence 1",
+            download_filename="licences/licence1.docx",
+        )
+    ]
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+    assert stac_record["license"] == "other"
+
+    # Test with a single licence with spdx_identifier in preview mode
+    record.licences = [
+        cads_catalogue.database.Licence(
+            licence_id="licence-1",
+            revision=1,
+            title="Licence 1",
+            download_filename="licences/licence1.docx",
+            spdx_identifier="MIT",
+        )
+    ]
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request, preview=True
+    )
+    assert stac_record["license"] == "MIT"
+
+    # Test with no licences, should be "other"
+    record.licences = []
+    stac_record = cads_catalogue_api_service.client.collection_serializer(
+        record, session=object(), request=request
+    )
+    assert stac_record["license"] == "other"
+
+
 @pytest.mark.parametrize(
     "update_frequency",
     [
         (None),
-        ("Daily"),
+        ("threeTimesAYear"),
     ],
 )
 def test_update_frequency(monkeypatch, update_frequency: str | None) -> None:
