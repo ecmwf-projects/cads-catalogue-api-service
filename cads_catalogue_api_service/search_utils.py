@@ -18,8 +18,8 @@ from typing import Any
 
 import cads_catalogue.database
 import sqlalchemy as sa
-import stac_fastapi.types
-import stac_fastapi.types.stac
+
+import cads_catalogue_api_service.models.stac
 
 # TODO: this should be placed in a configuration file
 WEIGHT_HIGH_PRIORITY_TERMS = 1.0
@@ -204,12 +204,6 @@ def apply_filters(
     return search
 
 
-class CollectionsWithStats(stac_fastapi.types.stac.Collections):
-    """A collection with search stats."""
-
-    search: dict[str, Any]
-
-
 def generate_keywords_structure(keywords: list[str] | None) -> dict[str, Any]:
     """Generate a structure with the categories and keywords.
 
@@ -261,9 +255,9 @@ def count_all(collections: list, result: dict) -> None:
 
 def populate_facets(
     all_collections: list,
-    collections: CollectionsWithStats,
+    collections: cads_catalogue_api_service.models.stac.Collections,
     keywords: list[str] | None,
-) -> CollectionsWithStats:
+) -> cads_catalogue_api_service.models.stac.Collections:
     """Populate the collections entity with facets."""
     result: dict = {}
     # generate keywords structure ES. from ["Cat1 : Kw1 "] to {'Cat1':['Kw1']}

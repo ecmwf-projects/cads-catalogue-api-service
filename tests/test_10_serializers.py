@@ -20,10 +20,7 @@ from testing import Request, generate_expected, get_record
 
 import cads_catalogue_api_service.client
 import cads_catalogue_api_service.models
-from cads_catalogue_api_service.sanity_check import (
-    SanityCheckResult,
-    SanityCheckStatus,
-)
+from cads_catalogue_api_service.models.stac import CadsSanityCheck, SanityCheckStatus
 
 
 def fake_get_active_message(
@@ -38,9 +35,9 @@ def fake_get_active_message(
     )
 
 
-def fake_process_sanity_check(*args, **kwargs) -> SanityCheckResult:
-    return SanityCheckResult(
-        status=SanityCheckStatus.available,
+def fake_process_sanity_check(*args, **kwargs) -> CadsSanityCheck:
+    return CadsSanityCheck(
+        status=SanityCheckStatus.AVAILABLE,
         timestamp=datetime.datetime(2024, 1, 1, 12, 15, 34),
     )
 
@@ -205,4 +202,4 @@ def test_update_frequency(monkeypatch, update_frequency: str | None) -> None:
     stac_record = cads_catalogue_api_service.client.collection_serializer(
         record, session=object(), request=request
     )
-    assert stac_record["cads:update_frequency"] == update_frequency
+    assert stac_record.get("cads:update_frequency") == update_frequency

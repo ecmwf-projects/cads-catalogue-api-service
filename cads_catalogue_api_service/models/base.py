@@ -1,4 +1,4 @@
-"""Custom models that extends the OGC/STAC ones."""
+"""General purpose DSS models."""
 
 # Copyright 2022, European Union.
 #
