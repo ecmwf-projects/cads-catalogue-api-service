@@ -86,7 +86,13 @@ def schema_org_json_ld(
 
     See https://developers.google.com/search/docs/appearance/structured-data/dataset
     """
-    collection = query_collection(session, collection_id, request)
+    try:
+        collection = query_collection(session, collection_id, request)
+    except sa.orm.exc.NoResultFound:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            detail=f"Resource {collection_id} not found.",
+        )
     url, license, distribution = None, None, None
     if "links" in collection and collection["links"]:
         url = get_url_link(collection, "self")
@@ -99,7 +105,8 @@ def schema_org_json_ld(
     temporal_coverage = (
         list(filter(None, temporal_coverage[0])) if temporal_coverage else []
     )
-    download_url = f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets/{collection_id}?tab=download"
+    current_site = (site or "").upper()
+    download_url = f"{os.getenv(f'{current_site}_PROJECT_URL', '')}/datasets/{collection_id}?tab=download"
 
     box = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
     contentSize = (
@@ -154,7 +161,11 @@ def schema_org_json_ld(
                 else ""
             ),
         ],
-        temporalCoverage="/".join(temporal_coverage) if temporal_coverage else None,
+        temporalCoverage=(
+            "/".join([t.isoformat() + "Z" for t in temporal_coverage])
+            if temporal_coverage
+            else None
+        ),
         spatialCoverage=models.schema_org.Place(
             type="",
             geo=models.schema_org.GeoShape(
@@ -171,9 +182,11 @@ def schema_org_json_ld(
                 "@type": "DataCatalog",
                 "identifier": site,
                 "name": CADS_SITE_TO_LONG_NAME.get(site, "ECMWF Data Store"),
-                "url": f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets"
-                if site
-                else None,
+                "url": (
+                    f"{os.getenv(f'{site.upper()}_PROJECT_URL', None)}/datasets"
+                    if site
+                    else None
+                ),
             }
         ],
     )

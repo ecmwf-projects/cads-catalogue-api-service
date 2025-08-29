@@ -17,6 +17,7 @@ import urllib
 
 import cads_catalogue.database
 
+import cads_catalogue_api_service.models
 from cads_catalogue_api_service.sanity_check import SanityCheckStatus
 
 
@@ -115,14 +116,23 @@ def generate_expected(
     expected = {
         "type": "Collection",
         "id": "era5-something",
-        "stac_version": "1.0.0",
+        "stac_version": "1.1.0",
         "title": "ERA5",
         "description": "Lorem ipsum dolor",
         "keywords": ["kw1"],
         "license": "other",
         "extent": {
-            "spatial": {"bbox": [[-0.5, 45.0, 15.0, 50.0]]},
-            "temporal": {"interval": [["1980-01-01T00:00:00Z", None]]},
+            "spatial": {"bbox": [(-0.5, 45.0, 15.0, 50.0)]},
+            "temporal": {
+                "interval": [
+                    [
+                        datetime.datetime.strptime(
+                            "1980-01-01T00:00:00", "%Y-%m-%dT%H:%M:%S"
+                        ).replace(tzinfo=datetime.timezone.utc),
+                        None,
+                    ]
+                ]
+            },
         },
         **(
             {
@@ -230,7 +240,7 @@ def generate_expected(
                     "href": urllib.parse.urljoin(
                         base_url, "collections/era5-something/messages"
                     ),
-                    "title": "All messages related to the selected dataset",
+                    "title": "All active messages on ERA5",
                 },
             ]
         ),
@@ -238,16 +248,18 @@ def generate_expected(
         "updated": "2020-02-05T00:00:00Z",
         "sci:doi": "11.2222/cads.12345",
         "cads:disabled_reason": "Disabled because of a reason",
-        "cads:message": {
-            "content": "Message 2",
-            "date": datetime.datetime(2024, 1, 1, 12, 15, 34),
-            "id": "message-2",
-            "live": True,
-            "severity": "warning",
-        },
+        "cads:message": cads_catalogue_api_service.models.Message(
+            message_uid="message-2",
+            content="Message 2",
+            date=datetime.datetime.strptime(
+                "2024-01-01T12:15:34Z", "%Y-%m-%dT%H:%M:%SZ"
+            ),
+            live=True,
+            severity="warning",
+        ),
         "cads:sanity_check": {
             "status": SanityCheckStatus.available,
-            "timestamp": "2024-01-01T12:15:34",
+            "timestamp": "2024-01-01T12:15:34Z",
         },
         "cads:update_frequency": None,
     }

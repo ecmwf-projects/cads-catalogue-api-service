@@ -26,9 +26,11 @@ from cads_catalogue_api_service.sanity_check import (
 )
 
 
-def fake_get_active_message(*args, **kwargs) -> None:
+def fake_get_active_message(
+    *args, **kwargs
+) -> cads_catalogue_api_service.models.Message:
     return cads_catalogue_api_service.models.Message(
-        id="message-2",
+        message_uid="message-2",
         date=datetime.datetime(2024, 1, 1, 12, 15, 34),
         content="Message 2",
         severity="warning",

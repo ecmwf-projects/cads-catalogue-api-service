@@ -16,9 +16,10 @@
 
 import datetime
 import enum
-from typing import TypedDict
 
-import stac_fastapi.types
+import pydantic
+from pydantic import field_serializer
+from typing_extensions import TypedDict
 
 
 class LicenceCategories(str, enum.Enum):
@@ -59,17 +60,40 @@ class Keywords(TypedDict):
     keywords: list[Keyword]
 
 
-class Message(TypedDict):
-    """Message definition."""
+class Message(pydantic.BaseModel):
+    """A portal or dataset message."""
 
-    id: str | None
+    model_config = pydantic.ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: str | None = pydantic.Field(alias="message_uid", serialization_alias="id")
     date: datetime.datetime | None
-    summary: str | None
-    url: str | None
+    summary: str | None = None
+    url: str | None = None
     severity: str | None
     content: str | None
     live: bool | None
-    show_date: bool | None
+    show_date: bool | None = True
+
+    @field_serializer("date")
+    def serialize_date(
+        self, value: datetime.datetime | datetime.date | None
+    ) -> str | None:
+        """Serialize datetime in ISO format."""
+        if value is None:
+            return None
+
+        # If no timezone info, add it
+        if isinstance(value, datetime.datetime) and value.tzinfo is None:
+            value = value.replace(tzinfo=datetime.timezone.utc)
+
+        # If not UTC yet, converto to UTC
+        if (
+            isinstance(value, datetime.datetime)
+            and value.tzinfo != datetime.timezone.utc
+        ):
+            value = value.astimezone(datetime.timezone.utc)
+
+        return value.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class Messages(TypedDict):
@@ -82,12 +106,3 @@ class Changelog(TypedDict):
     """Changelog vocabulary."""
 
     changelog: list[Message]
-
-
-class CADSCollections(stac_fastapi.types.stac.Collections):
-    """STAC collections entitiy with additional fields not (yet) in the STAC spec."""
-
-    # Injecting elements count (waiting for STAC API to support this officially)
-    # See https://github.com/radiantearth/stac-api-spec/issues/442
-    numberMatched: int | None
-    numberReturned: int | None

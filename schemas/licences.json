@@ -1,6 +1,6 @@
 {
   "$id": "/schemas/licences",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "title": "CADS licences vocabularies",
   "type": "object",
   "properties": {

@@ -57,7 +57,7 @@ def static_messages_query(
     return [
         Message(
             message_uid="0-yyy-zzzz.md",
-            date="2023-01-01T08:05:54+00:00",
+            date="2023-01-01T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/0.md",
             severity="info",
@@ -67,7 +67,7 @@ def static_messages_query(
         ),
         Message(
             message_uid="1-yyy-zzzz.md",
-            date="2023-01-02T08:05:54+00:00",
+            date="2023-01-02T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/1.md",
             severity="warning",
@@ -89,7 +89,7 @@ def static_changelog_query(
     return [
         Message(
             message_uid="0-yyy-zzzz.md",
-            date="2023-01-01T08:05:54+00:00",
+            date="2023-01-01T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/0.md",
             severity="info",
@@ -99,7 +99,7 @@ def static_changelog_query(
         ),
         Message(
             message_uid="1-yyy-zzzz.md",
-            date="2023-01-02T08:05:54+00:00",
+            date="2023-01-02T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/1.md",
             severity="warning",
@@ -109,7 +109,7 @@ def static_changelog_query(
         ),
         Message(
             message_uid="2-yyy-zzzz.md",
-            date="2023-01-03T08:05:54+00:00",
+            date="2023-01-03T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/2.md",
             severity="warning",
@@ -119,7 +119,7 @@ def static_changelog_query(
         ),
         Message(
             message_uid="3-yyy-zzzz.md",
-            date="2023-01-04T08:05:54+00:00",
+            date="2023-01-04T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/3.md",
             severity="warning",
@@ -129,7 +129,7 @@ def static_changelog_query(
         ),
         Message(
             message_uid="4-yyy-zzzz.md",
-            date="2023-01-05T08:05:54+00:00",
+            date="2023-01-05T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/4.md",
             severity="warning",
@@ -139,7 +139,7 @@ def static_changelog_query(
         ),
         Message(
             message_uid="5-yyy-zzzz.md",
-            date="2023-01-05T08:05:54+00:00",
+            date="2023-01-05T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/5.md",
             severity="warning",
@@ -149,7 +149,7 @@ def static_changelog_query(
         ),
         Message(
             message_uid="6-yyy-zzzz.md",
-            date="2023-01-06T08:05:54+00:00",
+            date="2023-01-06T08:05:54Z",
             summary="Found a log on this dataset",
             url="http://object-storage/…/6.md",
             severity="warning",
@@ -185,7 +185,7 @@ def test_messages(monkeypatch) -> None:
         "messages": [
             {
                 "id": "0-yyy-zzzz.md",
-                "date": "2023-01-01T08:05:54+00:00",
+                "date": "2023-01-01T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/0.md",
                 "severity": "info",
@@ -195,7 +195,7 @@ def test_messages(monkeypatch) -> None:
             },
             {
                 "id": "1-yyy-zzzz.md",
-                "date": "2023-01-02T08:05:54+00:00",
+                "date": "2023-01-02T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
                 "severity": "warning",
@@ -222,7 +222,7 @@ def test_messages_all(monkeypatch) -> None:
         "messages": [
             {
                 "id": "0-yyy-zzzz.md",
-                "date": "2023-01-01T08:05:54+00:00",
+                "date": "2023-01-01T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/0.md",
                 "severity": "info",
@@ -232,7 +232,7 @@ def test_messages_all(monkeypatch) -> None:
             },
             {
                 "id": "1-yyy-zzzz.md",
-                "date": "2023-01-02T08:05:54+00:00",
+                "date": "2023-01-02T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
                 "severity": "warning",
@@ -259,7 +259,7 @@ def test_changelog(monkeypatch) -> None:
         "changelog": [
             {
                 "id": "0-yyy-zzzz.md",
-                "date": "2023-01-01T08:05:54+00:00",
+                "date": "2023-01-01T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/0.md",
                 "severity": "info",
@@ -269,7 +269,7 @@ def test_changelog(monkeypatch) -> None:
             },
             {
                 "id": "1-yyy-zzzz.md",
-                "date": "2023-01-02T08:05:54+00:00",
+                "date": "2023-01-02T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
                 "severity": "warning",
@@ -279,7 +279,7 @@ def test_changelog(monkeypatch) -> None:
             },
             {
                 "id": "2-yyy-zzzz.md",
-                "date": "2023-01-03T08:05:54+00:00",
+                "date": "2023-01-03T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/2.md",
                 "severity": "warning",
@@ -289,7 +289,7 @@ def test_changelog(monkeypatch) -> None:
             },
             {
                 "id": "3-yyy-zzzz.md",
-                "date": "2023-01-04T08:05:54+00:00",
+                "date": "2023-01-04T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/3.md",
                 "severity": "warning",
@@ -299,7 +299,7 @@ def test_changelog(monkeypatch) -> None:
             },
             {
                 "id": "4-yyy-zzzz.md",
-                "date": "2023-01-05T08:05:54+00:00",
+                "date": "2023-01-05T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/4.md",
                 "severity": "warning",
@@ -309,7 +309,7 @@ def test_changelog(monkeypatch) -> None:
             },
             {
                 "id": "5-yyy-zzzz.md",
-                "date": "2023-01-05T08:05:54+00:00",
+                "date": "2023-01-05T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/5.md",
                 "severity": "warning",
@@ -319,7 +319,7 @@ def test_changelog(monkeypatch) -> None:
             },
             {
                 "id": "6-yyy-zzzz.md",
-                "date": "2023-01-06T08:05:54+00:00",
+                "date": "2023-01-06T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/6.md",
                 "severity": "warning",
@@ -346,7 +346,7 @@ def test_changelog_all(monkeypatch) -> None:
         "changelog": [
             {
                 "id": "0-yyy-zzzz.md",
-                "date": "2023-01-01T08:05:54+00:00",
+                "date": "2023-01-01T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/0.md",
                 "severity": "info",
@@ -356,7 +356,7 @@ def test_changelog_all(monkeypatch) -> None:
             },
             {
                 "id": "1-yyy-zzzz.md",
-                "date": "2023-01-02T08:05:54+00:00",
+                "date": "2023-01-02T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/1.md",
                 "severity": "warning",
@@ -366,7 +366,7 @@ def test_changelog_all(monkeypatch) -> None:
             },
             {
                 "id": "2-yyy-zzzz.md",
-                "date": "2023-01-03T08:05:54+00:00",
+                "date": "2023-01-03T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/2.md",
                 "severity": "warning",
@@ -376,7 +376,7 @@ def test_changelog_all(monkeypatch) -> None:
             },
             {
                 "id": "3-yyy-zzzz.md",
-                "date": "2023-01-04T08:05:54+00:00",
+                "date": "2023-01-04T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/3.md",
                 "severity": "warning",
@@ -386,7 +386,7 @@ def test_changelog_all(monkeypatch) -> None:
             },
             {
                 "id": "4-yyy-zzzz.md",
-                "date": "2023-01-05T08:05:54+00:00",
+                "date": "2023-01-05T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/4.md",
                 "severity": "warning",
@@ -396,7 +396,7 @@ def test_changelog_all(monkeypatch) -> None:
             },
             {
                 "id": "5-yyy-zzzz.md",
-                "date": "2023-01-05T08:05:54+00:00",
+                "date": "2023-01-05T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/5.md",
                 "severity": "warning",
@@ -406,7 +406,7 @@ def test_changelog_all(monkeypatch) -> None:
             },
             {
                 "id": "6-yyy-zzzz.md",
-                "date": "2023-01-06T08:05:54+00:00",
+                "date": "2023-01-06T08:05:54Z",
                 "summary": "Found a log on this dataset",
                 "url": "http://object-storage/…/6.md",
                 "severity": "warning",
