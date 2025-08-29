@@ -58,6 +58,11 @@ class Place(pydantic.BaseModel):
 
 
 class Dataset(pydantic.BaseModel):
+    """Schema.org representation of a dataset.
+
+    See https://schema.org/Dataset
+    """
+
     context: Literal["https://schema.org/"] = pydantic.Field(
         default="https://schema.org/", alias="@context"
     )
@@ -80,4 +85,4 @@ class Dataset(pydantic.BaseModel):
     image: str | None = None
     conditionsOfAccess: str | None
     isPartOf: list[dict] | None = None
-    contentSize: str | None
+    contentSize: str | None = None

@@ -444,9 +444,7 @@ def collection_serializer(
         # NOTE: this is triggering a long list of subqueries
         # FIXME: we can do the same we did for resource_data
         "keywords": (
-            [keyword.keyword_name for keyword in db_model.keywords]
-            if with_keywords
-            else []
+            [facet.facet_name for facet in db_model.facets] if with_keywords else []
         ),
         "license": stac_license,
         "extent": get_extent(db_model),
