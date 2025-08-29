@@ -370,7 +370,7 @@ def collection_serializer(
     schema_org: bool = False,
     with_message: bool = True,
     with_keywords: bool = True,
-) -> stac_fastapi.types.stac.Collection:
+) -> models.stac.Collection:
     """Transform database model to STAC collection."""
     collection_links = generate_collection_links(
         model=db_model, request=request, preview=preview
@@ -407,8 +407,10 @@ def collection_serializer(
         "cads:disabled_reason": db_model.disabled_reason,
         **({"cads:hidden": db_model.hidden} if db_model.hidden else {}),
         "cads:sanity_check": processed_sanity_check,
-        "cads:update_frequency": (
-            db_model.update_frequency if db_model.update_frequency else None
+        **(
+            {"cads:update_frequency": db_model.update_frequency}
+            if db_model.update_frequency
+            else {}
         ),
     }
 
@@ -451,7 +453,7 @@ def collection_serializer(
         "links": collection_links,
         **additional_properties,
     }
-    return stac_fastapi.types.stac.Collection(**collection_dict)  # type: ignore
+    return models.stac.Collection(**collection_dict)  # type: ignore
 
 
 @attrs.define
@@ -536,7 +538,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         limit: int = 999,
         route_name="Get Collections",
         search_stats: bool = False,
-    ) -> stac_fastapi.types.stac.Collections | search_utils.CollectionsWithStats:
+    ) -> models.stac.Collections:
         """Read datasets from the catalogue."""
         portals = dependencies.get_portals_values(
             request.headers.get(config.PORTAL_HEADER_NAME)
@@ -626,7 +628,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                     }
                 )
 
-            collections = stac_fastapi.types.stac.Collections(
+            collections = models.stac.Collections(
                 collections=serialized_collections or [],
                 links=links,
                 numberMatched=count,
@@ -634,13 +636,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             )
 
         if search_stats:
-            collections = search_utils.CollectionsWithStats(
-                collections=serialized_collections or [],
-                links=links,
-                numberMatched=count,
-                numberReturned=len(serialized_collections),
-                search={},
-            )
+            collections.search = {}  # type: ignore[attr-defined]
             with self.reader.context_session() as session:
                 all_collections = self.load_catalogue(session, request, q, portals)
 
@@ -657,13 +653,14 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         **kwargs: Any,
     ) -> stac_fastapi.types.stac.Collections:
         """Read all collections from the catalogue."""
-        return self.all_datasets(**kwargs)
+        all_dataset = self.all_datasets(**kwargs)
+        return all_dataset  # type: ignore[return-value]
 
     def get_collection(
         self,
         collection_id: str,
         **kwargs: Any,
-    ) -> stac_fastapi.types.stac.Collection:
+    ) -> models.stac.Collection:
         """Get a STAC collection by id."""
         request: fastapi.Request | None = kwargs.get("request")
 

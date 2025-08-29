@@ -1,10 +1,9 @@
 import datetime
 from unittest import mock
 
+from cads_catalogue_api_service.models.stac import CadsSanityCheck, SanityCheckStatus
 from cads_catalogue_api_service.sanity_check import (
     SanityCheckOutput,
-    SanityCheckResult,
-    SanityCheckStatus,
     get_outputs,
     process,
 )
@@ -90,12 +89,12 @@ def test_process() -> None:
     timestamp_e = datetime.datetime.now(datetime.timezone.utc)
 
     # Test case: None or empty list
-    assert process(None) == SanityCheckResult(
-        status=SanityCheckStatus.unknown,
+    assert process(None) == CadsSanityCheck(
+        status=SanityCheckStatus.UNKNOWN,
         timestamp=None,
     )
-    assert process([]) == SanityCheckResult(
-        status=SanityCheckStatus.unknown,
+    assert process([]) == CadsSanityCheck(
+        status=SanityCheckStatus.UNKNOWN,
         timestamp=None,
     )
 
@@ -124,8 +123,8 @@ def test_process() -> None:
         ),
     ]
 
-    assert process(many_tests) == SanityCheckResult(
-        status=SanityCheckStatus.warning,
+    assert process(many_tests) == CadsSanityCheck(
+        status=SanityCheckStatus.WARNING,
         timestamp=timestamp_e,
     )
 
@@ -136,8 +135,8 @@ def test_process() -> None:
         )
     ]
 
-    assert process(one_test_success) == SanityCheckResult(
-        status=SanityCheckStatus.available,
+    assert process(one_test_success) == CadsSanityCheck(
+        status=SanityCheckStatus.AVAILABLE,
         timestamp=timestamp,
     )
 
@@ -148,8 +147,8 @@ def test_process() -> None:
         )
     ]
 
-    assert process(one_test_failed) == SanityCheckResult(
-        status=SanityCheckStatus.down,
+    assert process(one_test_failed) == CadsSanityCheck(
+        status=SanityCheckStatus.DOWN,
         timestamp=timestamp,
     )
 
@@ -163,8 +162,8 @@ def test_process() -> None:
         ),
     ]
 
-    assert process(two_tests_all_success) == SanityCheckResult(
-        status=SanityCheckStatus.available,
+    assert process(two_tests_all_success) == CadsSanityCheck(
+        status=SanityCheckStatus.AVAILABLE,
         timestamp=timestamp,
     )
 
@@ -178,8 +177,8 @@ def test_process() -> None:
         ),
     ]
 
-    assert process(two_tests_one_success) == SanityCheckResult(
-        status=SanityCheckStatus.warning,
+    assert process(two_tests_one_success) == CadsSanityCheck(
+        status=SanityCheckStatus.WARNING,
         timestamp=timestamp,
     )
 
@@ -193,8 +192,8 @@ def test_process() -> None:
         ),
     ]
 
-    assert process(two_tests_none_success) == SanityCheckResult(
-        status=SanityCheckStatus.down,
+    assert process(two_tests_none_success) == CadsSanityCheck(
+        status=SanityCheckStatus.DOWN,
         timestamp=timestamp,
     )
 
@@ -211,8 +210,8 @@ def test_process() -> None:
         ),
     ]
 
-    assert process(three_tests_all_success) == SanityCheckResult(
-        status=SanityCheckStatus.available,
+    assert process(three_tests_all_success) == CadsSanityCheck(
+        status=SanityCheckStatus.AVAILABLE,
         timestamp=timestamp,
     )
 
@@ -229,8 +228,8 @@ def test_process() -> None:
         ),
     ]
 
-    assert process(three_tests_two_success) == SanityCheckResult(
-        status=SanityCheckStatus.available,
+    assert process(three_tests_two_success) == CadsSanityCheck(
+        status=SanityCheckStatus.AVAILABLE,
         timestamp=timestamp,
     )
 
@@ -247,8 +246,8 @@ def test_process() -> None:
         ),
     ]
 
-    assert process(three_tests_one_success) == SanityCheckResult(
-        status=SanityCheckStatus.warning,
+    assert process(three_tests_one_success) == CadsSanityCheck(
+        status=SanityCheckStatus.WARNING,
         timestamp=timestamp,
     )
 
@@ -265,8 +264,8 @@ def test_process() -> None:
         ),
     ]
 
-    assert process(three_tests_none_success) == SanityCheckResult(
-        status=SanityCheckStatus.down,
+    assert process(three_tests_none_success) == CadsSanityCheck(
+        status=SanityCheckStatus.DOWN,
         timestamp=timestamp,
     )
 
@@ -286,8 +285,8 @@ def test_process_expired(mock_settings) -> None:
             finished_at=expired_timestamp,
         )
     ]
-    assert process(expired_test) == SanityCheckResult(
-        status=SanityCheckStatus.expired,
+    assert process(expired_test) == CadsSanityCheck(
+        status=SanityCheckStatus.EXPIRED,
         timestamp=expired_timestamp,
     )
 
@@ -303,14 +302,14 @@ def test_process_expired(mock_settings) -> None:
             finished_at=not_expired_timestamp,
         )
     ]
-    assert process(not_expired_test) == SanityCheckResult(
-        status=SanityCheckStatus.available,
+    assert process(not_expired_test) == CadsSanityCheck(
+        status=SanityCheckStatus.AVAILABLE,
         timestamp=not_expired_timestamp,
     )
 
     # Test case: env var is not set
     mock_settings.sanity_check_validity_duration = None
-    assert process(expired_test) == SanityCheckResult(
-        status=SanityCheckStatus.available,
+    assert process(expired_test) == CadsSanityCheck(
+        status=SanityCheckStatus.AVAILABLE,
         timestamp=expired_timestamp,
     )

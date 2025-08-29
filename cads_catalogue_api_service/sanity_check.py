@@ -1,24 +1,15 @@
 import datetime
-from enum import Enum
 from typing import Any
 
 import pydantic
 import structlog
 from pydantic import BaseModel
 
-from cads_catalogue_api_service import config
+from cads_catalogue_api_service import config, models
 
 logger = structlog.getLogger(__name__)
 
 SANITY_CHECK_MAX_ENTRIES = 3
-
-
-class SanityCheckStatus(str, Enum):
-    available = "available"
-    warning = "warning"
-    down = "down"
-    unknown = "unknown"
-    expired = "expired"
 
 
 class SanityCheckOutput(BaseModel):
@@ -30,34 +21,23 @@ class SanityCheckOutput(BaseModel):
     finished_at: datetime.datetime
 
 
-class SanityCheckResult(BaseModel):
-    """Result of processing sanity checks."""
-
-    status: SanityCheckStatus
-    timestamp: datetime.datetime | None
-
-    def dict(self, *args, **kwargs):
-        """Override dict method to handle datetime serialization."""
-        data = super().dict(*args, **kwargs)
-        if data["timestamp"] is not None:
-            data["timestamp"] = data["timestamp"].isoformat() + "Z"
-        return data
-
-
 # Rules mapping for determining status
 # Format: {total_tests: {successful_tests: status}}
 status_rules = {
-    1: {0: SanityCheckStatus.down, 1: SanityCheckStatus.available},
+    1: {
+        0: models.stac.SanityCheckStatus.DOWN,
+        1: models.stac.SanityCheckStatus.AVAILABLE,
+    },
     2: {
-        0: SanityCheckStatus.down,
-        1: SanityCheckStatus.warning,
-        2: SanityCheckStatus.available,
+        0: models.stac.SanityCheckStatus.DOWN,
+        1: models.stac.SanityCheckStatus.WARNING,
+        2: models.stac.SanityCheckStatus.AVAILABLE,
     },
     3: {
-        0: SanityCheckStatus.down,
-        1: SanityCheckStatus.warning,
-        2: SanityCheckStatus.available,
-        3: SanityCheckStatus.available,
+        0: models.stac.SanityCheckStatus.DOWN,
+        1: models.stac.SanityCheckStatus.WARNING,
+        2: models.stac.SanityCheckStatus.AVAILABLE,
+        3: models.stac.SanityCheckStatus.AVAILABLE,
     },
 }
 
@@ -89,7 +69,7 @@ def get_outputs(
 
 def process(
     sanity_check: list[SanityCheckOutput] | None,
-) -> SanityCheckResult:
+) -> models.stac.CadsSanityCheck:
     """Process the sanity check results and determine the status.
 
     Calculates the status based on the following rules:
@@ -120,7 +100,9 @@ def process(
     """
     # Default status for empty checks
     if not sanity_check:
-        return SanityCheckResult(status=SanityCheckStatus.unknown, timestamp=None)
+        return models.stac.CadsSanityCheck(
+            status=models.stac.SanityCheckStatus.UNKNOWN, timestamp=None
+        )
 
     # Just take into account latest X tests (tests are sorted descending by finished_at)
     sanity_check = sanity_check[:SANITY_CHECK_MAX_ENTRIES]
@@ -133,8 +115,8 @@ def process(
     if validity_duration and latest_timestamp:
         now = datetime.datetime.now(datetime.timezone.utc)
         if now - latest_timestamp > datetime.timedelta(minutes=validity_duration):
-            return SanityCheckResult(
-                status=SanityCheckStatus.expired, timestamp=latest_timestamp
+            return models.stac.CadsSanityCheck(
+                status=models.stac.SanityCheckStatus.EXPIRED, timestamp=latest_timestamp
             )
 
     # Count successful tests
@@ -143,7 +125,7 @@ def process(
 
     # Get status based on rules or default to "available"
     status = status_rules.get(total_tests, {}).get(
-        successful_tests, SanityCheckStatus.available
+        successful_tests, models.stac.SanityCheckStatus.AVAILABLE
     )
 
-    return SanityCheckResult(status=status, timestamp=latest_timestamp)
+    return models.stac.CadsSanityCheck(status=status, timestamp=latest_timestamp)

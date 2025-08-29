@@ -9,11 +9,14 @@ from .base import (
     Message,
     Messages,
 )
+from .stac import Collection
 from .status import CatalogueUpdateStatus
 
 __all__ = [
     "CatalogueUpdateStatus",
     "Changelog",
+    "Collection",
+    "contents",
     "Keyword",
     "Keywords",
     "Licence",
@@ -22,6 +25,5 @@ __all__ = [
     "Message",
     "Messages",
     "schema_org",
-    "contents",
     "status",
 ]
