@@ -54,8 +54,87 @@
           "encodingFormat": {
             "type": "string"
           },
-          "contentUrl": {
-            "type": "string"
+          "name":{
+            "type":["string","null"]
+          },
+          "description":{
+            "type":["string","null"]
+          },
+          "url":{
+            "type":["string","null"]
+          },
+          "sameAs": {
+            "type": ["string","null"]
+          },
+          "identifier": {
+            "type": ["string","null"]
+          },
+          "license": {
+            "type": ["string","null"]
+          },
+          "keywords": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            }
+          },
+          "is_accessible_for_free": {
+            "type": "boolean"
+          },
+          "creator": {
+            "type": "object"
+          },
+          "funder": {
+            "type": "object"
+          },
+          "distribution":{
+            "type":"array",
+            "items": {
+              "type": "object",
+              "properties":{
+                "encodingFormat":{
+                  "type":"string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "contentSize": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "encodingFormat",
+                "url"
+              ]
+            }
+
+          },
+          "creator_name":{
+            "type":"string"
+          },
+          "creator_url":{
+            "type":"string"
+          },
+          "creator_type":{
+            "type":"string"
+          },
+          "creator_contact_email":{
+            "type":"string"
+          },
+          "file_format":{
+            "type":"string"
+          },
+          "temporalCoverage": {
+            "type": ["string","null"]
+          },
+          "spatialCoverage": {
+            "type": "object"
+          },
+          "dateModified": {
+            "type": ["string","null"]
+          },
+          "image": {
+            "type": ["string","null"]
           }
         },
         "required": ["encodingFormat"]

@@ -48,6 +48,10 @@ def get_sorting_clause(
 ) -> dict | tuple:
     """Get the sorting clause."""
     supported_sorts = {
+        "publication": (
+            model.publication_date,
+            sqlalchemy.desc,
+        ),
         "update": (
             model.resource_update,
             sqlalchemy.desc,
@@ -198,16 +202,23 @@ def generate_collection_links(
 
     if not preview:
         # Licenses
-        additional_links += [
-            {
-                "rel": "license",
-                "href": urllib.parse.urljoin(
+        for license in model.licences:
+            href = (
+                license.download_filename
+                if license.spdx_identifier
+                else urllib.parse.urljoin(
                     config.settings.document_storage_url, license.download_filename
-                ),
-                "title": license.title,
-            }
-            for license in model.licences
-        ]
+                )
+            )
+            additional_links.append(
+                {
+                    "rel": "license",
+                    "href": href,
+                    "title": license.title,
+                    "rev": license.revision,
+                    "id": license.licence_uid,
+                }
+            )
         # Documentation
         additional_links += [
             {
@@ -254,11 +265,7 @@ def generate_collection_links(
             }
         )
 
-        if (
-            model.resource_data
-            and model.resource_data.adaptor_configuration
-            and "costing" in model.resource_data.adaptor_configuration
-        ):
+        if model.has_adaptor_costing:
             additional_links.append(
                 {
                     "rel": "costing_api",
@@ -316,7 +323,10 @@ def lookup_id(
     try:
         search = (
             session.query(record)
-            .options(*database.deferred_columns)
+            .options(
+                *database.deferred_columns,
+                sqlalchemy.orm.selectinload(record.licences),
+            )
             .filter(record.resource_uid == id)
         )
         if portals:
@@ -397,6 +407,9 @@ def collection_serializer(
         "cads:disabled_reason": db_model.disabled_reason,
         **({"cads:hidden": db_model.hidden} if db_model.hidden else {}),
         "cads:sanity_check": processed_sanity_check,
+        "cads:update_frequency": (
+            db_model.update_frequency if db_model.update_frequency else None
+        ),
     }
 
     if schema_org:
@@ -406,8 +419,21 @@ def collection_serializer(
             "creator_type": db_model.responsible_organisation_role,
             "creator_contact_email": db_model.contactemail,
             "file_format": db_model.file_format,
+            "keywords_urls": db_model.keywords_urls,
+            "content_size": db_model.content_size,
         }
         additional_properties.update(schema_org_properties)  # type: ignore
+
+    stac_license = "other"
+    # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
+    # NOTE: this small check, even if correct, is triggering a lot of subrequests
+    # FIXME: we can do the same we did for resource_data
+    if (
+        db_model.licences
+        and len(db_model.licences) == 1
+        and db_model.licences[0].spdx_identifier
+    ):
+        stac_license = db_model.licences[0].spdx_identifier
 
     collection_dict = {
         "type": "Collection",
@@ -422,12 +448,7 @@ def collection_serializer(
             if with_keywords
             else []
         ),
-        # https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#license
-        # NOTE: this small check, even if correct, is triggering a lot of subrequests
-        # FIXME: we can do the same we did for resource_data
-        "license": (
-            "various" if not preview and len(db_model.licences) > 1 else "proprietary"
-        ),
+        "license": stac_license,
         "extent": get_extent(db_model),
         "links": collection_links,
         **additional_properties,
@@ -528,7 +549,8 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
 
         with self.reader.context_session() as session:
             search = session.query(self.collection_table).options(
-                *database.deferred_columns
+                *database.deferred_columns,
+                sqlalchemy.orm.selectinload(self.collection_table.licences),
             )
             search = search_utils.apply_filters(
                 session, search, q, kw, idx, portals=portals

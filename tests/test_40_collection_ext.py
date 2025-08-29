@@ -36,7 +36,7 @@ def _static_query_collection(
         "keywords": [
             "Temporal coverage: Past",
         ],
-        "license": "proprietary",
+        "license": "other",
         "links": [
             {
                 "rel": "self",
@@ -81,7 +81,7 @@ def _static_query_collection_nolinks(
         "keywords": [
             "Temporal coverage: Past",
         ],
-        "license": "proprietary",
+        "license": "other",
         "links": [
             {
                 "rel": "self",

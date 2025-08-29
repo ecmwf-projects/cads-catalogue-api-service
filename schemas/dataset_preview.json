@@ -17,7 +17,7 @@
   ],
   "properties": {
     "license": {
-      "enum": ["various", "proprietary"]
+      "enum": ["other"]
     },
     "cads:disabled_reason": {
       "type": ["string", "null"],
@@ -63,7 +63,7 @@
           "type": "string",
           "title": "Status",
           "description": "The result of the sanity check on the dataset",
-          "enum": ["available", "warning", "down", "unknown"]
+          "enum": ["available", "warning", "down", "unknown", "expired"]
         },
         "timestamp": {
           "type": ["string", "null"],
@@ -73,6 +73,11 @@
         }
       },
       "required": ["status", "timestamp"]
+    },
+    "cads:update_frequency": {
+      "type": "string",
+      "title": "Update frequency",
+      "description": "The update frequency of the dataset"
     }
   },
   "required": ["published", "updated"]

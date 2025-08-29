@@ -38,6 +38,7 @@ class Licence(TypedDict):
     attachment_url: str
     scope: LicenceCategories | str | None
     portal: str | None
+    spdx_identifier: str | None
 
 
 class Licences(TypedDict):
