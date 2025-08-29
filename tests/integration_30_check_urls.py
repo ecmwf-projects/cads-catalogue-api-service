@@ -43,6 +43,8 @@ def test_collections_links(collection_by_id) -> None:
             "self",
             "parent",
             "root",
+            # not working with a simple HTTP GET
+            "costing",
         ]:
             logger.info(f"Checking {collection_by_id['title']}, rel {link['rel']}")
             link_req = requests.get(link["href"])
