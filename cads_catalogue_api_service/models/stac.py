@@ -57,7 +57,7 @@ class CadsSanityCheck(pydantic.BaseModel):
 class Collection(stac_fastapi.types.stac.Collection):
     """STAC Collection with additional ECMWF DSS fields."""
 
-    cads_sanity_check: CadsSanityCheck
+    cads_sanity_check: CadsSanityCheck = pydantic.Field(alias="cads:sanity_check")
 
 
 class Collections(TypedDict):

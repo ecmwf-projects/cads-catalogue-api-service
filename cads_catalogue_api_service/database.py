@@ -18,7 +18,6 @@ OMITTABLE_COLUMNS = [
     cads_catalogue.database.Resource.citation,
     cads_catalogue.database.Resource.contactemail,
     cads_catalogue.database.Resource.ds_contactemail,
-    cads_catalogue.database.Resource.ds_responsible_organisation,
     cads_catalogue.database.Resource.ds_responsible_organisation_role,
     cads_catalogue.database.Resource.file_format,
     cads_catalogue.database.Resource.format_version,

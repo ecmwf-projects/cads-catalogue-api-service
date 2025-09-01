@@ -443,6 +443,12 @@ def collection_serializer(
         "stac_version": "1.1.0",
         "title": db_model.title,
         "description": db_model.abstract,
+        "summaries": {},
+        "providers": (
+            [{"name": db_model.ds_responsible_organisation}]
+            if bool(db_model.ds_responsible_organisation)
+            else []
+        ),
         # NOTE: this is triggering a long list of subqueries
         # FIXME: we can do the same we did for resource_data
         "keywords": (
@@ -636,7 +642,7 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             )
 
         if search_stats:
-            collections.search = {}  # type: ignore[attr-defined]
+            collections["search"] = {}  # type: ignore[attr-defined]
             with self.reader.context_session() as session:
                 all_collections = self.load_catalogue(session, request, q, portals)
 
