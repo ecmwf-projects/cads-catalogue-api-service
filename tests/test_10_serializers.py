@@ -205,4 +205,4 @@ def test_update_frequency(monkeypatch, update_frequency: str | None) -> None:
     stac_record = cads_catalogue_api_service.client.collection_serializer(
         record, session=object(), request=request
     )
-    assert stac_record["cads:update_frequency"] == update_frequency
+    assert stac_record.get("cads:update_frequency") == update_frequency

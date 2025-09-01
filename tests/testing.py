@@ -261,7 +261,8 @@ def generate_expected(
             "status": SanityCheckStatus.available,
             "timestamp": "2024-01-01T12:15:34Z",
         },
-        "cads:update_frequency": None,
+        "providers": [],
+        "summaries": {},
     }
     if not preview:
         expected = {

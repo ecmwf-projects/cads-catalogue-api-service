@@ -43,7 +43,11 @@ def test_collections_links(collection_by_id) -> None:
             "self",
             "parent",
             "root",
+            # not working with a simple HTTP GET
+            "costing_api",
         ]:
             logger.info(f"Checking {collection_by_id['title']}, rel {link['rel']}")
             link_req = requests.get(link["href"])
-            assert link_req.status_code == 200
+            assert link_req.status_code == 200, (
+                f"Link {link['href']} (rel {link['rel']}) is broken"
+            )
