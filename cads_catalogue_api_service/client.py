@@ -407,8 +407,10 @@ def collection_serializer(
         "cads:disabled_reason": db_model.disabled_reason,
         **({"cads:hidden": db_model.hidden} if db_model.hidden else {}),
         "cads:sanity_check": processed_sanity_check,
-        "cads:update_frequency": (
-            db_model.update_frequency if db_model.update_frequency else None
+        **(
+            {"cads:update_frequency": db_model.update_frequency}
+            if db_model.update_frequency
+            else {}
         ),
     }
 
@@ -441,6 +443,12 @@ def collection_serializer(
         "stac_version": "1.1.0",
         "title": db_model.title,
         "description": db_model.abstract,
+        "summaries": {},
+        "providers": (
+            [{"name": db_model.ds_responsible_organisation}]
+            if bool(db_model.ds_responsible_organisation)
+            else []
+        ),
         # NOTE: this is triggering a long list of subqueries
         # FIXME: we can do the same we did for resource_data
         "keywords": (
@@ -626,13 +634,6 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                     }
                 )
 
-            collections = stac_fastapi.types.stac.Collections(
-                collections=serialized_collections or [],
-                links=links,
-                numberMatched=count,
-                numberReturned=len(serialized_collections),
-            )
-
         if search_stats:
             collections = search_utils.CollectionsWithStats(
                 collections=serialized_collections or [],
@@ -649,6 +650,13 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                     collections=collections,
                     keywords=kw,
                 )
+        else:
+            collections = stac_fastapi.types.stac.Collections(
+                collections=serialized_collections or [],
+                links=links,
+                numberMatched=count,
+                numberReturned=len(serialized_collections),
+            )
 
         return collections
 
