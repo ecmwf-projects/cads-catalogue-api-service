@@ -19,7 +19,7 @@ RUN set -a && source environment \
     && python ./git-clone-repos.py --default-branch \
     cads-catalogue \
     cads-common \
-    cads-e2e-tests 
+    cads-e2e-tests
 
 # remove CADS_PAT
 RUN export CADS_PAT=''
