@@ -17,15 +17,21 @@
 from typing import Any
 
 import cads_catalogue.database
+import requests
 import sqlalchemy as sa
 import stac_fastapi.types
 import stac_fastapi.types.stac
+import structlog
+
+from . import config
 
 # TODO: this should be placed in a configuration file
 WEIGHT_HIGH_PRIORITY_TERMS = 1.0
 WEIGHT_TITLE = 0.8
 WEIGHT_DESCRIPTION = 0.5
 WEIGHT_FULLTEXT = 0.03
+
+logger = structlog.getLogger(__name__)
 
 
 def apply_filters_typeahead(
@@ -73,20 +79,6 @@ def apply_filters_typeahead(
     )
     if limit is not None:
         search = search.limit(limit)  # type: ignore
-
-    # final sql for `apply_filters_typeahead(session, 'er', portals=['cams', 'c3s'], limit=10)`:
-    # SELECT suggestion FROM
-    # (
-    #     SELECT unnest(array_agg(distinct(t.g))) AS suggestion FROM
-    #     (
-    #         SELECT unnest(string_to_array(lower(title), ' ')) AS g FROM resources
-    #         WHERE resources.hidden = true AND resources.portal IN ('cams', 'c3s')
-    #     )
-    #      AS t
-    # ) AS tt
-    # WHERE length(tt.suggestion) > 2 AND tt.suggestion ILIKE 'er%'
-    # ORDER BY tt.suggestion
-    # LIMIT 10;
 
     return search
 
@@ -197,11 +189,63 @@ def apply_filters(
 
     # FT search
     if q:
-        tsquery = generate_ts_query(q)
-        search = search.filter(
-            cads_catalogue.database.Resource.search_field.bool_op("@@")(tsquery)
-        )
+        search = apply_fts(search, q)
     return search
+
+
+def apply_llm_sorting(search: sa.orm.Query, ids: list[str]):
+    """Apply sorting based on the order of the given ids.
+
+    LLM is already sorting in the correct order, but we still need to pass through our internal
+    database. So: we are manually applying a sort based on the order of the given ids.
+
+    Args
+    ----
+        search (sqlalchemy.orm.Query): current query
+        ids (list): list of dataset ids in the order to apply
+    """
+    ordering = sa.case(
+        {id: index for index, id in enumerate(ids)},
+        value=cads_catalogue.database.Resource.resource_uid,
+    )
+    return search.order_by(ordering)
+
+
+def apply_fts(search: sa.orm.Query, q: str):
+    """Apply full text search to the running query.
+
+    Args
+    ----
+        search (sqlalchemy.orm.Query): current query
+        q (str): search query (full text search)
+    """
+    filtered_search = None
+    if config.settings.llm_search_enabled and config.settings.llm_search_endpoint:
+        # perform an API call to config.settings.llm_search_endpoint
+        try:
+            logger.debug(f"Performing search for query ${q}")
+            response = requests.get(
+                config.settings.llm_search_endpoint,
+                params={"query": q},
+                timeout=config.settings.llm_search_timeout,
+            )
+            response.raise_for_status()
+            data = response.json()
+            ids = [entry.get("catalogue_id") for entry in data]
+            filtered_search = search.filter(
+                cads_catalogue.database.Resource.resource_uid.in_(ids)
+            )
+            filtered_search = apply_llm_sorting(filtered_search, ids)
+            return filtered_search
+        except requests.RequestException as e:
+            logger.error(f"LLM search request failed: {e}")
+    # if we reach this point: fallback to standard full text search
+    tsquery = generate_ts_query(q)
+    filtered_search = search.filter(
+        cads_catalogue.database.Resource.search_field.bool_op("@@")(tsquery)
+    )
+
+    return filtered_search
 
 
 class CollectionsWithStats(stac_fastapi.types.stac.Collections):

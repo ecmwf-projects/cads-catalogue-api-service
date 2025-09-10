@@ -73,7 +73,15 @@ def apply_sorting_and_limit(
     sorting_clause = get_sorting_clause(cads_catalogue.database.Resource, sortby)
     sort_by, sort_order_fn = sorting_clause
 
-    if sortby == "relevance" and q:
+    if (
+        sortby == "relevance"
+        and q
+        and config.settings.llm_search_enabled
+        and config.settings.llm_search_endpoint
+    ):
+        # when using LLM search, sorting is already OK as it is returned by the apply_filters function
+        pass
+    elif sortby == "relevance" and q:
         # generate sorting by relevance based on input
         search = search.order_by(search_utils.fulltext_order_by(q))
     else:

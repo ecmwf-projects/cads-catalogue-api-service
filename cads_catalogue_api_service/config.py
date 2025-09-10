@@ -60,6 +60,9 @@ class Settings(pydantic_settings.BaseSettings):
     catalogue_max_page_size: int = 500
     # number of minutes after which a sanity check is considered outdated
     sanity_check_validity_duration: int | None = None
+    llm_search_enabled: bool = False
+    llm_search_endpoint: str | None = None
+    llm_search_timeout: int = 5  # seconds
 
 
 dbsettings = SqlalchemySettings()
