@@ -76,8 +76,8 @@ def apply_sorting_and_limit(
     if (
         sortby == "relevance"
         and q
-        and config.settings.llm_search_enabled
-        and config.settings.llm_search_endpoint
+        and config.settings.external_search_enabled
+        and config.settings.external_search_endpoint
     ):
         # when using LLM search, sorting is already OK as it is returned by the apply_filters function
         pass

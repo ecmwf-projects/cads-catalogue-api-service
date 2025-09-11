@@ -60,10 +60,20 @@ class Settings(pydantic_settings.BaseSettings):
     catalogue_max_page_size: int = 500
     # number of minutes after which a sanity check is considered outdated
     sanity_check_validity_duration: int | None = None
-    llm_search_enabled: bool = False
-    llm_search_endpoint: str | None = None
-    llm_search_timeout: int = 5  # seconds
+    external_search_enabled: bool = False
+    external_search_endpoint: str | None = None
+    external_search_timeout: int = 5  # seconds
+
+
+class CachesSettings(pydantic_settings.BaseSettings):
+    """Settings for various caches used in the service."""
+
+    # Number of entries to store for the external search service (LLM based search)
+    external_search_service_cache_maxsize: int = 48
+    http_cache_time: int = 180
+    http_cache_stale_time: int = 60
 
 
 dbsettings = SqlalchemySettings()
 settings = Settings()
+caches_settings = CachesSettings()

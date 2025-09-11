@@ -16,6 +16,7 @@
 
 from typing import Any
 
+import cachetools
 import cads_catalogue.database
 import requests
 import sqlalchemy as sa
@@ -211,6 +212,44 @@ def apply_llm_sorting(search: sa.orm.Query, ids: list[str]):
     return search.order_by(ordering)
 
 
+@cachetools.cached(
+    cache=cachetools.TTLCache(
+        maxsize=config.caches_settings.external_search_service_cache_maxsize,
+        # we reuse http cache time because they should expire in the same moment
+        ttl=config.caches_settings.http_cache_time,
+    ),
+    key=lambda q: q.lower(),  # type: ignore
+)
+def remote_llm_search(q: str) -> list[str]:
+    """Perform a remote query on external search.
+
+    Remote service should accept both HTTP GET and POST methods, and a "query" keyword argument or
+    JSON field.
+
+    Args
+    ----
+        q (str): search query (full text search)
+
+    Returns
+    -------
+        list of dataset ids in the order returned by the LLM search
+    """
+    logger.debug(f"Performing search for query ${q}")
+    if len(q) < 5000:
+        call_param = ("get", "params")
+    else:
+        call_param = ("post", "json")
+    response = getattr(requests, call_param[0])(
+        config.settings.external_search_endpoint,
+        timeout=config.settings.external_search_timeout,
+        **{call_param[1]: {"query": q}},
+    )
+    response.raise_for_status()
+    data = response.json()
+    ids = [entry.get("catalogue_id") for entry in data]
+    return ids
+
+
 def apply_fts(search: sa.orm.Query, q: str):
     """Apply full text search to the running query.
 
@@ -220,18 +259,13 @@ def apply_fts(search: sa.orm.Query, q: str):
         q (str): search query (full text search)
     """
     filtered_search = None
-    if config.settings.llm_search_enabled and config.settings.llm_search_endpoint:
-        # perform an API call to config.settings.llm_search_endpoint
+    if (
+        config.settings.external_search_enabled
+        and config.settings.external_search_endpoint
+    ):
+        # perform an API call to config.settings.external_search_endpoint
         try:
-            logger.debug(f"Performing search for query ${q}")
-            response = requests.get(
-                config.settings.llm_search_endpoint,
-                params={"query": q},
-                timeout=config.settings.llm_search_timeout,
-            )
-            response.raise_for_status()
-            data = response.json()
-            ids = [entry.get("catalogue_id") for entry in data]
+            ids = remote_llm_search(q)
             filtered_search = search.filter(
                 cads_catalogue.database.Resource.resource_uid.in_(ids)
             )
