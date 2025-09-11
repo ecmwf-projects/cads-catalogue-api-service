@@ -69,7 +69,7 @@ class CachesSettings(pydantic_settings.BaseSettings):
     """Settings for various caches used in the service."""
 
     # Number of entries to store for the external search service (LLM based search)
-    external_search_service_cache_maxsize: int = 48
+    external_search_service_cache_maxsize: int = 64
     http_cache_time: int = 180
     http_cache_stale_time: int = 60
 
