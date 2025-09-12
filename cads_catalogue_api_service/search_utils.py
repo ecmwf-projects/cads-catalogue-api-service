@@ -265,7 +265,7 @@ def apply_fts(search: sa.orm.Query, q: str):
     ):
         # perform an API call to config.settings.external_search_endpoint
         try:
-            ids = remote_llm_search(q)
+            ids = remote_llm_search(q.strip())
             filtered_search = search.filter(
                 cads_catalogue.database.Resource.resource_uid.in_(ids)
             )
