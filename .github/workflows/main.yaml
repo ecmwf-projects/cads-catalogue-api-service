@@ -20,4 +20,5 @@ jobs:
       dockerfile: 'Catalogue.Dockerfile'
       chart-repo: 'ecmwf/dss-catalogue-chart'
       package-ref: "CADS_CATALOGUE_API_SERVICE_REF"
+      image-name: catalogue-api
     secrets: inherit
