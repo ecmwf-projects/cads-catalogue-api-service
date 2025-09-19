@@ -412,6 +412,11 @@ def collection_serializer(
             if db_model.update_frequency
             else {}
         ),
+        **(
+            {"cads:fair": db_model.fair_score}
+            if db_model.fair_score is not None
+            else {}
+        ),
     }
 
     if schema_org:
