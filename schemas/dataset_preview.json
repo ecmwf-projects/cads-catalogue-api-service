@@ -78,6 +78,11 @@
       "type": "string",
       "title": "Update frequency",
       "description": "The update frequency of the dataset"
+    },
+    "cads:fair": {
+      "type": ["number", "null"],
+      "title": "FAIR score",
+      "description": "The FAIR score of the dataset (0-100)"
     }
   },
   "required": ["published", "updated"]
