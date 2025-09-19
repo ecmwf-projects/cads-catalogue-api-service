@@ -51,10 +51,15 @@ def apply_filters_typeahead(
     )
     if portals:
         search = search.filter(cads_catalogue.database.Resource.portal.in_(portals))
-    g = sa.func.unnest(
-        sa.func.string_to_array(
-            sa.func.lower(cads_catalogue.database.Resource.title), " "
-        )
+    g = sa.func.regexp_replace(
+        sa.func.unnest(
+            sa.func.string_to_array(
+                sa.func.lower(cads_catalogue.database.Resource.title), " "
+            )
+        ),
+        r"^[^\w]+|[^\w]+$",  # strip non-word characters from start and end of word
+        "",
+        "g",
     ).label("g")
     t = search.with_entities(g).scalar_subquery().alias("t")
     suggestion = sa.func.unnest(sa.func.array_agg(sa.func.distinct(t.c.g))).label(
