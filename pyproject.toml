@@ -29,7 +29,7 @@ dependencies = [
   "stac_fastapi.types",
   "typing_extensions>=4.6.0"  # required only for python<3.12
 ]
-description = "STAC REST API service for EXMWF Data Stores"
+description = "STAC REST API service for ECMWF Data Stores"
 dynamic = ["version"]
 license = {file = "LICENSE"}
 name = "cads-catalogue-api-service"
