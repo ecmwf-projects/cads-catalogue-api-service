@@ -14,12 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import uuid
 
 import fastapi
 import starlette
 import structlog
+
+from cads_catalogue_api_service import config
 
 
 # See https://github.com/snok/asgi-correlation-id/blob/5a7be6337f3b33b84a00d03baae3da999bb722d5/asgi_correlation_id/middleware.py  # noqa: E501
@@ -83,8 +84,6 @@ class LoggerInitializationMiddleware:
 
 
 CACHEABLE_HTTP_METHODS = ["GET", "HEAD"]
-CACHE_TIME = os.getenv("CACHE_TIME", "180")
-CACHE_STALE_TIME = os.getenv("CACHE_STALE_TIME", "60")
 
 
 class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
@@ -107,8 +106,8 @@ class CacheControlMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
             response.headers.update(
                 {
                     "cache-control": (
-                        f"public, max-age={CACHE_TIME},"
-                        f" stale-while-revalidate={CACHE_STALE_TIME}"
+                        f"public, max-age={config.caches_settings.http_cache_time},"
+                        f" stale-while-revalidate={config.caches_settings.http_cache_stale_time}"
                     )
                 }
             )

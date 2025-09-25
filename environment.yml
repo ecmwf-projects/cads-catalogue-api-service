@@ -9,6 +9,7 @@ channels:
 # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW AS SHOWN IN THE EXAMPLE
 dependencies:
 - attrs
+- cachetools
 - brotli-asgi
 - fastapi>=0.113.0
 - httpx

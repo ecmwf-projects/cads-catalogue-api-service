@@ -14,7 +14,7 @@
 
 import pytest
 
-from cads_catalogue_api_service import middlewares
+from cads_catalogue_api_service import config, middlewares
 
 
 class MockRequest:
@@ -48,9 +48,12 @@ async def test_cache_middleware():
     await middleware.dispatch(request, call_next)
 
     # Check that the response has the correct cache control header
-    assert f"max-age={middlewares.CACHE_TIME}" in response.headers["cache-control"]
     assert (
-        f" stale-while-revalidate={middlewares.CACHE_STALE_TIME}"
+        f"max-age={config.caches_settings.http_cache_time}"
+        in response.headers["cache-control"]
+    )
+    assert (
+        f" stale-while-revalidate={config.caches_settings.http_cache_stale_time}"
         in response.headers["cache-control"]
     )
 

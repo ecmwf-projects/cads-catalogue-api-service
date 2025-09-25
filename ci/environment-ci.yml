@@ -18,6 +18,7 @@ dependencies:
 - jsonschema
 - sqlalchemy[mypy]
 - tabulate  # for test notebooks
+- types-cachetools
 - types-jsonschema
 - types-python-dateutil
 - types-requests

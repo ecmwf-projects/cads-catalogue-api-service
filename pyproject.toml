@@ -16,6 +16,7 @@ classifiers = [
 ]
 dependencies = [
   "attrs",
+  "cachetools",
   "cads-catalogue@git+https://github.com/ecmwf-projects/cads-catalogue.git",
   "cads-common@git+https://github.com/ecmwf-projects/cads-common.git",
   "fastapi>=0.113.0",
@@ -28,7 +29,7 @@ dependencies = [
   "stac_fastapi.types",
   "typing_extensions>=4.6.0"  # required only for python<3.12
 ]
-description = "STAC based API service for the Climate & Atmosphere Data Store"
+description = "STAC REST API service for ECMWF Data Stores"
 dynamic = ["version"]
 license = {file = "LICENSE"}
 name = "cads-catalogue-api-service"
