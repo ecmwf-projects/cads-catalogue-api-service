@@ -18,6 +18,7 @@ Options are based on pydantic.BaseSettings, so they automatically get values fro
 # limitations under the License.
 
 import cads_catalogue.config
+import pydantic
 import pydantic_settings
 import stac_fastapi.types.config
 
@@ -63,6 +64,22 @@ class Settings(pydantic_settings.BaseSettings):
     external_search_enabled: bool = False
     external_search_endpoint: str | None = None
     external_search_timeout: int = 5  # seconds
+
+    @pydantic.field_validator("external_search_enabled", mode="before")
+    @classmethod
+    def validate_external_search_enabled(cls, value) -> bool:
+        """Convert empty string to False, handle string boolean values."""
+        if isinstance(value, str):
+            if value == "":
+                return False
+            # Handle string representations of booleans
+            if value.lower() in ("true", "1", "yes", "on"):
+                return True
+            elif value.lower() in ("false", "0", "no", "off"):
+                return False
+            else:
+                raise ValueError(f"Invalid boolean value: {value}")
+        return bool(value)
 
 
 class CachesSettings(pydantic_settings.BaseSettings):
