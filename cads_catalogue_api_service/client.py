@@ -29,6 +29,7 @@ import stac_fastapi.types.core
 import stac_fastapi.types.links
 import stac_fastapi.types.stac
 import stac_pydantic
+import structlog
 
 from . import (
     config,
@@ -41,6 +42,8 @@ from . import (
     search_utils,
 )
 from .fastapisessionmaker import FastAPISessionMaker
+
+logger = structlog.getLogger(__name__)
 
 
 def get_sorting_clause(
@@ -114,23 +117,41 @@ def get_next_prev_links(
     return links
 
 
+def normalize_bbox_coordinates(spatial: dict) -> tuple[float, float, float, float]:
+    """Detect 0-360 longitude range and normalize to -180/+180 range.
+
+    Swaps west and east if west is greather, assuming wrong initial values.
+    """
+    west = float(spatial.get("bboxW", -180))
+    south = float(spatial.get("bboxS", -90))
+    east = float(spatial.get("bboxE", 180))
+    north = float(spatial.get("bboxN", 90))
+
+    # Fixes "Bounding box must be within (-180, -90, 180, 90)"
+    west = west - 360 if west > 180 else west
+    east = east - 360 if east > 180 else east
+
+    # Fixes "Maximum longitude must be greater than minimum longitude when not crossing the Antimeridian"
+    if west > east:
+        west, east = east, west
+
+    return west, south, east, north
+
+
 def get_extent(
     record: cads_catalogue.database.Resource,
 ) -> dict:
     """Get extent from model."""
     spatial = record.geo_extent or {}
+
+    west, south, east, north = normalize_bbox_coordinates(spatial)
+
     try:
         spatial_extent = stac_pydantic.collection.SpatialExtent(
-            bbox=[
-                (
-                    spatial.get("bboxW", -180),
-                    spatial.get("bboxS", -90),
-                    spatial.get("bboxE", 180),
-                    spatial.get("bboxN", 90),
-                )
-            ],
+            bbox=[(west, south, east, north)],
         )
-    except pydantic.ValidationError:
+    except pydantic.ValidationError as e:
+        logger.error("Bbox stac_pydantic validation failed, setting defaults", error=e)
         spatial_extent = stac_pydantic.collection.SpatialExtent(
             bbox=[(-180, -90, 180, 90)]
         )
