@@ -29,6 +29,7 @@ import stac_fastapi.types.core
 import stac_fastapi.types.links
 import stac_fastapi.types.stac
 import stac_pydantic
+import structlog
 
 from . import (
     config,
@@ -41,6 +42,8 @@ from . import (
     search_utils,
 )
 from .fastapisessionmaker import FastAPISessionMaker
+
+logger = structlog.getLogger(__name__)
 
 
 def get_sorting_clause(
@@ -119,21 +122,31 @@ def get_extent(
 ) -> dict:
     """Get extent from model."""
     spatial = record.geo_extent or {}
+
+    west = float(spatial.get("bboxW", -180))
+    south = float(spatial.get("bboxS", -90))
+    east = float(spatial.get("bboxE", 180))
+    north = float(spatial.get("bboxN", 90))
+
     try:
         spatial_extent = stac_pydantic.collection.SpatialExtent(
-            bbox=[
-                (
-                    spatial.get("bboxW", -180),
-                    spatial.get("bboxS", -90),
-                    spatial.get("bboxE", 180),
-                    spatial.get("bboxN", 90),
-                )
-            ],
+            bbox=[(west, south, east, north)],
         )
-    except pydantic.ValidationError:
-        spatial_extent = stac_pydantic.collection.SpatialExtent(
-            bbox=[(-180, -90, 180, 90)]
-        )
+    except pydantic.ValidationError as e:
+        # 0-360 longitude values are considered valid
+        if (
+            0 <= west <= 360 or 0 <= east <= 360
+        ) and "Bounding box must be within (-180, -90, 180, 90)" in str(e):
+            spatial_extent = stac_pydantic.collection.SpatialExtent.model_construct(
+                bbox=[(west, south, east, north)]
+            )
+        else:
+            logger.error(
+                "Bbox stac_pydantic validation failed, setting defaults", error=e
+            )
+            spatial_extent = stac_pydantic.collection.SpatialExtent(
+                bbox=[(-180, -90, 180, 90)]
+            )
 
     begin_date_value = getattr(record, "begin_date", None)
     end_date_value = getattr(record, "end_date", None)
