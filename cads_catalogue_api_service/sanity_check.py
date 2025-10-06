@@ -131,6 +131,9 @@ def process(
     # Expired status
     validity_duration = config.settings.sanity_check_validity_duration
     if validity_duration and latest_timestamp:
+        # Ensure latest_timestamp is timezone-aware
+        if latest_timestamp.tzinfo is None:
+            latest_timestamp = latest_timestamp.replace(tzinfo=datetime.timezone.utc)
         now = datetime.datetime.now(datetime.timezone.utc)
         if now - latest_timestamp > datetime.timedelta(minutes=validity_duration):
             return SanityCheckResult(
