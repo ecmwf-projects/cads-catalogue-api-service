@@ -24,7 +24,7 @@ class SanityCheckStatus(str, Enum):
 class SanityCheckOutput(BaseModel):
     """Individual sanity check test structure."""
 
-    req_id: str
+    req_id: str | None
     success: bool
     started_at: datetime.datetime
     finished_at: datetime.datetime
