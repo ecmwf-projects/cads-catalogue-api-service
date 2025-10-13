@@ -45,6 +45,7 @@ def query_licences(
     """Query all licences.
 
     Return the latest revision of each licence. Older revision virtually disappear from API.
+    Only returns licences that are used by at least one dataset.
     """
     # subquery, to select all unique licence_uids and their max revision
     subquery = session.query(
@@ -62,6 +63,14 @@ def query_licences(
         cads_catalogue.database.Licence.portal,
         cads_catalogue.database.Licence.spdx_identifier,
     )
+
+    # Filters out unused licences
+    query = query.join(
+        cads_catalogue.database.ResourceLicence,
+        cads_catalogue.database.Licence.licence_id
+        == cads_catalogue.database.ResourceLicence.licence_id,
+    )
+
     if scope and scope != LicenceScopeCriterion.all:
         query = query.filter(cads_catalogue.database.Licence.scope == scope)
     if portals:
@@ -73,12 +82,16 @@ def query_licences(
         )
 
     # Now retrieve all licences where the tuple (licence_uid, revision) is in the subquery
-    results = query.filter(
-        sa.tuple_(
-            cads_catalogue.database.Licence.licence_uid,
-            cads_catalogue.database.Licence.revision,
-        ).in_(subquery)
-    ).order_by(cads_catalogue.database.Licence.title)
+    results = (
+        query.filter(
+            sa.tuple_(
+                cads_catalogue.database.Licence.licence_uid,
+                cads_catalogue.database.Licence.revision,
+            ).in_(subquery)
+        )
+        .distinct()
+        .order_by(cads_catalogue.database.Licence.title)
+    )
     return results  # type: ignore
 
 
