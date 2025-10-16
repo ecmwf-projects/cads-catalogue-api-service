@@ -45,7 +45,7 @@ def query_licences(
     """Query all licences.
 
     Return the latest revision of each licence. Older revision virtually disappear from API.
-    Only returns licences that are used by at least one dataset.
+    Dataset-scoped licences are only returned if used by at least one dataset.
     """
     # subquery, to select all unique licence_uids and their max revision
     subquery = session.query(
@@ -64,11 +64,16 @@ def query_licences(
         cads_catalogue.database.Licence.spdx_identifier,
     )
 
-    # Filters out unused licences
-    query = query.join(
+    # Filters out unused dataset licences
+    query = query.outerjoin(
         cads_catalogue.database.ResourceLicence,
         cads_catalogue.database.Licence.licence_id
         == cads_catalogue.database.ResourceLicence.licence_id,
+    ).filter(
+        sa.or_(
+            cads_catalogue.database.ResourceLicence.licence_id.isnot(None),
+            cads_catalogue.database.Licence.scope == "portal",
+        )
     )
 
     if scope and scope != LicenceScopeCriterion.all:
