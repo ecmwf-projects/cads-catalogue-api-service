@@ -17,7 +17,7 @@
   ],
   "properties": {
     "license": {
-      "enum": ["other"]
+      "enum": ["other", "CC-BY-4.0"]
     },
     "cads:disabled_reason": {
       "type": ["string", "null"],

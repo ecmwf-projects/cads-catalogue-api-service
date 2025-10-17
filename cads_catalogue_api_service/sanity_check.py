@@ -40,7 +40,7 @@ class SanityCheckResult(BaseModel):
         """Override dict method to handle datetime serialization."""
         data = super().dict(*args, **kwargs)
         if data["timestamp"] is not None:
-            data["timestamp"] = data["timestamp"].isoformat() + "Z"
+            data["timestamp"] = data["timestamp"].isoformat()
         return data
 
 
