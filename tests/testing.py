@@ -259,7 +259,7 @@ def generate_expected(
         ),
         "cads:sanity_check": {
             "status": SanityCheckStatus.available,
-            "timestamp": "2024-01-01T12:15:34Z",
+            "timestamp": "2024-01-01T12:15:34+00:00",
         },
         "providers": [],
         "summaries": {},

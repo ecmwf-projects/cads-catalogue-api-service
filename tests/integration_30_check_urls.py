@@ -13,6 +13,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+READ_TIMEOUT = 10
+
 
 @pytest.fixture
 def collection_by_id(request):
@@ -47,7 +49,7 @@ def test_collections_links(collection_by_id) -> None:
             "costing_api",
         ]:
             logger.info(f"Checking {collection_by_id['title']}, rel {link['rel']}")
-            link_req = requests.get(link["href"])
+            link_req = requests.get(link["href"], timeout=READ_TIMEOUT)
             assert link_req.status_code == 200, (
                 f"Link {link['href']} (rel {link['rel']}) is broken"
             )
