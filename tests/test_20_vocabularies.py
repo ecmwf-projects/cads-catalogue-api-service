@@ -165,17 +165,27 @@ def test_vocabularies_keywords(monkeypatch) -> None:
 
 
 @pytest.mark.parametrize(
-    ("scope", "expected"),
+    ("scope", "portals", "expected"),
     [
-        (vocabularies.LicenceScopeCriterion.all, {"dataset-used", "portal-only"}),
-        (vocabularies.LicenceScopeCriterion.dataset, {"dataset-used"}),
-        (vocabularies.LicenceScopeCriterion.portal, {"portal-only"}),
+        (
+            vocabularies.LicenceScopeCriterion.all,
+            ["portal-a"],
+            {"dataset-used", "portal-a"},
+        ),
+        (
+            vocabularies.LicenceScopeCriterion.dataset,
+            ["portal-a"],
+            {"dataset-used"},
+        ),
+        (
+            vocabularies.LicenceScopeCriterion.portal,
+            ["portal-a"],
+            {"portal-a"},
+        ),
     ],
 )
-def test_query_licences_scope_filters_unused_dataset_licences(
-    session_obj, scope, expected
-) -> None:
-    """Licences query should filter by scope, skipping unused dataset licences."""
+def test_query_licences(session_obj, scope, portals, expected) -> None:
+    """Licences query should filter portals and unused dataset licences."""
     session = session_obj()
     try:
         resource = cads_catalogue.database.Resource(
@@ -200,17 +210,33 @@ def test_query_licences_scope_filters_unused_dataset_licences(
             download_filename="unused.pdf",
             scope="dataset",
         )
-        portal_licence = cads_catalogue.database.Licence(
-            licence_uid="portal-only",
-            title="Portal Licence",
+        portal_a_licence = cads_catalogue.database.Licence(
+            licence_uid="portal-a",
+            title="Portal Licence A",
             revision=1,
             md_filename="portal.md",
             download_filename="portal.pdf",
             scope="portal",
+            portal="portal-a",
+        )
+        portal_b_licence = cads_catalogue.database.Licence(
+            licence_uid="portal-b",
+            title="Portal Licence B",
+            revision=1,
+            md_filename="portal-other.md",
+            download_filename="portal-other.pdf",
+            scope="portal",
+            portal="portal-b",
         )
 
         session.add_all(
-            [resource, linked_dataset_licence, unlinked_dataset_licence, portal_licence]
+            [
+                resource,
+                linked_dataset_licence,
+                unlinked_dataset_licence,
+                portal_a_licence,
+                portal_b_licence,
+            ]
         )
         session.flush()
 
@@ -221,7 +247,7 @@ def test_query_licences_scope_filters_unused_dataset_licences(
         session.add(link)
         session.commit()
 
-        results = vocabularies.query_licences(session, scope).all()
+        results = vocabularies.query_licences(session, scope, portals).all()
 
         returned_uids = {row.licence_uid for row in results}
         assert returned_uids == expected
