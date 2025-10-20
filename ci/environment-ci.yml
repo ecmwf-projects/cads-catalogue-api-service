@@ -22,6 +22,10 @@ dependencies:
 - types-jsonschema
 - types-python-dateutil
 - types-requests
+- postgresql
+- psycopg
+- psycopg2
 - pip:
   - git+https://github.com/ecmwf-projects/cads-catalogue.git
   - git+https://github.com/ecmwf-projects/cads-common.git
+  - pytest-postgresql

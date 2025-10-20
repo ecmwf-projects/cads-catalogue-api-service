@@ -17,8 +17,10 @@ from typing import Any
 import cads_catalogue
 import fastapi
 import fastapi.testclient
+import pytest
 
 import cads_catalogue_api_service
+from cads_catalogue_api_service import vocabularies
 from cads_catalogue_api_service.main import app
 
 client = fastapi.testclient.TestClient(app)
@@ -160,3 +162,94 @@ def test_vocabularies_keywords(monkeypatch) -> None:
     assert response.json() == {
         "keywords": [{"id": kw, "label": kw} for kw in KEYWORDS],
     }
+
+
+@pytest.mark.parametrize(
+    ("scope", "portals", "expected"),
+    [
+        (
+            vocabularies.LicenceScopeCriterion.all,
+            ["portal-a"],
+            {"dataset-used", "portal-a"},
+        ),
+        (
+            vocabularies.LicenceScopeCriterion.dataset,
+            ["portal-a"],
+            {"dataset-used"},
+        ),
+        (
+            vocabularies.LicenceScopeCriterion.portal,
+            ["portal-a"],
+            {"portal-a"},
+        ),
+    ],
+)
+def test_query_licences(session_obj, scope, portals, expected) -> None:
+    """Licences query should filter portals and unused dataset licences."""
+    session = session_obj()
+    try:
+        resource = cads_catalogue.database.Resource(
+            resource_uid="resource-1",
+            abstract="A dataset resource",
+            description={"en": {"description": "Example"}},
+            type="dataset",
+        )
+        linked_dataset_licence = cads_catalogue.database.Licence(
+            licence_uid="dataset-used",
+            title="Dataset Licence Used",
+            revision=1,
+            md_filename="used.md",
+            download_filename="used.pdf",
+            scope="dataset",
+        )
+        unlinked_dataset_licence = cads_catalogue.database.Licence(
+            licence_uid="dataset-unused",
+            title="Dataset Licence Unused",
+            revision=1,
+            md_filename="unused.md",
+            download_filename="unused.pdf",
+            scope="dataset",
+        )
+        portal_a_licence = cads_catalogue.database.Licence(
+            licence_uid="portal-a",
+            title="Portal Licence A",
+            revision=1,
+            md_filename="portal.md",
+            download_filename="portal.pdf",
+            scope="portal",
+            portal="portal-a",
+        )
+        portal_b_licence = cads_catalogue.database.Licence(
+            licence_uid="portal-b",
+            title="Portal Licence B",
+            revision=1,
+            md_filename="portal-other.md",
+            download_filename="portal-other.pdf",
+            scope="portal",
+            portal="portal-b",
+        )
+
+        session.add_all(
+            [
+                resource,
+                linked_dataset_licence,
+                unlinked_dataset_licence,
+                portal_a_licence,
+                portal_b_licence,
+            ]
+        )
+        session.flush()
+
+        link = cads_catalogue.database.ResourceLicence(
+            resource_id=resource.resource_id,
+            licence_id=linked_dataset_licence.licence_id,
+        )
+        session.add(link)
+        session.commit()
+
+        results = vocabularies.query_licences(session, scope, portals).all()
+
+        returned_uids = {row.licence_uid for row in results}
+        assert returned_uids == expected
+    finally:
+        session.close()
