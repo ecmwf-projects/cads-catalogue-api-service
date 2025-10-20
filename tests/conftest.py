@@ -3,7 +3,11 @@ from typing import Any
 from unittest.mock import Mock
 
 import pytest
+import sqlalchemy as sa
+from cads_catalogue import database
 from cads_catalogue.database import Resource
+from psycopg import Connection
+from sqlalchemy.orm import sessionmaker
 
 
 @pytest.fixture(autouse=True)
@@ -44,3 +48,18 @@ def mock_hybrid_property():
 
     Resource.has_adaptor_costing = mock_property
     yield
+
+
+@pytest.fixture()
+def session_obj(postgresql: Connection[str]) -> sessionmaker:
+    """Init the test database and return a connection object."""
+    connection_string = (
+        f"postgresql+psycopg2://{postgresql.info.user}:"
+        f"@{postgresql.info.host}:{postgresql.info.port}/{postgresql.info.dbname}"
+    )
+    engine = sa.create_engine(connection_string)
+    database.BaseModel.metadata.drop_all(engine)
+    database.BaseModel.metadata.create_all(engine)
+    database.create_catalogue_functions(engine)
+    session_obj = sessionmaker(engine)
+    return session_obj

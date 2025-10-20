@@ -17,8 +17,10 @@ from typing import Any
 import cads_catalogue
 import fastapi
 import fastapi.testclient
+import pytest
 
 import cads_catalogue_api_service
+from cads_catalogue_api_service import vocabularies
 from cads_catalogue_api_service.main import app
 
 client = fastapi.testclient.TestClient(app)
@@ -160,3 +162,68 @@ def test_vocabularies_keywords(monkeypatch) -> None:
     assert response.json() == {
         "keywords": [{"id": kw, "label": kw} for kw in KEYWORDS],
     }
+
+
+@pytest.mark.parametrize(
+    ("scope", "expected"),
+    [
+        (vocabularies.LicenceScopeCriterion.all, {"dataset-used", "portal-only"}),
+        (vocabularies.LicenceScopeCriterion.dataset, {"dataset-used"}),
+        (vocabularies.LicenceScopeCriterion.portal, {"portal-only"}),
+    ],
+)
+def test_query_licences_scope_filters_unused_dataset_licences(
+    session_obj, scope, expected
+) -> None:
+    """Licences query should filter by scope, skipping unused dataset licences."""
+    session = session_obj()
+    try:
+        resource = cads_catalogue.database.Resource(
+            resource_uid="resource-1",
+            abstract="A dataset resource",
+            description={"en": {"description": "Example"}},
+            type="dataset",
+        )
+        linked_dataset_licence = cads_catalogue.database.Licence(
+            licence_uid="dataset-used",
+            title="Dataset Licence Used",
+            revision=1,
+            md_filename="used.md",
+            download_filename="used.pdf",
+            scope="dataset",
+        )
+        unlinked_dataset_licence = cads_catalogue.database.Licence(
+            licence_uid="dataset-unused",
+            title="Dataset Licence Unused",
+            revision=1,
+            md_filename="unused.md",
+            download_filename="unused.pdf",
+            scope="dataset",
+        )
+        portal_licence = cads_catalogue.database.Licence(
+            licence_uid="portal-only",
+            title="Portal Licence",
+            revision=1,
+            md_filename="portal.md",
+            download_filename="portal.pdf",
+            scope="portal",
+        )
+
+        session.add_all(
+            [resource, linked_dataset_licence, unlinked_dataset_licence, portal_licence]
+        )
+        session.flush()
+
+        link = cads_catalogue.database.ResourceLicence(
+            resource_id=resource.resource_id,
+            licence_id=linked_dataset_licence.licence_id,
+        )
+        session.add(link)
+        session.commit()
+
+        results = vocabularies.query_licences(session, scope).all()
+
+        returned_uids = {row.licence_uid for row in results}
+        assert returned_uids == expected
+    finally:
+        session.close()
