@@ -146,7 +146,7 @@ def get_extent(
         else:
             if record.resource_uid not in WRONG_BBOX_LOGGED_IDS:
                 # this log is important, but we don't want to flood the logs
-                WRONG_BBOX_LOGGED_IDS.add(record.resource_uid)
+                WRONG_BBOX_LOGGED_IDS.add(str(record.resource_uid))
                 logger.warning(
                     "Bbox stac_pydantic validation failed, fallback to whole world",
                     error=e,
