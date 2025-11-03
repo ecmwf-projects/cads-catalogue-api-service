@@ -117,6 +117,9 @@ def get_next_prev_links(
     return links
 
 
+WRONG_BBOX_LOGGED_IDS: set[str] = set()
+
+
 def get_extent(
     record: cads_catalogue.database.Resource,
 ) -> dict:
@@ -141,9 +144,14 @@ def get_extent(
                 bbox=[(west, south, east, north)]
             )
         else:
-            logger.error(
-                "Bbox stac_pydantic validation failed, setting defaults", error=e
-            )
+            if record.resource_uid not in WRONG_BBOX_LOGGED_IDS:
+                # this log is important, but we don't want to flood the logs
+                WRONG_BBOX_LOGGED_IDS.add(record.resource_uid)
+                logger.warning(
+                    "Bbox stac_pydantic validation failed, fallback to whole world",
+                    error=e,
+                    id=record.resource_uid,
+                )
             spatial_extent = stac_pydantic.collection.SpatialExtent(
                 bbox=[(-180, -90, 180, 90)]
             )
