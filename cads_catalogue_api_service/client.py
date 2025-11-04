@@ -493,7 +493,9 @@ def collection_serializer(
         "links": collection_links,
         **additional_properties,
     }
-    return stac_fastapi.types.stac.Collection(**collection_dict)  # type: ignore
+
+    result = stac_fastapi.types.stac.Collection(**collection_dict)  # type: ignore
+    return result
 
 
 @attrs.define
@@ -559,12 +561,21 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
         query_results = search_utils.apply_filters(
             session, query, q, kw=None, idx=None, portals=portals
         ).all()
-        all_collections = [
-            collection_serializer(
-                collection, session=session, request=request, preview=True
-            )
-            for collection in query_results
-        ]
+        all_collections = []
+
+        for collection in query_results:
+            try:
+                all_collections.append(
+                    collection_serializer(
+                        collection, session=session, request=request, preview=True
+                    )
+                )
+            except pydantic.ValidationError as e:
+                logger.error(
+                    "Collection validation failed",
+                    error=e,
+                    id=collection.resource_uid,
+                )
         return all_collections
 
     def all_datasets(
@@ -607,12 +618,20 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                     "Search does not match any dataset"
                 )
 
-            serialized_collections = [
-                collection_serializer(
-                    collection, session=session, request=request, preview=True
-                )
-                for collection in collections
-            ]
+            serialized_collections = []
+            for collection in collections:
+                try:
+                    serialized_collections.append(
+                        collection_serializer(
+                            collection, session=session, request=request, preview=True
+                        )
+                    )
+                except pydantic.ValidationError as e:
+                    logger.error(
+                        "Collection validation failed",
+                        error=e,
+                        id=collection.resource_uid,
+                    )
 
             links = [
                 {
@@ -719,9 +738,20 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
             collection = lookup_id(
                 collection_id, self.collection_table, session, portals=portals
             )
-            return collection_serializer(
-                collection, session=session, request=request, preview=False
-            )
+            try:
+                return collection_serializer(
+                    collection, session=session, request=request, preview=False
+                )
+            except pydantic.ValidationError as e:
+                logger.error(
+                    "Collection validation failed",
+                    error=e,
+                    id=collection.resource_uid,
+                )
+                raise fastapi.HTTPException(
+                    status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Collection validation failed",
+                ) from e
 
     def get_item(
         self, item_id: str, collection_id: str, **kwargs: Any
