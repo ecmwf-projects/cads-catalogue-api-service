@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
 import urllib
 from typing import Any, Type
 
@@ -22,7 +21,6 @@ import attrs
 import cads_catalogue
 import fastapi
 import pydantic
-import sqlalchemy.dialects
 import sqlalchemy.orm
 import stac_fastapi.types
 import stac_fastapi.types.core
@@ -115,75 +113,6 @@ def get_next_prev_links(
     if page > 0:
         links["prev"] = dict(page=page - 1, limit=limit, sortby=sortby)
     return links
-
-
-WRONG_BBOX_LOGGED_IDS: set[str] = set()
-
-
-def get_extent(
-    record: cads_catalogue.database.Resource,
-) -> dict:
-    """Get extent from model."""
-    spatial = record.geo_extent or {}
-
-    west = float(spatial.get("bboxW", -180))
-    south = float(spatial.get("bboxS", -90))
-    east = float(spatial.get("bboxE", 180))
-    north = float(spatial.get("bboxN", 90))
-
-    try:
-        spatial_extent = stac_pydantic.collection.SpatialExtent(
-            bbox=[(west, south, east, north)],
-        )
-    except pydantic.ValidationError as e:
-        # 0-360 longitude values are considered valid
-        if (
-            0 <= west <= 360 or 0 <= east <= 360
-        ) and "Bounding box must be within (-180, -90, 180, 90)" in str(e):
-            spatial_extent = stac_pydantic.collection.SpatialExtent.model_construct(
-                bbox=[(west, south, east, north)]
-            )
-        else:
-            if record.resource_uid not in WRONG_BBOX_LOGGED_IDS:
-                # this log is important, but we don't want to flood the logs
-                WRONG_BBOX_LOGGED_IDS.add(str(record.resource_uid))
-                logger.warning(
-                    "Bbox stac_pydantic validation failed, fallback to whole world",
-                    error=e,
-                    id=record.resource_uid,
-                )
-            spatial_extent = stac_pydantic.collection.SpatialExtent(
-                bbox=[(-180, -90, 180, 90)]
-            )
-
-    begin_date_value = getattr(record, "begin_date", None)
-    end_date_value = getattr(record, "end_date", None)
-
-    return stac_pydantic.collection.Extent(
-        spatial=spatial_extent,
-        temporal=stac_pydantic.collection.TimeInterval(
-            interval=[
-                [
-                    (
-                        # We have datetime.date on DB, while STAC requires datetime with timezone
-                        datetime.datetime.combine(
-                            begin_date_value, datetime.datetime.min.time()
-                        ).replace(tzinfo=datetime.timezone.utc)
-                        if begin_date_value
-                        else None
-                    ),
-                    (
-                        # We have datetime.date on DB, while STAC requires datetime with timezone
-                        datetime.datetime.combine(
-                            end_date_value, datetime.datetime.min.time()
-                        ).replace(tzinfo=datetime.timezone.utc)
-                        if end_date_value
-                        else None
-                    ),
-                ]
-            ],
-        ),
-    ).model_dump()
 
 
 def generate_assets(
@@ -489,7 +418,7 @@ def collection_serializer(
             [facet.facet_name for facet in db_model.facets] if with_keywords else []
         ),
         "license": stac_license,
-        "extent": get_extent(db_model),
+        "extent": cads_catalogue.stac_helpers.get_extent(db_model),
         "links": collection_links,
         **additional_properties,
     }
