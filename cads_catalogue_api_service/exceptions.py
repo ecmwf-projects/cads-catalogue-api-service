@@ -17,7 +17,7 @@
 from typing import Callable, Dict, Type
 
 import fastapi
-import stac_fastapi.api.app
+import stac_fastapi.api.errors
 import starlette
 import structlog
 
@@ -78,7 +78,7 @@ def add_exception_handlers(
 
 
 # Monkey patching yet another STAC Fastapi wrapper that makes Fastapi to not work as expected
-stac_fastapi.api.app.add_exception_handlers = add_exception_handlers
+stac_fastapi.api.errors.add_exception_handlers = add_exception_handlers
 
 
 # *** Custom exceptions ***
