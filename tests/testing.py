@@ -104,6 +104,9 @@ def get_record(
             "http://purl.oclc.org/NET/ssnx/cf/cf-feature",
         ],
         update_frequency=update_frequency,
+        metadata_urls=[
+            "http://cfconventions.org/documents.html",
+        ],
     )
 
 
@@ -143,6 +146,9 @@ def generate_expected(
                 "file_format": None,
                 "keywords_urls": [
                     "http://purl.oclc.org/NET/ssnx/cf/cf-feature",
+                ],
+                "metadata_urls": [
+                    "http://cfconventions.org/documents.html",
                 ],
                 "content_size": None,
             }

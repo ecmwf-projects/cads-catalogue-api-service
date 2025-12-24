@@ -114,6 +114,7 @@ def schema_org_json_ld(
         if collection.get("content_size")
         else None
     )
+    print("^^^^^^^^^^^^", collection.get("metadata_urls"))
 
     return models.schema_org.Dataset(
         context="http://schema.org/",
@@ -189,4 +190,5 @@ def schema_org_json_ld(
                 ),
             }
         ],
+        isBasedOn=collection.get("metadata_urls") or [],
     )

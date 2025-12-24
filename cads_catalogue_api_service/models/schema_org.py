@@ -86,3 +86,4 @@ class Dataset(pydantic.BaseModel):
     conditionsOfAccess: str | None
     isPartOf: list[dict] | None = None
     contentSize: str | None = None
+    isBasedOn: list[str] | None = None
