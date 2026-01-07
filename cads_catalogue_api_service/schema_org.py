@@ -93,7 +93,7 @@ def schema_org_json_ld(
             status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail=f"Resource {collection_id} not found.",
         )
-    url, license, distribution = None, None, None
+    url, license, distribution, retrieve_url = None, None, None, None
     if "links" in collection and collection["links"]:
         url = get_url_link(collection, "self")
         license = get_url_link(collection, "license")
@@ -143,7 +143,7 @@ def schema_org_json_ld(
                 models.schema_org.DataDownload(
                     encodingFormat=collection.get("file_format")
                     or "application/octet-stream",
-                    url=f"{retrieve_url}",
+                    url=retrieve_url,
                     contentSize=contentSize,
                 )
                 if distribution
