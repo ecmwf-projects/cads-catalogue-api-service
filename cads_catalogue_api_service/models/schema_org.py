@@ -77,6 +77,7 @@ class Dataset(pydantic.BaseModel):
     license: str | None
     isAccessibleForFree: bool = True
     creator: Organization
+    publisher: Organization | None = None
     distribution: list[DataDownload]
     temporalCoverage: str | None
     spatialCoverage: Place
@@ -86,3 +87,4 @@ class Dataset(pydantic.BaseModel):
     conditionsOfAccess: str | None
     isPartOf: list[dict] | None = None
     contentSize: str | None = None
+    isBasedOn: list[str] | None = None

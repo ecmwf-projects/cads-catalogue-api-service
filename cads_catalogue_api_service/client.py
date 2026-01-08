@@ -386,6 +386,7 @@ def collection_serializer(
             "file_format": db_model.file_format,
             "keywords_urls": db_model.keywords_urls,
             "content_size": db_model.content_size,
+            "metadata_urls": db_model.metadata_urls,
         }
         additional_properties.update(schema_org_properties)  # type: ignore
 
