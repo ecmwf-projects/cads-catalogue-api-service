@@ -251,6 +251,18 @@ def remote_llm_search(q: str) -> list[str]:
     )
     response.raise_for_status()
     data = response.json()
+
+    if data:
+        first_distance = data[0].get("distance")
+        try:
+            if float(first_distance) > config.settings.llm_distance_threshold:
+                return []
+        except (TypeError, ValueError):
+            logger.warning(
+                "Distance value too high in LLM search response",
+                distance=first_distance,
+            )
+
     ids = [entry.get("catalogue_id") for entry in data]
     return ids
 
@@ -271,6 +283,9 @@ def apply_fts(search: sa.orm.Query, q: str):
         # perform an API call to config.settings.external_search_endpoint
         try:
             ids = remote_llm_search(q.strip())
+            if not ids:
+                return search.filter(sa.false())
+
             filtered_search = search.filter(
                 cads_catalogue.database.Resource.resource_uid.in_(ids)
             )
