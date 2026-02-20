@@ -104,10 +104,6 @@ def test_remote_llm_search_threshold(monkeypatch, distance, expected):
     monkeypatch.setattr(
         "cads_catalogue_api_service.search_utils.requests.get", mock_get
     )
-    monkeypatch.setattr(
-        "cads_catalogue_api_service.search_utils.config.settings.llm_distance_threshold",
-        0.5,
-    )
     remote_llm_search.cache.clear()
 
     assert remote_llm_search("test search") == expected

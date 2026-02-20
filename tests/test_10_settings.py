@@ -37,7 +37,7 @@ def test_settings_env() -> None:
 
 
 def test_llm_distance_threshold_env() -> None:
-    os.environ["LLM_DISTANCE_THRESHOLD"] = "0.42"
+    os.environ["LLM_DISTANCE_THRESHOLD"] = "0.50"
     settings = cads_catalogue_api_service.config.Settings()
 
-    assert settings.llm_distance_threshold == 0.42
+    assert settings.llm_distance_threshold == 0.50
