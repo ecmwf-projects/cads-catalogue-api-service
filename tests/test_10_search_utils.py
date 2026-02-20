@@ -15,10 +15,12 @@
 
 import fastapi
 import fastapi.testclient
+import pytest
 
 from cads_catalogue_api_service.main import app
 from cads_catalogue_api_service.search_utils import (
     populate_facets,
+    remote_llm_search,
     split_by_category,
 )
 
@@ -79,3 +81,33 @@ def test_split_by_category():
         ],
         ["cat2: kw1"],
     ]
+
+
+@pytest.mark.parametrize(
+    "distance, expected",
+    [
+        (0.51, []),
+        (0.5, ["dataset-a"]),
+    ],
+)
+def test_remote_llm_search_threshold(monkeypatch, distance, expected):
+    class MockResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return [{"catalogue_id": "dataset-a", "distance": distance}]
+
+    def mock_get(*args, **kwargs):
+        return MockResponse()
+
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.search_utils.requests.get", mock_get
+    )
+    monkeypatch.setattr(
+        "cads_catalogue_api_service.search_utils.config.settings.llm_distance_threshold",
+        0.5,
+    )
+    remote_llm_search.cache.clear()
+
+    assert remote_llm_search("test search") == expected
