@@ -199,10 +199,10 @@ def apply_filters(
     return search
 
 
-def apply_llm_sorting(search: sa.orm.Query, ids: list[str]):
+def apply_external_search_sorting(search: sa.orm.Query, ids: list[str]):
     """Apply sorting based on the order of the given ids.
 
-    LLM is already sorting in the correct order, but we still need to pass through our internal
+    External search is already sorting in the correct order, but we still need to pass through our internal
     database. So: we are manually applying a sort based on the order of the given ids.
 
     Args
@@ -225,7 +225,7 @@ def apply_llm_sorting(search: sa.orm.Query, ids: list[str]):
     ),
     key=lambda q: q.lower(),  # type: ignore
 )
-def remote_llm_search(q: str) -> list[str]:
+def external_search(q: str) -> list[str]:
     """Perform a remote query on external search.
 
     Remote service should accept both HTTP GET and POST methods, and a "query" keyword argument or
@@ -237,7 +237,7 @@ def remote_llm_search(q: str) -> list[str]:
 
     Returns
     -------
-        list of dataset ids in the order returned by the LLM search
+        list of dataset ids in the order returned by the external search
     """
     logger.debug(f"Performing search for query ${q}")
     if len(q) < 5000:
@@ -255,11 +255,14 @@ def remote_llm_search(q: str) -> list[str]:
     if data:
         first_distance = data[0].get("distance")
         try:
-            if float(first_distance) > config.settings.llm_distance_threshold:
+            if (
+                float(first_distance)
+                > config.settings.external_search_distance_threshold
+            ):
                 return []
         except (TypeError, ValueError):
             logger.warning(
-                "Distance value too high in LLM search response",
+                "Invalid distance value in external search response",
                 distance=first_distance,
             )
 
@@ -282,17 +285,17 @@ def apply_fts(search: sa.orm.Query, q: str):
     ):
         # perform an API call to config.settings.external_search_endpoint
         try:
-            ids = remote_llm_search(q.strip())
+            ids = external_search(q.strip())
             if not ids:
                 return search.filter(sa.false())
 
             filtered_search = search.filter(
                 cads_catalogue.database.Resource.resource_uid.in_(ids)
             )
-            filtered_search = apply_llm_sorting(filtered_search, ids)
+            filtered_search = apply_external_search_sorting(filtered_search, ids)
             return filtered_search
         except requests.RequestException as e:
-            logger.error(f"LLM search request failed: {e}")
+            logger.error(f"External search request failed: {e}")
     # if we reach this point: fallback to standard full text search
     tsquery = generate_ts_query(q)
     filtered_search = search.filter(

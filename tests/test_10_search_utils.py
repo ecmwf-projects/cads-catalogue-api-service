@@ -19,8 +19,8 @@ import pytest
 
 from cads_catalogue_api_service.main import app
 from cads_catalogue_api_service.search_utils import (
+    external_search,
     populate_facets,
-    remote_llm_search,
     split_by_category,
 )
 
@@ -90,7 +90,7 @@ def test_split_by_category():
         (0.5, ["dataset-a"]),
     ],
 )
-def test_remote_llm_search_threshold(monkeypatch, distance, expected):
+def test_external_search_threshold(monkeypatch, distance, expected):
     class MockResponse:
         def raise_for_status(self):
             return None
@@ -104,6 +104,6 @@ def test_remote_llm_search_threshold(monkeypatch, distance, expected):
     monkeypatch.setattr(
         "cads_catalogue_api_service.search_utils.requests.get", mock_get
     )
-    remote_llm_search.cache.clear()
+    external_search.cache.clear()
 
-    assert remote_llm_search("test search") == expected
+    assert external_search("test search") == expected

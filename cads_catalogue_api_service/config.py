@@ -64,7 +64,7 @@ class Settings(pydantic_settings.BaseSettings):
     external_search_enabled: bool = False
     external_search_endpoint: str | None = None
     external_search_timeout: int = 5  # seconds
-    llm_distance_threshold: float = 0.5
+    external_search_distance_threshold: float = 0.5
 
     @pydantic.field_validator("external_search_enabled", mode="before")
     @classmethod
@@ -82,19 +82,11 @@ class Settings(pydantic_settings.BaseSettings):
                 raise ValueError(f"Invalid boolean value: {value}")
         return bool(value)
 
-    @pydantic.field_validator("llm_distance_threshold")
-    @classmethod
-    def validate_llm_distance_threshold(cls, value: float) -> float:
-        """Ensure LLM distance threshold is non-negative."""
-        if value < 0:
-            raise ValueError("llm_distance_threshold must be >= 0")
-        return value
-
 
 class CachesSettings(pydantic_settings.BaseSettings):
     """Settings for various caches used in the service."""
 
-    # Number of entries to store for the external search service (LLM based search)
+    # Number of entries to store for the external search service
     external_search_service_cache_maxsize: int = 64
     http_cache_time: int = 180
     http_cache_stale_time: int = 60
