@@ -73,7 +73,12 @@ api = stac_fastapi.api.app.StacApi(
     middlewares=[
         starlette.middleware.Middleware(BrotliMiddleware),
         starlette.middleware.Middleware(PrometheusMiddleware),
-        starlette.middleware.Middleware(stac_fastapi.api.middleware.CORSMiddleware),
+        starlette.middleware.Middleware(
+            starlette.middleware.cors.CORSMiddleware,
+            allow_origins=["*"],
+            allow_methods=["OPTIONS", "POST", "GET"],
+            allow_headers=["Content-Type"],
+        ),
         starlette.middleware.Middleware(middlewares.CacheControlMiddleware),
         starlette.middleware.Middleware(middlewares.LoggerInitializationMiddleware),
     ],

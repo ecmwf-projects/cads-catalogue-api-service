@@ -80,7 +80,7 @@ def apply_sorting_and_limit(
         and config.settings.external_search_enabled
         and config.settings.external_search_endpoint
     ):
-        # when using LLM search, sorting is already OK as it is returned by the apply_filters function
+        # when using external search, sorting is already OK as it is returned by the apply_filters function
         pass
     elif sortby == "relevance" and q:
         # generate sorting by relevance based on input
