@@ -22,8 +22,11 @@ import cads_catalogue_api_service.extensions
 
 
 class FakeQuery:
+    def __init__(self):
+        self.order_bys = []
+
     def order_by(self, order_by):
-        self.order_by = order_by
+        self.order_bys.append(order_by)
         return self
 
     def limit(self, limit: int):
@@ -43,7 +46,8 @@ def test_apply_sorting() -> None:
 
     assert search.limit == 10
     assert search.offset == 20
-    assert search.order_by.element.key == "resource_uid"
+    assert search.order_bys[0] is None
+    assert search.order_bys[-1].element.key == "resource_uid"
 
     query = FakeQuery()
     search = cads_catalogue_api_service.client.apply_sorting_and_limit(
@@ -52,7 +56,7 @@ def test_apply_sorting() -> None:
 
     assert search.limit == 10
     assert search.offset == 0
-    assert search.order_by.element.name == "ts_rank2"
+    assert search.order_bys[-1].element.name == "ts_rank2"
 
 
 def test_get_next_prev_links() -> None:

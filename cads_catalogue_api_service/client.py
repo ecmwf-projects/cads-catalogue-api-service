@@ -86,7 +86,7 @@ def apply_sorting_and_limit(
         # generate sorting by relevance based on input
         search = search.order_by(search_utils.fulltext_order_by(q))
     else:
-        search = search.order_by(sort_order_fn(sort_by))
+        search = search.order_by(None).order_by(sort_order_fn(sort_by))
 
     search = search.offset(page * limit).limit(limit)
 
