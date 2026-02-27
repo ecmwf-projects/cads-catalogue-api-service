@@ -86,7 +86,7 @@ def apply_sorting_and_limit(
         # generate sorting by relevance based on input
         search = search.order_by(search_utils.fulltext_order_by(q))
     else:
-        search = search.order_by(None).order_by(sort_order_fn(sort_by))
+        search = search.order_by(sort_order_fn(sort_by))
 
     search = search.offset(page * limit).limit(limit)
 
@@ -534,7 +534,13 @@ class CatalogueClient(stac_fastapi.types.core.BaseCoreClient):
                 sqlalchemy.orm.selectinload(self.collection_table.licences),
             )
             search = search_utils.apply_filters(
-                session, search, q, kw, idx, portals=portals
+                session,
+                search,
+                q,
+                kw,
+                idx,
+                portals=portals,
+                sortby=sortby.value,
             )
             count = search.count()
             search = apply_sorting_and_limit(
