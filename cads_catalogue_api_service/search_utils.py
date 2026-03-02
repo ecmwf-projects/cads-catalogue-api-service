@@ -145,6 +145,7 @@ def apply_filters(
     kw: list | None,
     idx: list | None,
     portals: list[str] | None = None,
+    sortby: str | None = None,
 ):
     """Apply allowed search filters to the running query.
 
@@ -195,7 +196,7 @@ def apply_filters(
 
     # FT search
     if q:
-        search = apply_fts(search, q)
+        search = apply_fts(search, q, sortby=sortby)
     return search
 
 
@@ -270,7 +271,7 @@ def external_search(q: str) -> list[str]:
     return ids
 
 
-def apply_fts(search: sa.orm.Query, q: str):
+def apply_fts(search: sa.orm.Query, q: str, sortby: str | None = None):
     """Apply full text search to the running query.
 
     Args
@@ -292,7 +293,8 @@ def apply_fts(search: sa.orm.Query, q: str):
             filtered_search = search.filter(
                 cads_catalogue.database.Resource.resource_uid.in_(ids)
             )
-            filtered_search = apply_external_search_sorting(filtered_search, ids)
+            if sortby == "relevance":
+                filtered_search = apply_external_search_sorting(filtered_search, ids)
             return filtered_search
         except requests.RequestException as e:
             logger.error(f"External search request failed: {e}")
