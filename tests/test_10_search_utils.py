@@ -74,12 +74,15 @@ def test_populate_facets(monkeypatch):
 
 
 def test_split_by_category():
-    assert split_by_category(["cat1: kw1", "cat1: kw2", "cat2: kw1"]) == [
+    assert split_by_category(
+        ["cat1: kw1", "cat1: kw2", "cat2: kw1", "no_category"]
+    ) == [
         [
             "cat1: kw1",
             "cat1: kw2",
         ],
         ["cat2: kw1"],
+        ["no_category"],
     ]
 
 

@@ -96,10 +96,11 @@ def split_by_category(keywords: list) -> list:
     """
     categories: dict = {}
     for keyword in keywords:
-        category, value = keyword.split(":", 1)
-        if category not in categories:
-            categories[category] = []
-        categories[category].append(":".join([category, value]))
+        if ":" in keyword:
+            category, value = keyword.split(":", 1)
+            categories.setdefault(category, []).append(":".join([category, value]))
+        else:
+            categories.setdefault("", []).append(keyword)
     return list(categories.values())
 
 
